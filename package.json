@@ -4,11 +4,16 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "elm-live src/Main.elm --open -- --output=elm.js",
-    "build": "elm make src/Main.elm --optimize --output=elm.js"
+    "build:elm": "elm make src/Main.elm --optimize --output=elm.js",
+    "build:css": "npx @tailwindcss/cli -i ./input.css -o ./output.css --minify",
+    "build": "npm run build:elm && npm run build:css"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "@tailwindcss/typography": "^0.5.20",
     "elm": "^0.19.1",
-    "elm-live": "^4.0.2"
+    "elm-live": "^4.0.2",
+    "tailwindcss": "^4.3.3"
   },
   "dependencies": {
     "sortablejs": "^1.15.7"
