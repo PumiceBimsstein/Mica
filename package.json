@@ -1,0 +1,16 @@
+{
+  "name": "card-viewer",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "elm-live src/Main.elm --open -- --output=elm.js",
+    "build": "elm make src/Main.elm --optimize --output=elm.js"
+  },
+  "devDependencies": {
+    "elm": "^0.19.1",
+    "elm-live": "^4.0.2"
+  },
+  "dependencies": {
+    "sortablejs": "^1.15.7"
+  }
+}

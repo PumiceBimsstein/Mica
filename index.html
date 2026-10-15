@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="JSON、CSVデータをカード形式で表示する汎用ビューア、Mica。表示項目の設定や検索・絞り込み、カードの編集・並べ替え、JSON・CSVの入出力に対応しています。" />
+  <meta property="og:title" content="Mica">
+  <meta property="og:description" content="JSON、CSVデータをカード形式で表示する汎用ビューア、Mica。表示項目の設定や検索・絞り込み、カードの編集・並べ替え、JSON・CSVの入出力に対応しています。">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <title>Mica</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="node_modules/sortablejs/Sortable.min.js"></script>
+  <script src="node_modules/sortablejs/plugins/MultiDrag/Sortable.MultiDrag.min.js"></script>
+  <script src="elm.js"></script>
+  <script src="ports.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    window.appInstance = Elm.Main.init({ node: document.getElementById("app") });
+    initPorts(window.appInstance);
+  </script>
+</body>
+</html>
