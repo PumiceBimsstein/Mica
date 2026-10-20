@@ -1,7 +1,7 @@
 port module Ports exposing
-    ( loadState
-    , saveState
-    , stateLoaded
+    ( --loadState
+      saveState
+    --, stateLoaded
     , openSortModalWithTopCard
     , receiveClosedSortModal
     , requestTopCardId
@@ -24,13 +24,13 @@ import Json.Encode as Encode
 import Types exposing (Msg(..))
 
 
-port loadState : () -> Cmd msg
+--port loadState : () -> Cmd msg
 
 
 port saveState : Encode.Value -> Cmd msg
 
 
-port stateLoaded : (Decode.Value -> msg) -> Sub msg
+--port stateLoaded : (Decode.Value -> msg) -> Sub msg
 
 
 port requestTopCardId : () -> Cmd msg

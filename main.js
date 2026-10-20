@@ -5331,34 +5331,135 @@ var $elm$core$Task$perform = F2(
 			A2($elm$core$Task$map, toMessage, task));
 	});
 var $elm$browser$Browser$element = _Browser_element;
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
-var $author$project$Types$JsonFormat = 0;
+var $author$project$Storage$applyPersistedState = F2(
+	function (state, model) {
+		return _Utils_update(
+			model,
+			{aG: state.aG, j: state.j});
+	});
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $author$project$Storage$PersistedState = F2(
+	function (dataset, cardSize) {
+		return {aG: cardSize, j: dataset};
+	});
+var $elm$json$Json$Decode$andThen = _Json_andThen;
+var $author$project$Types$Large = 2;
 var $author$project$Types$Medium = 1;
-var $author$project$Types$NewDataset = 0;
-var $author$project$Types$SearchAll = {$: 0};
+var $author$project$Types$Small = 0;
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $author$project$Storage$cardSizeFromString = function (s) {
+	switch (s) {
+		case 'small':
+			return $elm$json$Json$Decode$succeed(0);
+		case 'medium':
+			return $elm$json$Json$Decode$succeed(1);
+		case 'large':
+			return $elm$json$Json$Decode$succeed(2);
+		default:
+			var other = s;
+			return $elm$json$Json$Decode$fail('unknown cardSize: ' + other);
+	}
+};
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$Storage$decodeCardSize = A2($elm$json$Json$Decode$andThen, $author$project$Storage$cardSizeFromString, $elm$json$Json$Decode$string);
+var $author$project$Types$Dataset = F7(
+	function (id, name, fields, items, imageLinkField, titleLinkField, filterOrder) {
+		return {ac: fields, aU: filterOrder, af: id, a$: imageLinkField, ag: items, a7: name, bq: titleLinkField};
+	});
+var $author$project$Types$FieldConfig = F9(
+	function (key, label, displayRole, showOnCard, filterable, isBool, isTextList, trueLabel, falseLabel) {
+		return {aK: displayRole, aT: falseLabel, aX: filterable, a3: isBool, a4: isTextList, ah: key, a5: label, bj: showOnCard, bt: trueLabel};
+	});
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $author$project$DomainJson$decodeAndMap = $elm$json$Json$Decode$map2(
+	F2(
+		function (a, f) {
+			return f(a);
+		}));
 var $author$project$Types$Image = 2;
 var $author$project$Types$Link = 3;
 var $author$project$Types$PlainText = 0;
 var $author$project$Types$Title = 1;
-var $author$project$MockData$fields = _List_fromArray(
-	[
-		{aK: 1, aT: $elm$core$Maybe$Nothing, aX: false, a3: false, a4: false, ah: 'title', a5: 'タイトル', bj: true, bt: $elm$core$Maybe$Nothing},
-		{aK: 0, aT: $elm$core$Maybe$Nothing, aX: true, a3: false, a4: false, ah: 'author', a5: '著者', bj: true, bt: $elm$core$Maybe$Nothing},
-		{aK: 2, aT: $elm$core$Maybe$Nothing, aX: false, a3: false, a4: false, ah: 'coverUrl', a5: '表紙画像', bj: false, bt: $elm$core$Maybe$Nothing},
-		{aK: 3, aT: $elm$core$Maybe$Nothing, aX: false, a3: false, a4: false, ah: 'infoUrl', a5: '詳細ページ', bj: false, bt: $elm$core$Maybe$Nothing},
-		{aK: 0, aT: $elm$core$Maybe$Nothing, aX: true, a3: false, a4: true, ah: 'tags', a5: 'タグ', bj: true, bt: $elm$core$Maybe$Nothing},
-		{
-		aK: 0,
-		aT: $elm$core$Maybe$Just('いいえ'),
-		aX: true,
-		a3: true,
-		a4: false,
-		ah: 'read',
-		a5: '既読',
-		bj: true,
-		bt: $elm$core$Maybe$Just('はい')
+var $author$project$DomainJson$displayRoleFromString = function (s) {
+	switch (s) {
+		case 'plain':
+			return $elm$json$Json$Decode$succeed(0);
+		case 'title':
+			return $elm$json$Json$Decode$succeed(1);
+		case 'image':
+			return $elm$json$Json$Decode$succeed(2);
+		case 'link':
+			return $elm$json$Json$Decode$succeed(3);
+		default:
+			var other = s;
+			return $elm$json$Json$Decode$fail('unknown displayRole: ' + other);
 	}
-	]);
+};
+var $author$project$DomainJson$decodeDisplayRole = A2($elm$json$Json$Decode$andThen, $author$project$DomainJson$displayRoleFromString, $elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $elm$json$Json$Decode$maybe = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
+				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
+			]));
+};
+var $author$project$DomainJson$decodeFieldConfig = A2(
+	$author$project$DomainJson$decodeAndMap,
+	$elm$json$Json$Decode$maybe(
+		A2($elm$json$Json$Decode$field, 'falseLabel', $elm$json$Json$Decode$string)),
+	A2(
+		$author$project$DomainJson$decodeAndMap,
+		$elm$json$Json$Decode$maybe(
+			A2($elm$json$Json$Decode$field, 'trueLabel', $elm$json$Json$Decode$string)),
+		A2(
+			$author$project$DomainJson$decodeAndMap,
+			$elm$json$Json$Decode$oneOf(
+				_List_fromArray(
+					[
+						A2($elm$json$Json$Decode$field, 'isTextList', $elm$json$Json$Decode$bool),
+						$elm$json$Json$Decode$succeed(false)
+					])),
+			A2(
+				$author$project$DomainJson$decodeAndMap,
+				$elm$json$Json$Decode$oneOf(
+					_List_fromArray(
+						[
+							A2($elm$json$Json$Decode$field, 'isBool', $elm$json$Json$Decode$bool),
+							$elm$json$Json$Decode$succeed(false)
+						])),
+				A2(
+					$author$project$DomainJson$decodeAndMap,
+					A2($elm$json$Json$Decode$field, 'filterable', $elm$json$Json$Decode$bool),
+					A2(
+						$author$project$DomainJson$decodeAndMap,
+						A2($elm$json$Json$Decode$field, 'showOnCard', $elm$json$Json$Decode$bool),
+						A2(
+							$author$project$DomainJson$decodeAndMap,
+							A2($elm$json$Json$Decode$field, 'displayRole', $author$project$DomainJson$decodeDisplayRole),
+							A2(
+								$author$project$DomainJson$decodeAndMap,
+								A2($elm$json$Json$Decode$field, 'label', $elm$json$Json$Decode$string),
+								A2(
+									$author$project$DomainJson$decodeAndMap,
+									A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string),
+									$elm$json$Json$Decode$succeed($author$project$Types$FieldConfig))))))))));
+var $elm$json$Json$Decode$list = _Json_decodeList;
+var $author$project$DomainJson$decodeFilterOrder = $elm$json$Json$Decode$oneOf(
+	_List_fromArray(
+		[
+			A2(
+			$elm$json$Json$Decode$field,
+			'filterOrder',
+			$elm$json$Json$Decode$list($elm$json$Json$Decode$string)),
+			$elm$json$Json$Decode$succeed(_List_Nil)
+		]));
+var $author$project$Types$Item = F2(
+	function (id, values) {
+		return {af: id, ax: values};
+	});
 var $author$project$Types$Boolean = function (a) {
 	return {$: 2, a: a};
 };
@@ -5368,6 +5469,16 @@ var $author$project$Types$Text = function (a) {
 var $author$project$Types$TextList = function (a) {
 	return {$: 1, a: a};
 };
+var $author$project$DomainJson$decodeValue = $elm$json$Json$Decode$oneOf(
+	_List_fromArray(
+		[
+			A2($elm$json$Json$Decode$map, $author$project$Types$Text, $elm$json$Json$Decode$string),
+			A2(
+			$elm$json$Json$Decode$map,
+			$author$project$Types$TextList,
+			$elm$json$Json$Decode$list($elm$json$Json$Decode$string)),
+			A2($elm$json$Json$Decode$map, $author$project$Types$Boolean, $elm$json$Json$Decode$bool)
+		]));
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $elm$core$Dict$Black = 1;
@@ -5491,6 +5602,83 @@ var $elm$core$Dict$fromList = function (assocs) {
 		$elm$core$Dict$empty,
 		assocs);
 };
+var $elm$json$Json$Decode$keyValuePairs = _Json_decodeKeyValuePairs;
+var $elm$json$Json$Decode$dict = function (decoder) {
+	return A2(
+		$elm$json$Json$Decode$map,
+		$elm$core$Dict$fromList,
+		$elm$json$Json$Decode$keyValuePairs(decoder));
+};
+var $author$project$DomainJson$decodeItem = A3(
+	$elm$json$Json$Decode$map2,
+	$author$project$Types$Item,
+	A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string),
+	A2(
+		$elm$json$Json$Decode$field,
+		'values',
+		$elm$json$Json$Decode$dict($author$project$DomainJson$decodeValue)));
+var $elm$json$Json$Decode$map7 = _Json_map7;
+var $elm$json$Json$Decode$null = _Json_decodeNull;
+var $elm$json$Json$Decode$nullable = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				$elm$json$Json$Decode$null($elm$core$Maybe$Nothing),
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder)
+			]));
+};
+var $author$project$DomainJson$decodeDataset = A8(
+	$elm$json$Json$Decode$map7,
+	$author$project$Types$Dataset,
+	A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
+	A2(
+		$elm$json$Json$Decode$field,
+		'fields',
+		$elm$json$Json$Decode$list($author$project$DomainJson$decodeFieldConfig)),
+	A2(
+		$elm$json$Json$Decode$field,
+		'items',
+		$elm$json$Json$Decode$list($author$project$DomainJson$decodeItem)),
+	A2(
+		$elm$json$Json$Decode$field,
+		'imageLinkField',
+		$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string)),
+	A2(
+		$elm$json$Json$Decode$field,
+		'titleLinkField',
+		$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string)),
+	$author$project$DomainJson$decodeFilterOrder);
+var $author$project$Storage$persistedStateDecoder = A3(
+	$elm$json$Json$Decode$map2,
+	$author$project$Storage$PersistedState,
+	A2($elm$json$Json$Decode$field, 'dataset', $author$project$DomainJson$decodeDataset),
+	A2($elm$json$Json$Decode$field, 'cardSize', $author$project$Storage$decodeCardSize));
+var $author$project$Storage$decodeState = function (value) {
+	return A2($elm$json$Json$Decode$decodeValue, $author$project$Storage$persistedStateDecoder, value);
+};
+var $author$project$Types$JsonFormat = 0;
+var $author$project$Types$NewDataset = 0;
+var $author$project$Types$SearchAll = {$: 0};
+var $author$project$MockData$fields = _List_fromArray(
+	[
+		{aK: 1, aT: $elm$core$Maybe$Nothing, aX: false, a3: false, a4: false, ah: 'title', a5: 'タイトル', bj: true, bt: $elm$core$Maybe$Nothing},
+		{aK: 0, aT: $elm$core$Maybe$Nothing, aX: true, a3: false, a4: false, ah: 'author', a5: '著者', bj: true, bt: $elm$core$Maybe$Nothing},
+		{aK: 2, aT: $elm$core$Maybe$Nothing, aX: false, a3: false, a4: false, ah: 'coverUrl', a5: '表紙画像', bj: false, bt: $elm$core$Maybe$Nothing},
+		{aK: 3, aT: $elm$core$Maybe$Nothing, aX: false, a3: false, a4: false, ah: 'infoUrl', a5: '詳細ページ', bj: false, bt: $elm$core$Maybe$Nothing},
+		{aK: 0, aT: $elm$core$Maybe$Nothing, aX: true, a3: false, a4: true, ah: 'tags', a5: 'タグ', bj: true, bt: $elm$core$Maybe$Nothing},
+		{
+		aK: 0,
+		aT: $elm$core$Maybe$Just('いいえ'),
+		aX: true,
+		a3: true,
+		a4: false,
+		ah: 'read',
+		a5: '既読',
+		bj: true,
+		bt: $elm$core$Maybe$Just('はい')
+	}
+	]);
 var $author$project$MockData$mkItem = F2(
 	function (id, pairs) {
 		return {
@@ -5659,41 +5847,44 @@ var $author$project$Main$defaultModel = {
 	bo: $elm$core$Maybe$Nothing,
 	bs: $elm$core$Maybe$Nothing
 };
-var $elm$json$Json$Encode$null = _Json_encodeNull;
-var $author$project$Ports$loadState = _Platform_outgoingPort(
-	'loadState',
-	function ($) {
-		return $elm$json$Json$Encode$null;
-	});
-var $author$project$Storage$request = $author$project$Ports$loadState(0);
-var $author$project$Main$init = function (_v0) {
-	return _Utils_Tuple2(
-		$author$project$Main$defaultModel,
-		$elm$core$Platform$Cmd$batch(
-			_List_fromArray(
-				[$author$project$Storage$request])));
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $author$project$Main$init = function (flags) {
+	var _v0 = $author$project$Storage$decodeState(flags);
+	if (!_v0.$) {
+		var state = _v0.a;
+		return $elm$core$List$isEmpty(state.j.ag) ? _Utils_Tuple2($author$project$Main$defaultModel, $elm$core$Platform$Cmd$none) : _Utils_Tuple2(
+			A2($author$project$Storage$applyPersistedState, state, $author$project$Main$defaultModel),
+			$elm$core$Platform$Cmd$none);
+	} else {
+		return _Utils_Tuple2($author$project$Main$defaultModel, $elm$core$Platform$Cmd$none);
+	}
 };
 var $author$project$Types$CloseAndApply = F2(
 	function (a, b) {
 		return {$: 2, a: a, b: b};
 	});
 var $author$project$Types$CreateItemWithId = function (a) {
-	return {$: 17, a: a};
+	return {$: 16, a: a};
 };
 var $author$project$Types$DatasetFileImport = function (a) {
-	return {$: 18, a: a};
+	return {$: 17, a: a};
 };
 var $author$project$Types$OpenWithTopCard = function (a) {
 	return {$: 1, a: a};
 };
 var $author$project$Types$SortModalMsg = function (a) {
-	return {$: 9, a: a};
-};
-var $author$project$Types$StateLoaded = function (a) {
-	return {$: 1, a: a};
+	return {$: 8, a: a};
 };
 var $author$project$Types$TopCardIdReceived = function (a) {
-	return {$: 16, a: a};
+	return {$: 15, a: a};
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Basics$composeR = F3(
@@ -5701,17 +5892,11 @@ var $elm$core$Basics$composeR = F3(
 		return g(
 			f(x));
 	});
-var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Ports$idGenerated = _Platform_incomingPort('idGenerated', $elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$list = _Json_decodeList;
 var $author$project$Ports$idsArrayGenerated = _Platform_incomingPort(
 	'idsArrayGenerated',
 	$elm$json$Json$Decode$list($elm$json$Json$Decode$string));
 var $author$project$Ports$openSortModalWithTopCard = _Platform_incomingPort('openSortModalWithTopCard', $elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$andThen = _Json_andThen;
-var $elm$json$Json$Decode$field = _Json_decodeField;
-var $elm$json$Json$Decode$null = _Json_decodeNull;
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $author$project$Ports$receiveClosedSortModal = _Platform_incomingPort(
 	'receiveClosedSortModal',
 	A2(
@@ -5737,8 +5922,6 @@ var $author$project$Ports$receiveClosedSortModal = _Platform_incomingPort(
 						$elm$json$Json$Decode$null($elm$core$Maybe$Nothing),
 						A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, $elm$json$Json$Decode$string)
 					])))));
-var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $author$project$Ports$stateLoaded = _Platform_incomingPort('stateLoaded', $elm$json$Json$Decode$value);
 var $author$project$Ports$topCardIdReceived = _Platform_incomingPort(
 	'topCardIdReceived',
 	$elm$json$Json$Decode$oneOf(
@@ -5751,7 +5934,6 @@ var $author$project$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$batch(
 		_List_fromArray(
 			[
-				$author$project$Ports$stateLoaded($author$project$Types$StateLoaded),
 				$author$project$Ports$openSortModalWithTopCard(
 				A2($elm$core$Basics$composeR, $author$project$Types$OpenWithTopCard, $author$project$Types$SortModalMsg)),
 				$author$project$Ports$receiveClosedSortModal(
@@ -6097,6 +6279,7 @@ var $author$project$DomainJson$encodeDisplayRole = function (role) {
 			}
 		}());
 };
+var $elm$json$Json$Encode$null = _Json_encodeNull;
 var $author$project$DomainJson$encodeMaybeString = function (maybeValue) {
 	if (!maybeValue.$) {
 		var s = maybeValue.a;
@@ -6278,7 +6461,6 @@ var $elm$core$Maybe$map = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Types$AddNewFields = 0;
 var $author$project$Import$toItem = F2(
 	function (uuid, pairs) {
@@ -6333,13 +6515,6 @@ var $author$project$Import$defaultFieldConfig = function (key) {
 };
 var $author$project$Import$isBooleanValue = function (val) {
 	if (val.$ === 2) {
-		return true;
-	} else {
-		return false;
-	}
-};
-var $elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
 		return true;
 	} else {
 		return false;
@@ -6558,210 +6733,11 @@ var $author$project$Update$fileImport = F2(
 				A2($author$project$Update$processPendingImport, uuids, model),
 				model.f));
 	});
-var $author$project$Storage$applyPersistedState = F2(
-	function (state, model) {
-		return _Utils_update(
-			model,
-			{aG: state.aG, j: state.j});
-	});
 var $author$project$Update$saveAfter = function (model) {
 	return _Utils_Tuple2(
 		model,
 		$author$project$Storage$save(model));
 };
-var $author$project$Update$applyOrSeed = F2(
-	function (state, model) {
-		return $elm$core$List$isEmpty(state.j.ag) ? $author$project$Update$saveAfter(model) : _Utils_Tuple2(
-			A2($author$project$Storage$applyPersistedState, state, model),
-			$elm$core$Platform$Cmd$none);
-	});
-var $elm$json$Json$Decode$decodeValue = _Json_run;
-var $author$project$Storage$PersistedState = F2(
-	function (dataset, cardSize) {
-		return {aG: cardSize, j: dataset};
-	});
-var $author$project$Types$Large = 2;
-var $author$project$Types$Small = 0;
-var $elm$json$Json$Decode$fail = _Json_fail;
-var $author$project$Storage$cardSizeFromString = function (s) {
-	switch (s) {
-		case 'small':
-			return $elm$json$Json$Decode$succeed(0);
-		case 'medium':
-			return $elm$json$Json$Decode$succeed(1);
-		case 'large':
-			return $elm$json$Json$Decode$succeed(2);
-		default:
-			var other = s;
-			return $elm$json$Json$Decode$fail('unknown cardSize: ' + other);
-	}
-};
-var $author$project$Storage$decodeCardSize = A2($elm$json$Json$Decode$andThen, $author$project$Storage$cardSizeFromString, $elm$json$Json$Decode$string);
-var $author$project$Types$Dataset = F7(
-	function (id, name, fields, items, imageLinkField, titleLinkField, filterOrder) {
-		return {ac: fields, aU: filterOrder, af: id, a$: imageLinkField, ag: items, a7: name, bq: titleLinkField};
-	});
-var $author$project$Types$FieldConfig = F9(
-	function (key, label, displayRole, showOnCard, filterable, isBool, isTextList, trueLabel, falseLabel) {
-		return {aK: displayRole, aT: falseLabel, aX: filterable, a3: isBool, a4: isTextList, ah: key, a5: label, bj: showOnCard, bt: trueLabel};
-	});
-var $elm$json$Json$Decode$bool = _Json_decodeBool;
-var $author$project$DomainJson$decodeAndMap = $elm$json$Json$Decode$map2(
-	F2(
-		function (a, f) {
-			return f(a);
-		}));
-var $author$project$DomainJson$displayRoleFromString = function (s) {
-	switch (s) {
-		case 'plain':
-			return $elm$json$Json$Decode$succeed(0);
-		case 'title':
-			return $elm$json$Json$Decode$succeed(1);
-		case 'image':
-			return $elm$json$Json$Decode$succeed(2);
-		case 'link':
-			return $elm$json$Json$Decode$succeed(3);
-		default:
-			var other = s;
-			return $elm$json$Json$Decode$fail('unknown displayRole: ' + other);
-	}
-};
-var $author$project$DomainJson$decodeDisplayRole = A2($elm$json$Json$Decode$andThen, $author$project$DomainJson$displayRoleFromString, $elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$maybe = function (decoder) {
-	return $elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
-				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
-			]));
-};
-var $author$project$DomainJson$decodeFieldConfig = A2(
-	$author$project$DomainJson$decodeAndMap,
-	$elm$json$Json$Decode$maybe(
-		A2($elm$json$Json$Decode$field, 'falseLabel', $elm$json$Json$Decode$string)),
-	A2(
-		$author$project$DomainJson$decodeAndMap,
-		$elm$json$Json$Decode$maybe(
-			A2($elm$json$Json$Decode$field, 'trueLabel', $elm$json$Json$Decode$string)),
-		A2(
-			$author$project$DomainJson$decodeAndMap,
-			$elm$json$Json$Decode$oneOf(
-				_List_fromArray(
-					[
-						A2($elm$json$Json$Decode$field, 'isTextList', $elm$json$Json$Decode$bool),
-						$elm$json$Json$Decode$succeed(false)
-					])),
-			A2(
-				$author$project$DomainJson$decodeAndMap,
-				$elm$json$Json$Decode$oneOf(
-					_List_fromArray(
-						[
-							A2($elm$json$Json$Decode$field, 'isBool', $elm$json$Json$Decode$bool),
-							$elm$json$Json$Decode$succeed(false)
-						])),
-				A2(
-					$author$project$DomainJson$decodeAndMap,
-					A2($elm$json$Json$Decode$field, 'filterable', $elm$json$Json$Decode$bool),
-					A2(
-						$author$project$DomainJson$decodeAndMap,
-						A2($elm$json$Json$Decode$field, 'showOnCard', $elm$json$Json$Decode$bool),
-						A2(
-							$author$project$DomainJson$decodeAndMap,
-							A2($elm$json$Json$Decode$field, 'displayRole', $author$project$DomainJson$decodeDisplayRole),
-							A2(
-								$author$project$DomainJson$decodeAndMap,
-								A2($elm$json$Json$Decode$field, 'label', $elm$json$Json$Decode$string),
-								A2(
-									$author$project$DomainJson$decodeAndMap,
-									A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string),
-									$elm$json$Json$Decode$succeed($author$project$Types$FieldConfig))))))))));
-var $author$project$DomainJson$decodeFilterOrder = $elm$json$Json$Decode$oneOf(
-	_List_fromArray(
-		[
-			A2(
-			$elm$json$Json$Decode$field,
-			'filterOrder',
-			$elm$json$Json$Decode$list($elm$json$Json$Decode$string)),
-			$elm$json$Json$Decode$succeed(_List_Nil)
-		]));
-var $author$project$Types$Item = F2(
-	function (id, values) {
-		return {af: id, ax: values};
-	});
-var $author$project$DomainJson$decodeValue = $elm$json$Json$Decode$oneOf(
-	_List_fromArray(
-		[
-			A2($elm$json$Json$Decode$map, $author$project$Types$Text, $elm$json$Json$Decode$string),
-			A2(
-			$elm$json$Json$Decode$map,
-			$author$project$Types$TextList,
-			$elm$json$Json$Decode$list($elm$json$Json$Decode$string)),
-			A2($elm$json$Json$Decode$map, $author$project$Types$Boolean, $elm$json$Json$Decode$bool)
-		]));
-var $elm$json$Json$Decode$keyValuePairs = _Json_decodeKeyValuePairs;
-var $elm$json$Json$Decode$dict = function (decoder) {
-	return A2(
-		$elm$json$Json$Decode$map,
-		$elm$core$Dict$fromList,
-		$elm$json$Json$Decode$keyValuePairs(decoder));
-};
-var $author$project$DomainJson$decodeItem = A3(
-	$elm$json$Json$Decode$map2,
-	$author$project$Types$Item,
-	A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string),
-	A2(
-		$elm$json$Json$Decode$field,
-		'values',
-		$elm$json$Json$Decode$dict($author$project$DomainJson$decodeValue)));
-var $elm$json$Json$Decode$map7 = _Json_map7;
-var $elm$json$Json$Decode$nullable = function (decoder) {
-	return $elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				$elm$json$Json$Decode$null($elm$core$Maybe$Nothing),
-				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder)
-			]));
-};
-var $author$project$DomainJson$decodeDataset = A8(
-	$elm$json$Json$Decode$map7,
-	$author$project$Types$Dataset,
-	A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
-	A2(
-		$elm$json$Json$Decode$field,
-		'fields',
-		$elm$json$Json$Decode$list($author$project$DomainJson$decodeFieldConfig)),
-	A2(
-		$elm$json$Json$Decode$field,
-		'items',
-		$elm$json$Json$Decode$list($author$project$DomainJson$decodeItem)),
-	A2(
-		$elm$json$Json$Decode$field,
-		'imageLinkField',
-		$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string)),
-	A2(
-		$elm$json$Json$Decode$field,
-		'titleLinkField',
-		$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string)),
-	$author$project$DomainJson$decodeFilterOrder);
-var $author$project$Storage$persistedStateDecoder = A3(
-	$elm$json$Json$Decode$map2,
-	$author$project$Storage$PersistedState,
-	A2($elm$json$Json$Decode$field, 'dataset', $author$project$DomainJson$decodeDataset),
-	A2($elm$json$Json$Decode$field, 'cardSize', $author$project$Storage$decodeCardSize));
-var $author$project$Storage$decodeState = function (value) {
-	return A2($elm$json$Json$Decode$decodeValue, $author$project$Storage$persistedStateDecoder, value);
-};
-var $author$project$Update$handleStateLoaded = F2(
-	function (value, model) {
-		var _v0 = $author$project$Storage$decodeState(value);
-		if (!_v0.$) {
-			var state = _v0.a;
-			return A2($author$project$Update$applyOrSeed, state, model);
-		} else {
-			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-		}
-	});
 var $author$project$Ports$scrollToTop = _Platform_outgoingPort(
 	'scrollToTop',
 	function ($) {
@@ -8775,7 +8751,7 @@ var $author$project$Types$BackupFileSelected = function (a) {
 	return {$: 11, a: a};
 };
 var $author$project$Types$FileFlowMsg = function (a) {
-	return {$: 11, a: a};
+	return {$: 10, a: a};
 };
 var $elm$file$File$Select$file = F2(
 	function (mimes, toMsg) {
@@ -9384,50 +9360,47 @@ var $author$project$Update$update = F2(
 				return $author$project$Update$saveAfter(
 					A2($author$project$Update$setCardSize, size, model));
 			case 1:
-				var value = msg.a;
-				return A2($author$project$Update$handleStateLoaded, value, model);
-			case 2:
 				var open = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{bi: open}),
 					$elm$core$Platform$Cmd$none);
-			case 3:
+			case 2:
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{aD: !model.aD}),
 					$elm$core$Platform$Cmd$none);
-			case 4:
+			case 3:
 				var open = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{aV: open}),
 					$elm$core$Platform$Cmd$none);
-			case 9:
+			case 8:
 				var sortMsg = msg.a;
 				return A2($author$project$Update$updateSortModal, sortMsg, model);
-			case 10:
+			case 9:
 				var datasetMsg = msg.a;
 				return A2($author$project$Update$updateDataset, datasetMsg, model);
-			case 5:
+			case 4:
 				return $author$project$Update$saveAfter(
 					$author$project$Update$undo(model));
-			case 11:
+			case 10:
 				var fileFlowMsg = msg.a;
 				return A2($author$project$Update$updateFileFlow, fileFlowMsg, model);
-			case 12:
+			case 11:
 				var filterMsg = msg.a;
 				return A2($author$project$Update$updateFilter, filterMsg, model);
-			case 13:
+			case 12:
 				var fieldSettingsMsg = msg.a;
 				return A2($author$project$Update$updateFieldSettings, fieldSettingsMsg, model);
-			case 14:
+			case 13:
 				var editModalMsg = msg.a;
 				return A2($author$project$Update$updateEditModalMsg, editModalMsg, model);
-			case 6:
+			case 5:
 				var itemId = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
@@ -9436,33 +9409,33 @@ var $author$project$Update$update = F2(
 							a_: $elm$core$Maybe$Just(itemId)
 						}),
 					$elm$core$Platform$Cmd$none);
-			case 7:
+			case 6:
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{a_: $elm$core$Maybe$Nothing}),
 					$elm$core$Platform$Cmd$none);
-			case 8:
+			case 7:
 				return _Utils_Tuple2(
 					model,
 					$author$project$Ports$scrollToTop(0));
-			case 16:
+			case 15:
 				var maybeTopId = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{bs: maybeTopId}),
 					$elm$core$Platform$Cmd$none);
-			case 18:
+			case 17:
 				var uuids = msg.a;
 				return A2($author$project$Update$fileImport, uuids, model);
-			case 17:
+			case 16:
 				var uuid = msg.a;
 				var _v1 = A3($author$project$Update$ItemManager$createNewItemWithUuid, uuid, model.bs, model);
 				var newModel = _v1.a;
 				var saveCmd = _v1.b;
 				return _Utils_Tuple2(newModel, saveCmd);
-			case 19:
+			case 18:
 				var scale = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
@@ -9474,12 +9447,13 @@ var $author$project$Update$update = F2(
 				return A2($author$project$Update$updateSearch, searchMsg, model);
 		}
 	});
+var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Types$CreateNewItem = {$: 12};
 var $author$project$Types$EditModalMsg = function (a) {
-	return {$: 14, a: a};
+	return {$: 13, a: a};
 };
 var $author$project$Types$RequestOpen = {$: 0};
-var $author$project$Types$ToggleActionMenu = {$: 3};
+var $author$project$Types$ToggleActionMenu = {$: 2};
 var $author$project$View$actionButtonClasses = 'w-full px-3 py-1.5 text-xs border border-neutral-100 rounded bg-neutral-50 hover:bg-neutral-100 text-neutral-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-center';
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$Attributes$stringProperty = F2(
@@ -9526,7 +9500,7 @@ var $author$project$Filter$isFilterActive = F2(
 				dataset.ac));
 	});
 var $author$project$Types$SetMainCardScale = function (a) {
-	return {$: 19, a: a};
+	return {$: 18, a: a};
 };
 var $elm$core$String$fromFloat = _String_fromNumber;
 var $elm$html$Html$input = _VirtualDom_node('input');
@@ -9712,9 +9686,9 @@ var $author$project$View$cardGridClasses = function (size) {
 	}
 };
 var $author$project$Types$CardMouseEntered = function (a) {
-	return {$: 6, a: a};
+	return {$: 5, a: a};
 };
-var $author$project$Types$CardMouseLeft = {$: 7};
+var $author$project$Types$CardMouseLeft = {$: 6};
 var $elm$virtual_dom$VirtualDom$attribute = F2(
 	function (key, value) {
 		return A2(
@@ -10435,7 +10409,7 @@ var $author$project$View$mainArea = function (model) {
 				$author$project$View$mainContent(model)
 			]));
 };
-var $author$project$Types$ScrollToTopClicked = {$: 8};
+var $author$project$Types$ScrollToTopClicked = {$: 7};
 var $author$project$View$scrollToTopButtonClasses = 'fixed bottom-6 right-6 z-40 px-3 py-1.5 text-xs text-neutral-600 bg-white/70 border border-neutral-300 rounded shadow-sm opacity-50 hover:opacity-100 transition-opacity duration-200';
 var $author$project$View$scrollToTopButton = A2(
 	$elm$html$Html$button,
@@ -11062,7 +11036,7 @@ var $author$project$View$FileModal$backupSection = A2(
 				]))
 		]));
 var $author$project$Types$DatasetMsg = function (a) {
-	return {$: 10, a: a};
+	return {$: 9, a: a};
 };
 var $author$project$Types$OpenRename = {$: 0};
 var $author$project$View$FileModal$currentDatasetCard = function (dataset) {
@@ -11638,11 +11612,11 @@ var $author$project$View$FileModal$view = function (model) {
 	return model.Q ? $author$project$View$FileModal$overlay(model) : $elm$html$Html$text('');
 };
 var $author$project$Types$ToggleSettingsModal = function (a) {
-	return {$: 2, a: a};
+	return {$: 1, a: a};
 };
 var $author$project$View$SettingsModal$boolConfigClasses = 'self-end flex items-center gap-4 bg-neutral-50 p-2 rounded border border-neutral-100 text-xs mt-1';
 var $author$project$Types$FieldSettingsMsg = function (a) {
-	return {$: 13, a: a};
+	return {$: 12, a: a};
 };
 var $author$project$Types$SetFalseLabel = F2(
 	function (a, b) {
@@ -12228,7 +12202,7 @@ var $author$project$View$Sidebar$fileButton = A2(
 			$elm$html$Html$text('ファイル')
 		]));
 var $author$project$Types$FilterMsg = function (a) {
-	return {$: 12, a: a};
+	return {$: 11, a: a};
 };
 var $author$project$Types$ToggleCollapsed = function (a) {
 	return {$: 3, a: a};
@@ -12944,7 +12918,7 @@ var $author$project$View$Sidebar$filterArea = function (model) {
 			]));
 };
 var $author$project$Types$ToggleFilterSelectDropdown = function (a) {
-	return {$: 4, a: a};
+	return {$: 3, a: a};
 };
 var $author$project$Types$SetFilterable = F2(
 	function (a, b) {
@@ -13087,7 +13061,7 @@ var $author$project$View$Sidebar$appTitle = function (model) {
 				$elm$html$Html$text(model.j.a7)
 			]));
 };
-var $author$project$Types$UndoRequested = {$: 5};
+var $author$project$Types$UndoRequested = {$: 4};
 var $author$project$History$canUndo = function (model) {
 	return !$elm$core$List$isEmpty(model.A);
 };
@@ -13147,7 +13121,7 @@ var $author$project$View$Sidebar$headerRow = function (model) {
 			]));
 };
 var $author$project$Types$SearchMsg = function (a) {
-	return {$: 15, a: a};
+	return {$: 14, a: a};
 };
 var $author$project$Types$ToggleSearchField = function (a) {
 	return {$: 2, a: a};
@@ -13362,5 +13336,4 @@ var $author$project$View$view = function (model) {
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{a2: $author$project$Main$init, bn: $author$project$Main$subscriptions, bu: $author$project$Update$update, bv: $author$project$View$view});
-_Platform_export({'Main':{'init':$author$project$Main$main(
-	$elm$json$Json$Decode$succeed(0))(0)}});}(this));
+_Platform_export({'Main':{'init':$author$project$Main$main($elm$json$Json$Decode$value)(0)}});}(this));

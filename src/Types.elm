@@ -260,10 +260,10 @@ type alias Model =
 
 type Msg
     = SetCardSize CardSize
-    | StateLoaded Decode.Value
+    --| StateLoaded Decode.Value
     | ToggleSettingsModal Bool
     | ToggleActionMenu
-    | ToggleFilterSelectDropdown Bool -- [追加]
+    | ToggleFilterSelectDropdown Bool
     | UndoRequested
     | CardMouseEntered String
     | CardMouseLeft

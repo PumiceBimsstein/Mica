@@ -1,39 +1,77 @@
-const DB_NAME = "card-viewer";
-const DB_VERSION = 1;
+const DB_NAME = "card-viewer-Mica";
+const DB_VERSION = 2;
 const STORE_NAME = "appState";
 const RECORD_KEY = "state";
 
-const EMPTY_STATE = { datasets: [], selectedDatasetId: "", cardSize: "medium" };
 
 function openDb() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
-      req.result.createObjectStore(STORE_NAME);
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
+    try {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+
+      req.onupgradeneeded = (event) => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME);
+        }
+      };
+
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+      req.onblocked = () => reject(new Error("IndexedDB is blocked"));
+    } catch (err) {
+      reject(err);
+    }
   });
 }
 
+
+// 起動時に呼ばれる安全な読込処理（最大500msでタイムアウトしてアプリ起動を保証）
 async function loadState() {
-  const db = await openDb();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readonly");
-    const req = tx.objectStore(STORE_NAME).get(RECORD_KEY);
-    req.onsuccess = () => resolve(req.result || EMPTY_STATE);
-    req.onerror = () => reject(req.error);
+  const readPromise = (async () => {
+    const db = await openDb();
+    return new Promise((resolve) => {
+      try {
+        // オブジェクトストアが存在しない場合は null
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          resolve(null);
+          return;
+        }
+
+        const tx = db.transaction(STORE_NAME, "readonly");
+        const req = tx.objectStore(STORE_NAME).get(RECORD_KEY);
+
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => resolve(null);
+        tx.onerror = () => resolve(null);
+      } catch (err) {
+        console.warn("card-viewer: transaction failed, fallback to null", err);
+        resolve(null);
+      }
+    });
+  })();
+  
+  // IndexedDBの応答が遅い、または止まった場合のタイムアウト（500ms）
+  const timeoutPromise = new Promise((resolve) => {
+    setTimeout(() => resolve(null), 500);
   });
+
+  return Promise.race([readPromise, timeoutPromise]).catch(() => null);
 }
+
 
 async function saveState(state) {
-  const db = await openDb();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readwrite");
-    tx.objectStore(STORE_NAME).put(state, RECORD_KEY);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
+  try {
+    const db = await openDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME, "readwrite");
+      tx.objectStore(STORE_NAME).put(state, RECORD_KEY);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (err) {
+    console.error("card-viewer: saveState failed", err);
+  }
 }
 
 function initPorts(app) {
@@ -91,14 +129,6 @@ function initPorts(app) {
     }
   });
 
-  app.ports.loadState.subscribe(() => {
-    loadState()
-      .then((state) => app.ports.stateLoaded.send(state))
-      .catch((err) => {
-        console.error("card-viewer: failed to load state", err);
-        app.ports.stateLoaded.send(EMPTY_STATE);
-      });
-  });
 
   app.ports.saveState.subscribe((state) => {
     saveState(state).catch((err) => {

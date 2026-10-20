@@ -57,8 +57,8 @@ update msg model =
         SetCardSize size ->
             saveAfter (setCardSize size model)
 
-        StateLoaded value ->
-            handleStateLoaded value model
+        -- StateLoaded value ->
+        --     handleStateLoaded value model
 
         ToggleSettingsModal open ->
             ( { model | settingsModalOpen = open }, Cmd.none )
@@ -148,58 +148,6 @@ updateSortModal msg model =
 
         SetCardScale scale ->
             ( { model | sortModalCardScale = scale }, Cmd.none )
-
-
--- updateFileFlow : FileFlowMsg -> Model -> ( Model, Cmd Msg )
--- updateFileFlow msg model =
---     case msg of
---         ToggleModal open ->
---             ( openOrCloseFileModal open model, Cmd.none )
-
---         SetReadMode mode ->
---             ( { model | readMode = mode }, Cmd.none )
-
---         SetImportFormat format ->
---             ( { model | importFormat = format }, Cmd.none )
-
---         SetExportFormat format ->
---             ( { model | exportFormat = format }, Cmd.none )
-
---         RequestOpenFile ->
---             ( model, FileFlow.openFile model.importFormat )
-
---         FileSelected file ->
---             ( model, FileFlow.readFile file )
-
---         FileTextLoaded text ->
---             FileFlow.handleFileText text model
-
---         ImportNameChanged text ->
---             ( FileFlow.updatePendingName text model, Cmd.none )
-
---         ConfirmNewDataset ->
---             FileFlow.confirmNewDataset model
-
---         ResolveNewProperties choice ->
---             FileFlow.resolveChoice choice model
-
---         CancelPendingImport ->
---             ( { model | pendingImport = Nothing }, Cmd.none )
-
---         ExportClicked ->
---             ( model, FileFlow.exportCurrentDataset model )
-
---         RequestOpenBackupFile ->
---             ( model, FileFlow.openBackupFile )
-
---         BackupFileSelected file ->
---             ( model, FileFlow.readBackupFile file )
-
---         BackupTextLoaded text ->
---             FileFlow.handleBackupText text model
-
---         ExportBackupClicked ->
---             ( model, FileFlow.exportBackup model )
 
 
 updateFileFlow : FileFlowMsg -> Model -> ( Model, Cmd Msg )
@@ -369,23 +317,23 @@ saveAfter model =
 
 -- 起動時読込
 
-handleStateLoaded : Decode.Value -> Model -> ( Model, Cmd Msg )
-handleStateLoaded value model =
-    case Storage.decodeState value of
-        Ok state ->
-            applyOrSeed state model
+-- handleStateLoaded : Decode.Value -> Model -> ( Model, Cmd Msg )
+-- handleStateLoaded value model =
+--     case Storage.decodeState value of
+--         Ok state ->
+--             applyOrSeed state model
 
-        Err _ ->
-            ( model, Cmd.none )
+--         Err _ ->
+--             ( model, Cmd.none )
 
 
-applyOrSeed : Storage.PersistedState -> Model -> ( Model, Cmd Msg )
-applyOrSeed state model =
-    if List.isEmpty state.dataset.items then
-        saveAfter model
+-- applyOrSeed : Storage.PersistedState -> Model -> ( Model, Cmd Msg )
+-- applyOrSeed state model =
+--     if List.isEmpty state.dataset.items then
+--         saveAfter model
 
-    else
-        ( Storage.applyPersistedState state model, Cmd.none )
+--     else
+--         ( Storage.applyPersistedState state model, Cmd.none )
 
 
 

@@ -12,16 +12,30 @@
   <!-- <script src="https://cdn.tailwindcss.com"></script> -->
   <link rel="stylesheet" href="output.css">
   <script src="Sortable.js"></script>
-  <!-- <script src="node_modules/sortablejs/Sortable.min.js"></script> -->
-  <!-- <script src="node_modules/sortablejs/plugins/MultiDrag/Sortable.MultiDrag.min.js"></script> -->
   <script src="main.js"></script>
   <script src="ports.js"></script>
 </head>
 <body>
   <div id="app"></div>
   <script>
-    window.appInstance = Elm.Main.init({ node: document.getElementById("app") });
-    initPorts(window.appInstance);
+    (async () => {
+      let savedState = null;
+      try {
+        if (typeof loadState === "function") {
+          savedState = await loadState();
+        }
+      } catch (err) {
+        console.warn("card-viewer: failed to load initial state", err);
+      }
+
+      // 必ず Elm を起動する（savedState がなければ null を渡してモックデータ表示）
+      window.appInstance = Elm.Main.init({
+        node: document.getElementById("app"),
+        flags: savedState !== undefined ? savedState : null
+      });
+
+      initPorts(window.appInstance);
+    })();
   </script>
 </body>
 </html>

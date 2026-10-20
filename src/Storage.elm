@@ -2,7 +2,7 @@ module Storage exposing
     ( PersistedState
     , applyPersistedState
     , decodeState
-    , request
+    --, request
     , save
     )
 
@@ -24,9 +24,9 @@ type alias PersistedState =
     }
 
 
-request : Cmd msg
-request =
-    Ports.loadState ()
+-- request : Cmd msg
+-- request =
+--     Ports.loadState ()
 
 
 save : Model -> Cmd msg

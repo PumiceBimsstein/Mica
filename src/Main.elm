@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Dict
+import Json.Decode as Decode
 import MockData
 import Ports
 import Storage
@@ -15,7 +16,7 @@ import Types exposing
 
 
 
-main : Program () Model Msg
+main : Program Decode.Value Model Msg
 main =
     Browser.element
         { init = init
@@ -25,13 +26,21 @@ main =
         }
 
 
-{-| 起動時はまずモックデータを暫定表示しつつ、IndexedDBへ問い合わせる。
-問い合わせ結果は StateLoaded で受け取り、Update側で反映する。
-カードグリッドの並べ替え・選択の初期化も、他のメッセージ処理後と同様に行っておく。
--}
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( defaultModel, Cmd.batch [ Storage.request ] )
+-- flags をデコードして初期モデルを構築。
+-- データがない場合、またはデコード失敗時はモックデータを使用する。
+
+init : Decode.Value -> ( Model, Cmd Msg )
+init flags =
+    case Storage.decodeState flags of
+        Ok state ->
+            if List.isEmpty state.dataset.items then
+                ( defaultModel, Cmd.none )
+
+            else
+                ( Storage.applyPersistedState state defaultModel, Cmd.none )
+
+        Err _ ->
+            ( defaultModel, Cmd.none )
 
 
 defaultModel : Model
@@ -65,8 +74,7 @@ defaultModel =
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
-        [ Ports.stateLoaded StateLoaded
-        , Ports.openSortModalWithTopCard (OpenWithTopCard >> SortModalMsg)
+        [ Ports.openSortModalWithTopCard (OpenWithTopCard >> SortModalMsg)
         , Ports.receiveClosedSortModal (\data -> SortModalMsg (CloseAndApply data.newOrder data.topCardId))
         , Ports.topCardIdReceived TopCardIdReceived
         , Ports.idGenerated CreateItemWithId
