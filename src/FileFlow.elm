@@ -19,7 +19,6 @@ module FileFlow exposing
 -}
 
 import CsvCodec
-import DatasetAccess
 import Dict
 import DomainJson
 import File exposing (File)
@@ -102,21 +101,30 @@ parseRawItems model text =
 -}
 existingDatasetFor : Model -> Maybe Dataset
 existingDatasetFor model =
-    if model.readMode == NewDataset then
-        Nothing
-
-    else
-        DatasetAccess.currentDataset model
+    Just model.dataset
 
 
 startImport : List (List ( String, Value )) -> Model -> ( Model, Cmd Msg )
 startImport rawItems model =
-    case model.readMode of
-        NewDataset ->
-            ( { model | pendingImport = Just (newPendingImport rawItems), importError = Nothing }, Cmd.none )
+    let
+        target = model.dataset
+        newKeys = Import.findNewKeys target.fields rawItems
+        pending =
+            { mode = model.readMode
+            , rawItems = rawItems
+            , newKeys = newKeys
+            , nameInput = ""
+            }
+    in
+    if List.isEmpty newKeys then
+        -- 新プロパティがなければそのままUUID生成を要求
+        ( { model | pendingImport = Just pending, importError = Nothing }
+        , Ports.generateUuids (List.length rawItems)
+        )
+    else
+        -- 新プロパティの確認ダイアログを表示
+        ( { model | pendingImport = Just pending, importError = Nothing }, Cmd.none )
 
-        _ ->
-            startExistingDatasetImport rawItems model
 
 
 newPendingImport : List (List ( String, Value )) -> PendingImport
@@ -126,12 +134,7 @@ newPendingImport rawItems =
 
 startExistingDatasetImport : List (List ( String, Value )) -> Model -> ( Model, Cmd Msg )
 startExistingDatasetImport rawItems model =
-    case DatasetAccess.currentDataset model of
-        Nothing ->
-            ( { model | importError = Just "読み込み先のデータがありません。「新規」を選んでください。" }, Cmd.none )
-
-        Just target ->
-            resolveOrPrompt rawItems target model
+    resolveOrPrompt rawItems model.dataset model
 
 
 resolveOrPrompt : List (List ( String, Value )) -> Dataset -> Model -> ( Model, Cmd Msg )
@@ -162,28 +165,28 @@ resolveOrPrompt rawItems target model =
 -- 追加・置き換えインポート解決時：UUID 生成要求を JS ポートへ送る
 resolveChoice : AppendChoice -> Model -> ( Model, Cmd Msg )
 resolveChoice choice model =
-    case ( model.pendingImport, DatasetAccess.currentDataset model ) of
-        ( Just pending, Just _ ) ->
+    case model.pendingImport of
+        Just pending ->
             let
                 count =
                     List.length pending.rawItems
             in
-            -- pendingImport に選択した choice を保持して UUID の生成完了を待つ
-            ( { model | pendingImport = Just { pending | mode = pending.mode } }
+            ( { model | pendingImport = Just pending }
             , Ports.generateUuids count
             )
 
-        _ ->
+        Nothing ->
             ( { model | pendingImport = Nothing }, Cmd.none )
 
 
-applyImportAndSave : AppendChoice -> List String -> PendingImport -> Dataset -> Model -> ( Model, Cmd Msg )
-applyImportAndSave choice uuids pending target model =
-    case Import.applyChoice choice uuids pending target of
+applyImportAndSave : AppendChoice -> List String -> PendingImport -> Model -> ( Model, Cmd Msg )
+applyImportAndSave choice uuids pending model =
+    case Import.applyChoice choice uuids pending model.dataset of
         Just updated ->
             save
                 { model
-                    | datasets = DatasetAccess.replaceDataset updated model.datasets
+                    | history = History.push model model.history
+                    , dataset = updated 
                     , pendingImport = Nothing
                     , fileModalOpen = False
                 }
@@ -233,8 +236,8 @@ finaliseNewDatasetImport uuids model =
             in
             save
                 { model
-                    | datasets = model.datasets ++ [ newDataset ]
-                    , selectedDatasetId = newDataset.id
+                    | history = History.push model model.history
+                    , dataset = newDataset
                     , pendingImport = Nothing
                     , fileModalOpen = False
                 }
@@ -245,7 +248,7 @@ finaliseNewDatasetImport uuids model =
 
 nextDatasetId : Model -> String
 nextDatasetId model =
-    "dataset-" ++ String.fromInt (List.length model.datasets)
+    model.dataset.id
 
 
 datasetNameOrDefault : String -> String
@@ -261,12 +264,8 @@ datasetNameOrDefault input =
 
 exportCurrentDataset : Model -> Cmd Msg
 exportCurrentDataset model =
-    case DatasetAccess.currentDataset model of
-        Just dataset ->
-            downloadDataset model.exportFormat dataset
+    downloadDataset model.exportFormat model.dataset
 
-        Nothing ->
-            Cmd.none
 
 
 downloadDataset : FileFormat -> Dataset -> Cmd Msg
@@ -298,7 +297,6 @@ exportField item field =
 
 -- バックアップ（設定を含む）
 
-
 {-| バックアップは通常のJSON読み込みとは別枠の操作。
 モード（新規/追加/置き換え）や形式の選択を必要とせず、常に新しいデータセットとして復元する。
 -}
@@ -322,31 +320,26 @@ handleBackupText text model =
             ( { model | importError = Just "バックアップの形式が正しくありません。" }, Cmd.none )
 
 
+-- バックアップの復元：現在のデータセットを上書き
 restoreDataset : Dataset -> Model -> ( Model, Cmd Msg )
 restoreDataset dataset model =
     let
-        restored =
-            { dataset | id = nextDatasetId model }
-
-        pushed =
-            { model | history = History.push model model.history }
+        pushed = { model | history = History.push model model.history }
     in
     save
         { pushed
-            | datasets = pushed.datasets ++ [ restored ]
-            , selectedDatasetId = restored.id
+            | dataset = dataset
             , fileModalOpen = False
         }
 
 
 exportBackup : Model -> Cmd Msg
 exportBackup model =
-    case DatasetAccess.currentDataset model of
-        Just dataset ->
-            File.Download.string
-                (dataset.name ++ "-backup.json")
-                "application/json"
-                (Encode.encode 2 (DomainJson.encodeDataset dataset))
+    let
+        dataset = model.dataset
+    in
+    File.Download.string
+        (dataset.name ++ "-backup.json")
+        "application/json"
+        (Encode.encode 2 (DomainJson.encodeDataset dataset))
 
-        Nothing ->
-            Cmd.none

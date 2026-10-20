@@ -1,6 +1,5 @@
 module Update exposing (update)
 
-import DatasetAccess
 import Dict
 import FileFlow
 import Filter
@@ -28,9 +27,7 @@ import Update.EditModalState exposing
 import Update.DatasetManager exposing
     ( closeRenameModal
     , confirmRenameDataset
-    , deleteDataset
     , openRenameModal
-    , selectDataset
     , updateRenameModalName
     )
 import Types exposing
@@ -47,10 +44,7 @@ import Types exposing
     , SearchState
     , EditModalState
     , EditingFieldValue(..)
-    --, FieldConfig
     , FilterUiState
-    --, TextListItemState
-    --, Item
     , Model
     , Msg(..)
     , Value(..)
@@ -124,14 +118,8 @@ update msg model =
 updateDataset : DatasetMsg -> Model -> ( Model, Cmd Msg )
 updateDataset msg model =
     case msg of
-        Select id ->
-            saveAfter (selectDataset id model)
-
-        Delete id ->
-            saveAfter (deleteDataset id model)
-
-        OpenRename id ->
-            ( openRenameModal id model, Cmd.none )
+        OpenRename ->
+            ( openRenameModal model, Cmd.none )
 
         RenameNameChanged name ->
             ( updateRenameModalName name model, Cmd.none )
@@ -320,7 +308,6 @@ updateEditModalMsg msg model =
 
 -- MARK: ヘルパー関数
 
-
 setCardSize : CardSize -> Model -> Model
 setCardSize size model =
     { model | cardSize = size, mainAreaCardScale = 1.0 }
@@ -346,7 +333,7 @@ handleStateLoaded value model =
 
 applyOrSeed : Storage.PersistedState -> Model -> ( Model, Cmd Msg )
 applyOrSeed state model =
-    if List.isEmpty state.datasets then
+    if List.isEmpty state.dataset.items then
         saveAfter model
 
     else
@@ -391,12 +378,7 @@ updateFilterUi fieldKey transform model =
 -}
 updateCurrentDataset : (Dataset -> Dataset) -> Model -> ( Model, Cmd Msg )
 updateCurrentDataset transform model =
-    case DatasetAccess.currentDataset model of
-        Just dataset ->
-            saveAfter { model | datasets = DatasetAccess.replaceDataset (transform dataset) model.datasets }
-
-        Nothing ->
-            ( model, Cmd.none )
+    saveAfter { model | dataset = transform model.dataset }
 
 
 updateEditModalState : (EditModalState -> EditModalState) -> Model -> Model
@@ -423,14 +405,11 @@ processPendingImport uuids model pending =
 
 applyImportToCurrentDataset : List String -> Types.PendingImport -> Model -> ( Model, Cmd Msg )
 applyImportToCurrentDataset uuids pending model =
-    DatasetAccess.currentDataset model
-        |> Maybe.map (applyAndSaveImport uuids pending model)
-        |> Maybe.withDefault ( clearPendingImport model, Cmd.none )
+    FileFlow.applyImportAndSave Types.AddNewFields uuids pending model
 
-
-applyAndSaveImport : List String -> Types.PendingImport -> Model -> Dataset -> ( Model, Cmd Msg )
-applyAndSaveImport uuids pending model target =
-    FileFlow.applyImportAndSave Types.AddNewFields uuids pending target model
+applyAndSaveImport : List String -> Types.PendingImport -> Model -> ( Model, Cmd Msg )
+applyAndSaveImport uuids pending model =
+    FileFlow.applyImportAndSave Types.AddNewFields uuids pending model
 
 
 clearPendingImport : Model -> Model
@@ -464,8 +443,7 @@ updateSearch msg model =
             ( { model | searchState = toggleSearchField fieldKey model.searchState }, Cmd.none )
 
 
-{-| 検索ワードを更新する。
--}
+-- 検索ワードを更新する。
 updateSearchQuery : String -> SearchState -> SearchState
 updateSearchQuery newQuery state =
     { state | query = newQuery }

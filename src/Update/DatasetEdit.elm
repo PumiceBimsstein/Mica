@@ -1,6 +1,5 @@
 module Update.DatasetEdit exposing (confirmEditItem, deleteEditingItem)
 
-import DatasetAccess
 import Dict
 import History
 import Types exposing (Dataset, EditModalState, Item, Model, EditingFieldValue(..), Value(..), TextListItemState)
@@ -43,18 +42,14 @@ confirmEditItem model =
 getEditingContext : Model -> Maybe ( EditModalState, Dataset )
 getEditingContext model =
     model.editModal
-        |> Maybe.andThen
-            (\editState ->
-                DatasetAccess.currentDataset model
-                    |> Maybe.map (\dataset -> ( editState, dataset ))
-            )
+        |> Maybe.map (\editState -> ( editState, model.dataset ))
 
 
 applyDatasetChange : Model -> Dataset -> Model
 applyDatasetChange model updatedDataset =
     { model
         | history = History.push model model.history
-        , datasets = DatasetAccess.replaceDataset updatedDataset model.datasets
+        , dataset = updatedDataset
     }
 
 

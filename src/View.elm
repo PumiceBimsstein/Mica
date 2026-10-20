@@ -1,6 +1,5 @@
 module View exposing (view)
 
-import DatasetAccess
 import Filter
 import Html exposing (Html, div, text, button, node)
 import Html.Attributes exposing (class, id, style, disabled, value, type_, attribute, title)
@@ -40,69 +39,31 @@ mainAreaClasses =
 
 mainContent : Model -> Html Msg
 mainContent model =
-    case DatasetAccess.currentDataset model of
-        Just dataset ->
-            -- div [ class "flex flex-col gap-3 pt-12 pb-24" ]
-            --     [ cardGrid model dataset (Filter.visibleItems model.filterUi dataset)
-            --     ]
-            div
-                [ class "flex flex-col gap-3 pt-12 pb-24 origin-top-left"
-                , style "zoom" (String.fromFloat model.mainAreaCardScale)
-                ]
-                [ cardGrid model dataset (Filter.visibleItems model.searchState model.filterUi dataset)
-                ]
-        Nothing ->
-            emptyState
+    div
+        [ class "flex flex-col gap-3 pt-12 pb-24 origin-top-left"
+        , style "zoom" (String.fromFloat model.mainAreaCardScale)
+        ]
+        [ cardGrid model model.dataset (Filter.visibleItems model.searchState model.filterUi model.dataset)
+        ]
 
-
--- actionButtonGroup : Model -> Html Msg
--- actionButtonGroup model =
---     case DatasetAccess.currentDataset model of
---         Nothing ->
---             text ""
-
---         Just dataset ->
---             let
---                 isFiltered =
---                     Filter.isFilterActive model.filterUi dataset
---             in
---             div [ class actionButtonRapperClasses ]
---                 [ button
---                     [ class actionButtonClasses
---                     , onClick (EditModalMsg CreateNewItem)
---                     ]
---                     [ text "＋ 追加" ]
---                 , button
---                     [ class actionButtonClasses
---                     , onClick (SortModalMsg RequestOpen)
---                     , disabled isFiltered
---                     ]
---                     [ text "入れ替え" ]
---                 , mainCardSizeSlider model.mainAreaCardScale
---                 ]
 
 actionButtonGroup : Model -> Html Msg
 actionButtonGroup model =
-    case DatasetAccess.currentDataset model of
-        Nothing ->
-            text ""
+    let
+        isFiltered =
+            Filter.isFilterActive model.filterUi model.dataset
+    in
+    div [ class "fixed top-6 right-6 z-30 flex flex-col items-end gap-2" ]
+        [ -- 展開時に背景をクリックしたら閉じる透明オーバーレイ
+            if model.actionMenuOpen then
+                div
+                    [ class "fixed inset-0 z-30"
+                    , onClick ToggleActionMenu
+                    ]
+                    []
 
-        Just dataset ->
-            let
-                isFiltered =
-                    Filter.isFilterActive model.filterUi dataset
-            in
-            div [ class "fixed top-6 right-6 z-30 flex flex-col items-end gap-2" ]
-                [ -- 展開時に背景をクリックしたら閉じる透明オーバーレイ
-                  if model.actionMenuOpen then
-                    div
-                      [ class "fixed inset-0 z-30"
-                      , onClick ToggleActionMenu
-                      ]
-                      []
-
-                  else
-                    text ""
+            else
+                text ""
 
                 -- トグルボタン（展開・格納スイッチ）
                 , button
@@ -215,26 +176,22 @@ sortModal model =
         text ""
 
     else
-        case DatasetAccess.currentDataset model of
-            Nothing ->
-                text ""
-
-            Just dataset ->
-                let
-                    scaleStr =
-                        String.fromFloat model.sortModalCardScale
-                in
-                div [ class "fixed inset-0 z-50 bg-black/50 flex" ]
-                    [ div [ class "flex-1 h-full overflow-y-auto p-6 bg-white pointer-events-auto", id "sort-modal-scroll-area" ]
-                        [ node "sortable-card-grid"
-                            [ class "flex flex-wrap gap-4 origin-top-left"
-                            , id "sortable-card-grid"
-                            , style "zoom" scaleStr
-                            ]
-                            (List.map (sortModalCardEntry dataset model.cardSize) dataset.items)
-                        ]
-                    , sortModalControls model
+        let
+            scaleStr =
+                String.fromFloat model.sortModalCardScale
+            dataset = model.dataset
+        in
+        div [ class "fixed inset-0 z-50 bg-black/50 flex" ]
+            [ div [ class "flex-1 h-full overflow-y-auto p-6 bg-white pointer-events-auto", id "sort-modal-scroll-area" ]
+                [ node "sortable-card-grid"
+                    [ class "flex flex-wrap gap-4 origin-top-left"
+                    , id "sortable-card-grid"
+                    , style "zoom" scaleStr
                     ]
+                    (List.map (sortModalCardEntry dataset model.cardSize) dataset.items)
+                ]
+            , sortModalControls model
+            ]
 
 
 -- [変更] 個別の幅・高さ指定を撤廃し、カード単体は通常の要素として描画する

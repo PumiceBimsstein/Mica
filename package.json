@@ -3,8 +3,8 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "dev": "elm-live src/Main.elm --open -- --output=elm.js",
-    "build:elm": "elm make src/Main.elm --optimize --output=elm.js",
+    "dev": "elm-live src/Main.elm --open -- --output=main.js",
+    "build:elm": "elm make src/Main.elm --optimize --output=main.js",
     "build:css": "npx @tailwindcss/cli -i ./input.css -o ./output.css --minify",
     "build": "npm run build:elm && npm run build:css"
   },

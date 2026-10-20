@@ -3,10 +3,10 @@ module Update.SortModalManager exposing
     , openSortModal
     )
 
-import DatasetAccess
 import History
 import Ports
 import Storage
+import Set
 import Types exposing (Dataset, Model, Msg)
 
 
@@ -57,19 +57,12 @@ recordHistory snapshot model =
 
 applyDatasetReorder : List String -> Model -> Model
 applyDatasetReorder newOrder model =
-    updateModelDataset (DatasetAccess.reorderItems newOrder) model
+    updateModelDataset (reorderItems newOrder) model
 
 
 updateModelDataset : (Dataset -> Dataset) -> Model -> Model
 updateModelDataset transform model =
-    DatasetAccess.currentDataset model
-        |> Maybe.map (replaceDatasetInModel transform model)
-        |> Maybe.withDefault model
-
-
-replaceDatasetInModel : (Dataset -> Dataset) -> Model -> Dataset -> Model
-replaceDatasetInModel transform model dataset =
-    { model | datasets = DatasetAccess.replaceDataset (transform dataset) model.datasets }
+    { model | dataset = transform model.dataset }
 
 
 saveAndScroll : Maybe String -> Model -> ( Model, Cmd Msg )
@@ -85,3 +78,38 @@ scrollCommand maybeId =
 
         Nothing ->
             Cmd.none
+
+reorderItems : List String -> Dataset -> Dataset
+reorderItems orderedIds dataset =
+    let
+        originalIds =
+            List.map .id dataset.items
+
+        orderedIdSet =
+            Set.fromList orderedIds
+
+        originalIdSet =
+            Set.fromList originalIds
+
+        validLength =
+            List.length orderedIds == List.length originalIds
+
+        validIds =
+            orderedIdSet == originalIdSet
+
+        noDuplicateIds =
+            Set.size orderedIdSet == List.length orderedIds
+    in
+    if validLength && validIds && noDuplicateIds then
+        let
+            byId id =
+                List.filter (\item -> item.id == id) dataset.items
+                    |> List.head
+
+            ordered =
+                List.filterMap byId orderedIds
+        in
+        { dataset | items = ordered }
+
+    else
+        dataset

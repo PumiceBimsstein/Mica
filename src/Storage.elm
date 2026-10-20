@@ -19,8 +19,7 @@ import Types exposing (CardSize(..), Dataset, Model)
 
 
 type alias PersistedState =
-    { datasets : List Dataset
-    , selectedDatasetId : String
+    { dataset : Dataset
     , cardSize : CardSize
     }
 
@@ -38,8 +37,7 @@ save model =
 encodeState : Model -> Encode.Value
 encodeState model =
     Encode.object
-        [ ( "datasets", Encode.list DomainJson.encodeDataset model.datasets )
-        , ( "selectedDatasetId", Encode.string model.selectedDatasetId )
+        [ ( "dataset", DomainJson.encodeDataset model.dataset )
         , ( "cardSize", encodeCardSize model.cardSize )
         ]
 
@@ -51,9 +49,8 @@ decodeState value =
 
 persistedStateDecoder : Decode.Decoder PersistedState
 persistedStateDecoder =
-    Decode.map3 PersistedState
-        (Decode.field "datasets" (Decode.list DomainJson.decodeDataset))
-        (Decode.field "selectedDatasetId" Decode.string)
+    Decode.map2 PersistedState
+        (Decode.field "dataset" DomainJson.decodeDataset)
         (Decode.field "cardSize" decodeCardSize)
 
 
@@ -96,7 +93,6 @@ cardSizeFromString s =
 applyPersistedState : PersistedState -> Model -> Model
 applyPersistedState state model =
     { model
-        | datasets = state.datasets
-        , selectedDatasetId = state.selectedDatasetId
+        | dataset = state.dataset
         , cardSize = state.cardSize
     }

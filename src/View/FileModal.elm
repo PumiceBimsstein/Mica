@@ -38,7 +38,7 @@ overlay model =
         , -- パネル本体（背景の上に重なる兄弟要素）
           div [ class "relative bg-white rounded-md shadow-lg w-[32rem] max-h-[80vh] overflow-y-auto p-5 flex flex-col gap-5 z-10" ]
             [ header
-            , datasetSwitcher model
+            --, datasetSwitcher model
             , importSection model
             , exportSection model
             , backupSection
@@ -74,12 +74,12 @@ header =
 -- MARK:メインデータの切り替え
 
 
-datasetSwitcher : Model -> Html Msg
-datasetSwitcher model =
-    div [ class "flex flex-col gap-2" ]
-        [ sectionTitle "メインデータの切り替え"
-        , ul [ class "flex flex-col gap-1" ] (List.map (datasetRow model.selectedDatasetId) model.datasets)
-        ]
+-- datasetSwitcher : Model -> Html Msg
+-- datasetSwitcher model =
+--     div [ class "flex flex-col gap-2" ]
+--         [ sectionTitle "メインデータの切り替え"
+--         , ul [ class "flex flex-col gap-1" ] (List.map (datasetRow model.selectedDatasetId) model.datasets)
+--         ]
 
 
 datasetRow : String -> Dataset -> Html Msg
@@ -87,11 +87,11 @@ datasetRow selectedId dataset =
     li [ class "flex items-center gap-1" ]
         [ button
             [ class (datasetRowClasses (dataset.id == selectedId))
-            , onClick (DatasetMsg (Select dataset.id))
+            --, onClick (DatasetMsg (Select dataset.id))
             ]
             [ text dataset.name ]
         , renameDatasetButton dataset.id
-        , deleteDatasetButton dataset.id
+        --, deleteDatasetButton dataset.id
         ]
 
 -- [追加] データセット名変更ボタン
@@ -99,7 +99,7 @@ renameDatasetButton : String -> Html Msg
 renameDatasetButton datasetId =
     button
         [ class renameButtonClasses
-        , onClick (DatasetMsg (OpenRename datasetId))
+        , onClick (DatasetMsg OpenRename)
         ]
         [ text "名前変更" ]
 
@@ -108,15 +108,6 @@ renameDatasetButton datasetId =
 renameButtonClasses : String
 renameButtonClasses =
     "shrink-0 px-2 py-1 text-xs rounded text-neutral-600 hover:bg-neutral-100"
-
-
-deleteDatasetButton : String -> Html Msg
-deleteDatasetButton datasetId =
-    button
-        [ class deleteButtonClasses
-        , onClick (DatasetMsg (Delete datasetId))
-        ]
-        [ text "削除" ]
 
 
 deleteButtonClasses : String
@@ -135,7 +126,6 @@ datasetRowClasses isSelected =
 
 
 -- MARK:JSON読み込み
-
 
 importSection : Model -> Html Msg
 importSection model =
@@ -246,7 +236,6 @@ newPropertyChoice pending =
 
 -- MARK:書き出し
 
-
 exportSection : Model -> Html Msg
 exportSection model =
     div [ class "flex flex-col gap-2 border-t border-neutral-100 pt-4" ]
@@ -258,7 +247,6 @@ exportSection model =
 
 
 -- MARK:バックアップ（設定を含む）
-
 
 backupSection : Html Msg
 backupSection =
@@ -273,9 +261,7 @@ backupSection =
         ]
 
 
-
 -- MARK:共通部品
-
 
 sectionTitle : String -> Html Msg
 sectionTitle label_ =

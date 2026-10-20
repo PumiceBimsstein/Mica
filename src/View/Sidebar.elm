@@ -1,6 +1,5 @@
 module View.Sidebar exposing (view)
 
-import DatasetAccess
 import History
 import Html exposing (Html, button, div, h1, input, label, text, span)
 import Html.Attributes exposing (class, disabled, title, placeholder, value, type_, checked)
@@ -43,17 +42,11 @@ sidebarClasses =
     "w-72 shrink-0 h-screen overflow-y-auto border-r border-neutral-200 bg-neutral-50 px-4 py-5 flex flex-col gap-4"
 
 
-
 appTitle : Model -> Html Msg
 appTitle model =
-    case DatasetAccess.currentDataset model of
-        Just dataset ->
-            h1 [ class "text-lg font-semibold text-neutral-900 truncate" ]
-                [ text dataset.name ]
+    h1 [ class "text-lg font-semibold text-neutral-900 truncate" ]
+        [ text model.dataset.name ]
 
-        Nothing ->
-            h1 [ class "text-lg font-semibold text-neutral-400 truncate" ]
-                [ text "カードビューア" ]
 
 topButtonRowClasses : String
 topButtonRowClasses =
@@ -137,8 +130,8 @@ placeholderButtonClasses =
     "px-3 py-1 text-sm rounded border border-neutral-200 text-neutral-700 hover:bg-neutral-100"
 
 
-{-| ファイル操作ウィンドウを開く。データ切り替え・JSON読み込み・書き出しに対応。
--}
+-- ファイル操作ウィンドウを開く。データ切り替え・JSON読み込み・書き出しに対応。
+
 fileButton : Html Msg
 fileButton =
     button [ class fileButtonClasses, onClick (FileFlowMsg (ToggleModal True)) ] [ text "ファイル" ]
@@ -148,26 +141,7 @@ fileButtonClasses =
     "w-full px-3 py-1 text-sm rounded border border-neutral-200 text-neutral-700 hover:bg-neutral-100"
 
 
-{-| データ削除などの取り消しに使う。履歴が無い間は押せない。
--}
--- undoButton : Model -> Html Msg
--- undoButton model =
---     button
---         [ class (undoButtonClasses (History.canUndo model))
---         , onClick UndoRequested
---         , disabled (not (History.canUndo model))
---         ]
---         [ text "元に戻す" ]
-
-
--- undoButtonClasses : Bool -> String
--- undoButtonClasses enabled =
---     if enabled then
---         "w-full px-3 py-1 text-sm rounded border border-neutral-200 text-neutral-700 hover:bg-neutral-100"
-
---     else
---         "w-full px-3 py-1 text-sm rounded border border-neutral-200 text-neutral-300 cursor-not-allowed"
-
+-- データ削除などの取り消しに使う。履歴が無い間は押せない。
 
 undoButton : Model -> Html Msg
 undoButton model =
@@ -206,16 +180,13 @@ undoButtonClasses enabled =
 -}
 searchArea : Model -> Html Msg
 searchArea model =
-    case DatasetAccess.currentDataset model of
-        Just dataset ->
-            div [ class "border-t border-neutral-200 pt-2 -mx-4 px-4 space-y-2" ]
-                [ searchInput model.searchState
-                , searchModeButtons model.searchState
-                , searchFieldCheckboxes model.searchState dataset
-                ]
+    div [ class "border-t border-neutral-200 pt-2 -mx-4 px-4 space-y-2" ]
+        [ searchInput model.searchState
+        , searchModeButtons model.searchState
+        , searchFieldCheckboxes model.searchState model.dataset
+        ]
 
-        Nothing ->
-            div [] []
+
 
 
 {-| 検索ワード入力欄
@@ -297,30 +268,6 @@ searchFieldCheckboxes searchState dataset =
 
 {-| フィールド指定時のチェックボックス
 -}
--- searchFieldCheckbox : FieldConfig -> Set String -> Html Msg
--- searchFieldCheckbox field selectedFields =
---     let
---         isChecked =
---             Set.member field.key selectedFields
-
---         checkboxClasses =
---             "w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-400"
-
---         labelClasses =
---             "text-sm text-neutral-700"
---     in
---     div [ class "flex items-center gap-2 cursor-pointer" ]
---         [ input
---             [ class checkboxClasses
---             , type_ "checkbox"
---             , checked isChecked
---             , onInput (\_ -> SearchMsg (ToggleSearchField field.key))
---             ]
---             []
---         , label [ class labelClasses ]
---             [ text field.label ]
---         ]
-
 
 searchFieldCheckbox : FieldConfig -> Set String -> Html Msg
 searchFieldCheckbox field selectedFields =
@@ -344,9 +291,5 @@ searchFieldCheckbox field selectedFields =
 
 filterArea : Model -> Html Msg
 filterArea model =
-    case DatasetAccess.currentDataset model of
-        Just dataset ->
-            div [ class "flex-1 overflow-y-auto flex flex-col gap-2" ] [ FilterPanel.view model dataset ]
+    div [ class "flex-1 overflow-y-auto flex flex-col gap-2" ] [ FilterPanel.view model model.dataset ]
 
-        Nothing ->
-            div [ class "mt-2 text-sm text-neutral-400" ] [ text "データがありません" ]

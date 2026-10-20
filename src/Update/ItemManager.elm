@@ -3,7 +3,6 @@ module Update.ItemManager exposing
     , insertNewItem
     )
 
-import DatasetAccess
 import Dict exposing (Dict)
 import History
 import Storage
@@ -12,9 +11,8 @@ import Types exposing (Dataset, FieldConfig, Item, Model, Msg, Value(..))
 
 createNewItemWithUuid : String -> Maybe String -> Model -> ( Model, Cmd Msg )
 createNewItemWithUuid uuid maybeTopId model =
-    DatasetAccess.currentDataset model
-        |> Maybe.map (appendItemAndSave uuid maybeTopId model)
-        |> Maybe.withDefault ( model, Cmd.none )
+    model.dataset
+        |> appendItemAndSave uuid maybeTopId model
 
 
 appendItemAndSave : String -> Maybe String -> Model -> Dataset -> ( Model, Cmd Msg )
@@ -28,7 +26,7 @@ appendItemAndSave uuid maybeTopId model dataset =
 
 updateModelDatasets : Model -> Dataset -> Model
 updateModelDatasets model updatedDataset =
-    { model | datasets = DatasetAccess.replaceDataset updatedDataset model.datasets }
+    { model | dataset = updatedDataset }
 
 
 recordHistory : Model -> Model -> Model

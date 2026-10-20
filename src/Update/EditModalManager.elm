@@ -1,6 +1,5 @@
 module Update.EditModalManager exposing (closeEditModal, openEditModal)
 
-import DatasetAccess
 import Dict exposing (Dict)
 import Types exposing
     ( Dataset
@@ -41,8 +40,8 @@ closeEditModal model =
 
 findItemWithDataset : String -> Model -> Maybe ( Item, Dataset )
 findItemWithDataset itemId model =
-    DatasetAccess.currentDataset model
-        |> Maybe.andThen (findItemInDataset itemId)
+    model.dataset
+        |> findItemInDataset itemId
 
 
 findItemInDataset : String -> Dataset -> Maybe ( Item, Dataset )

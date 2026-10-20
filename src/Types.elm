@@ -143,8 +143,7 @@ type alias PendingImport =
 カードサイズやモーダルの開閉といったUI状態は含めない。
 -}
 type alias Snapshot =
-    { datasets : List Dataset
-    , selectedDatasetId : String
+    { dataset : Dataset
     }
 
 
@@ -233,8 +232,7 @@ type alias DatasetRenameState =
 
 
 type alias Model =
-    { datasets : List Dataset
-    , selectedDatasetId : String
+    { dataset : Dataset
     , cardSize : CardSize
     , fileModalOpen : Bool
     , settingsModalOpen : Bool
@@ -282,9 +280,7 @@ type Msg
 
 
 type DatasetMsg
-    = Select String
-    | Delete String
-    | OpenRename String
+    = OpenRename
     | RenameNameChanged String
     | CancelRename
     | ConfirmRename

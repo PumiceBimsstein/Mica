@@ -1,6 +1,5 @@
 module View.EditModal exposing (view)
 
-import DatasetAccess
 import Dict
 import Html exposing (Html, button, div, h2, input, label, span, text, textarea)
 import Html.Attributes exposing (checked, class, type_, value)
@@ -27,21 +26,11 @@ view model =
 overlay : EditModalState -> Model -> Html Msg
 overlay editState model =
     let
+        dataset = model.dataset
         isNewItem =
-            case getCurrentDataset model of
-                Just dataset ->
-                    not (List.any (\item -> item.id == editState.editingItemId) dataset.items)
+            not (List.any (\item -> item.id == editState.editingItemId) dataset.items)
 
-                Nothing ->
-                    False
     in
-    -- div [ class overlayClasses ]
-    --     [ div [ class panelClasses ]
-    --         [ header editState model
-    --         , formContent editState model
-    --         , footer isNewItem
-    --         ]
-    --     ]
     div [ class "fixed inset-0 flex items-center justify-center z-50" ]
         [ -- 画面全体を覆う背景（クリックで保存して閉じる）
           div
@@ -71,13 +60,9 @@ panelClasses =
 header : EditModalState -> Model -> Html Msg
 header editState model =
     let
+        dataset = model.dataset
         isNewItem =
-            case getCurrentDataset model of
-                Just dataset ->
-                    not (List.any (\item -> item.id == editState.editingItemId) dataset.items)
-
-                Nothing ->
-                    False
+            not (List.any (\item -> item.id == editState.editingItemId) dataset.items)
 
         title =
             if isNewItem then
@@ -113,12 +98,7 @@ getFieldsForEdit : EditModalState -> Model -> List FieldConfig
 getFieldsForEdit editState model =
     case findItem editState.editingItemId model of
         Just _ ->
-            case getCurrentDataset model of
-                Just dataset ->
-                    dataset.fields
-
-                Nothing ->
-                    []
+            model.dataset.fields
 
         Nothing ->
             []
@@ -126,18 +106,9 @@ getFieldsForEdit editState model =
 
 findItem : String -> Model -> Maybe Item
 findItem itemId model =
-    getCurrentDataset model
-        |> Maybe.andThen
-            (\dataset ->
-                dataset.items
-                    |> List.filter (\item -> item.id == itemId)
-                    |> List.head
-            )
-
-
-getCurrentDataset : Model -> Maybe Dataset
-getCurrentDataset model =
-    DatasetAccess.currentDataset model
+    model.dataset.items
+        |> List.filter (\item -> item.id == itemId)
+        |> List.head
 
 
 fieldForm : EditModalState -> Model -> FieldConfig -> Html Msg
@@ -214,11 +185,6 @@ textareaClasses : String
 textareaClasses =
     "border border-neutral-200 rounded px-3 py-1.5 text-sm font-sans resize bg-white text-neutral-900 min-h-[38px]"
 
-
--- textListFieldEditor : String -> List TextListItemState -> Html Msg
--- textListFieldEditor fieldKey items =
---     div [ class "flex flex-col gap-2" ]
---         (List.indexedMap (textListItemField fieldKey) items)
 
 textListFieldEditor : String -> Types.EditingTextListState -> Html Msg
 textListFieldEditor fieldKey state =

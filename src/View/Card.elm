@@ -268,7 +268,6 @@ detailValueView item field =
 
 -- MARK:編集ボタン
 
-
 editButton : String -> Html Msg
 editButton itemId =
     button

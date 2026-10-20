@@ -1,6 +1,5 @@
 module View.SettingsModal exposing (view)
 
-import DatasetAccess
 import Dict
 import Html exposing (Html, button, div, h2, input, label, option, select, span, text)
 import Html.Attributes exposing (checked, class, disabled, placeholder, selected, type_, value)
@@ -19,26 +18,11 @@ import Types exposing
 view : Model -> Html Msg
 view model =
     if model.settingsModalOpen then
-        case DatasetAccess.currentDataset model of
-            Just dataset ->
-                overlay dataset
-
-            Nothing ->
-                text ""
+        overlay model.dataset
 
     else
         text ""
 
-
--- overlay : Dataset -> Html Msg
--- overlay dataset =
---     div [ class overlayClasses ]
---         [ div [ class panelClasses ]
---             [ header
---             , fieldList dataset
---             , linkFieldSection dataset
---             ]
---         ]
 
 overlay : Dataset -> Html Msg
 overlay dataset =

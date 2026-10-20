@@ -17,7 +17,7 @@ maxSize =
 
 snapshotOf : Model -> Snapshot
 snapshotOf model =
-    { datasets = model.datasets, selectedDatasetId = model.selectedDatasetId }
+    { dataset = model.dataset }
 
 
 push : Model -> List Snapshot -> List Snapshot
@@ -37,7 +37,7 @@ pop stack =
 
 applySnapshot : Snapshot -> Model -> Model
 applySnapshot snapshot model =
-    { model | datasets = snapshot.datasets, selectedDatasetId = snapshot.selectedDatasetId }
+    { model | dataset = snapshot.dataset }
 
 
 canUndo : Model -> Bool

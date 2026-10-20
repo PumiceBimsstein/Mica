@@ -139,7 +139,7 @@ function getTopVisibleCardId(container, selector) {
   return closestId;
 }
 
-// Custom Element: <sortable-card-grid>
+// MARK:<sortable-card-grid>
 class SortableCardGrid extends HTMLElement {
   connectedCallback() {
     if (this._initialized) return;

@@ -116,22 +116,6 @@ moveButtonClasses enabled =
 
 -- 関係設定（他のフィルターとの関係・選択肢同士の関係）を一つのポップアップにまとめる
 
-
--- relationPopupTrigger : FieldConfig -> FilterUiState -> Html Msg
--- relationPopupTrigger field ui =
---     div [ class "relative" ]
---         [ button
---             [ class relationBadgeClasses
---             , onClick (FilterMsg (ToggleRelationPopup field.key))
---             ]
---             [ text "関係" ]
---         , if ui.relationPopupOpen then
---             relationPopup field ui
-
---           else
---             text ""
---         ]
-
 relationPopupTrigger : FieldConfig -> FilterUiState -> Html Msg
 relationPopupTrigger field ui =
     div [ class "relative" ]
@@ -189,12 +173,10 @@ relationBadgeClasses =
     "shrink-0 px-2 py-0.5 text-xs rounded border border-neutral-200 text-neutral-600 hover:bg-neutral-100"
 
 
--- popupClasses : String
--- popupClasses =
---     "absolute z-10 top-full right-0 mt-1 bg-white border border-neutral-200 rounded-md shadow-md flex flex-col p-1 gap-0.5 min-w-[8rem]"
 popupClasses : String
 popupClasses =
     "absolute z-50 top-full right-0 mt-1 bg-white border border-neutral-200 rounded-md shadow-md flex flex-col p-1 gap-0.5 min-w-[8rem]"
+
 
 popupOptionRowClasses : String
 popupOptionRowClasses =

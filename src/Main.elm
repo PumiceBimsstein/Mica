@@ -4,7 +4,6 @@ import Browser
 import Dict
 import MockData
 import Ports
---import Search
 import Storage
 import Update exposing (update)
 import View
@@ -37,8 +36,7 @@ init _ =
 
 defaultModel : Model
 defaultModel =
-    { datasets = [ MockData.dataset ]
-    , selectedDatasetId = MockData.dataset.id
+    { dataset = MockData.dataset
     , cardSize = Medium
     , fileModalOpen = False
     , settingsModalOpen = False
