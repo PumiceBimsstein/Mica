@@ -88,7 +88,7 @@ fieldRow total index dataset field =
             [ displayRoleButtons field
             , div [ class "flex items-center gap-3" ]
                 [ showOnCardCheckbox field
-                , filterableCheckbox field
+                --, filterableCheckbox field
                 ]
             ]
         , booleanDisplayConfig dataset field
@@ -245,9 +245,9 @@ showOnCardCheckbox field =
     checkboxField field.key "カードに表示" field.showOnCard (SetShowOnCard field.key)
 
 
-filterableCheckbox : FieldConfig -> Html Msg
-filterableCheckbox field =
-    checkboxField field.key "フィルター" field.filterable (SetFilterable field.key)
+-- filterableCheckbox : FieldConfig -> Html Msg
+-- filterableCheckbox field =
+--     checkboxField field.key "フィルター" field.filterable (SetFilterable field.key)
 
 
 checkboxField : String -> String -> Bool -> (Bool -> FieldSettingsMsg) -> Html Msg

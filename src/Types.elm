@@ -238,6 +238,7 @@ type alias Model =
     , settingsModalOpen : Bool
     , sortModalOpen : Bool
     , actionMenuOpen : Bool
+    , filterSelectOpen : Bool -- [追加]
     , mainAreaCardScale : Float
     , sortModalCardScale : Float
     , targetTopCardId : Maybe String
@@ -262,6 +263,7 @@ type Msg
     | StateLoaded Decode.Value
     | ToggleSettingsModal Bool
     | ToggleActionMenu
+    | ToggleFilterSelectDropdown Bool -- [追加]
     | UndoRequested
     | CardMouseEntered String
     | CardMouseLeft
@@ -330,16 +332,17 @@ type EditModalMsg
 type FileFlowMsg
     = ToggleModal Bool
     | SetReadMode ReadMode
-    | SetImportFormat FileFormat
-    | SetExportFormat FileFormat
+    --| SetImportFormat FileFormat
+    --| SetExportFormat FileFormat
     | RequestOpenFile
     | FileSelected File.File
-    | FileTextLoaded String
+    --| FileTextLoaded String
+    | FileLoaded String String -- fileName, content
     | ImportNameChanged String
     | ConfirmNewDataset
     | ResolveNewProperties AppendChoice
     | CancelPendingImport
-    | ExportClicked
+    | ExportClicked FileFormat
     | RequestOpenBackupFile
     | BackupFileSelected File.File
     | BackupTextLoaded String
@@ -349,3 +352,4 @@ type SearchMsg
     = SetQuery String
     | ToggleSearchMode
     | ToggleSearchField String
+

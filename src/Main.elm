@@ -42,6 +42,7 @@ defaultModel =
     , settingsModalOpen = False
     , sortModalOpen = False
     , actionMenuOpen = False
+    , filterSelectOpen = False
     , mainAreaCardScale = 1.0
     , sortModalCardScale = 1.0
     , targetTopCardId = Nothing

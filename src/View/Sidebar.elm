@@ -5,7 +5,7 @@ import Html exposing (Html, button, div, h1, input, label, text, span)
 import Html.Attributes exposing (class, disabled, title, placeholder, value, type_, checked)
 import Html.Events exposing (onClick, onInput)
 import Types as Types
-import Types exposing (CardSize(..), Model, Msg(..), FileFlowMsg(..), SearchMsg(..), SearchState, SearchMode(..), FieldConfig)
+import Types exposing (CardSize(..), Model, Msg(..), FileFlowMsg(..), SearchMsg(..), SearchState, SearchMode(..), FieldConfig, FieldSettingsMsg(..))
 import View.FilterPanel as FilterPanel
 import Svg exposing (path, svg)
 import Svg.Attributes as SvgAttr
@@ -25,6 +25,7 @@ view model =
         , fileButton
         --, undoButton model
         , searchArea model
+        , filterSectionHeader model
         , filterArea model
         ]
 
@@ -289,7 +290,106 @@ searchFieldCheckbox field selectedFields =
         , span [ class labelClasses ] [ text field.label ]
         ]
 
+
+-- filterSectionHeader : Model -> Html Msg
+-- filterSectionHeader model =
+--     div [ class "relative flex items-center justify-between border-t border-neutral-200 pt-3 -mx-4 px-4" ]
+--         [ span [ class "text-xs font-semibold text-neutral-500 uppercase tracking-wider" ]
+--             [ text "フィルター" ]
+--         , button
+--             [ class "px-2 py-0.5 text-xs rounded border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 flex items-center gap-1 shadow-sm"
+--             , onClick (ToggleFilterSelectDropdown (not model.filterSelectOpen))
+--             ]
+--             [ text "+ 項目選択" ]
+--         , filterSelectDropdown model
+--         ]
+
+filterSectionHeader : Model -> Html Msg
+filterSectionHeader model =
+    div [ class "flex flex-col gap-2 border-t border-neutral-200 pt-3 -mx-4 px-4 relative" ]
+        [ div [ class "flex items-center justify-between" ]
+            [ span [ class "text-xs font-semibold text-neutral-500 uppercase tracking-wider" ]
+                [ text "フィルター" ]
+            , button
+                [ class
+                    (if model.filterSelectOpen then
+                        "px-2 py-0.5 text-xs rounded border border-neutral-300 bg-neutral-200 text-neutral-800 font-medium shadow-sm transition"
+
+                     else
+                        "px-2 py-0.5 text-xs rounded border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 shadow-sm transition"
+                    )
+                , onClick (ToggleFilterSelectDropdown (not model.filterSelectOpen))
+                ]
+                [ text
+                    (if model.filterSelectOpen then
+                        "✕ 閉じる"
+
+                     else
+                        "+ 項目選択"
+                    )
+                ]
+            ]
+        , filterSelectDropdown model
+        ]
+
+
+-- filterSelectDropdown : Model -> Html Msg
+-- filterSelectDropdown model =
+--     if not model.filterSelectOpen then
+--         text ""
+
+--     else
+--         div []
+--             [ -- 枠外クリックで閉じるための透明オーバーレイ
+--               div
+--                 [ class "fixed inset-0 z-30"
+--                 , onClick (ToggleFilterSelectDropdown False)
+--                 ]
+--                 []
+--             , -- ドロップダウン本体
+--               div [ class "absolute right-4 top-full mt-1 w-52 bg-white border border-neutral-200 rounded-lg shadow-lg p-2 z-40 flex flex-col gap-1 max-h-60 overflow-y-auto" ]
+--                 (List.map filterFieldCheckbox model.dataset.fields)
+--             ]
+
+filterSelectDropdown : Model -> Html Msg
+filterSelectDropdown model =
+    if not model.filterSelectOpen then
+        text ""
+
+    else
+        div [ class "flex flex-col" ]
+            [ -- 枠外クリックで閉じるための透明オーバーレイ
+              div
+                [ class "fixed inset-0 z-30"
+                , onClick (ToggleFilterSelectDropdown False)
+                ]
+                []
+            , -- メニュー本体（サイドバー幅の中に確実に収まり、他の要素の上に重なって浮く）
+              div [ class "relative z-40 bg-white border border-neutral-300 rounded-lg shadow-md p-2 flex flex-col gap-1 max-h-56 overflow-y-auto" ]
+                [ div [ class "text-[11px] font-semibold text-neutral-400 px-2 py-0.5 border-b border-neutral-100 mb-1" ]
+                    [ text "表示するフィルターを選択" ]
+                , div [ class "flex flex-col gap-0.5" ]
+                    (List.map filterFieldCheckbox model.dataset.fields)
+                ]
+            ]
+
+filterFieldCheckbox : FieldConfig -> Html Msg
+filterFieldCheckbox field =
+    label [ class "flex items-center gap-2 px-2 py-1 hover:bg-neutral-50 rounded cursor-pointer text-xs text-neutral-700" ]
+        [ input
+            [ type_ "checkbox"
+            , class "w-3.5 h-3.5 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-400"
+            , checked field.filterable
+            , onClick (FieldSettingsMsg (SetFilterable field.key (not field.filterable)))
+            ]
+            []
+        , span [ class "truncate" ] [ text field.label ]
+        ]
+
+
+
 filterArea : Model -> Html Msg
 filterArea model =
-    div [ class "flex-1 overflow-y-auto flex flex-col gap-2" ] [ FilterPanel.view model model.dataset ]
+    div [ class "flex-1 overflow-y-auto flex flex-col gap-2 min-h-0" ]
+        [ FilterPanel.view model model.dataset ]
 

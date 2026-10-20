@@ -66,6 +66,9 @@ update msg model =
         ToggleActionMenu ->
             ( { model | actionMenuOpen = not model.actionMenuOpen }, Cmd.none )
 
+        ToggleFilterSelectDropdown open ->
+            ( { model | filterSelectOpen = open }, Cmd.none )
+
         SortModalMsg sortMsg ->
             updateSortModal sortMsg model
         
@@ -147,6 +150,58 @@ updateSortModal msg model =
             ( { model | sortModalCardScale = scale }, Cmd.none )
 
 
+-- updateFileFlow : FileFlowMsg -> Model -> ( Model, Cmd Msg )
+-- updateFileFlow msg model =
+--     case msg of
+--         ToggleModal open ->
+--             ( openOrCloseFileModal open model, Cmd.none )
+
+--         SetReadMode mode ->
+--             ( { model | readMode = mode }, Cmd.none )
+
+--         SetImportFormat format ->
+--             ( { model | importFormat = format }, Cmd.none )
+
+--         SetExportFormat format ->
+--             ( { model | exportFormat = format }, Cmd.none )
+
+--         RequestOpenFile ->
+--             ( model, FileFlow.openFile model.importFormat )
+
+--         FileSelected file ->
+--             ( model, FileFlow.readFile file )
+
+--         FileTextLoaded text ->
+--             FileFlow.handleFileText text model
+
+--         ImportNameChanged text ->
+--             ( FileFlow.updatePendingName text model, Cmd.none )
+
+--         ConfirmNewDataset ->
+--             FileFlow.confirmNewDataset model
+
+--         ResolveNewProperties choice ->
+--             FileFlow.resolveChoice choice model
+
+--         CancelPendingImport ->
+--             ( { model | pendingImport = Nothing }, Cmd.none )
+
+--         ExportClicked ->
+--             ( model, FileFlow.exportCurrentDataset model )
+
+--         RequestOpenBackupFile ->
+--             ( model, FileFlow.openBackupFile )
+
+--         BackupFileSelected file ->
+--             ( model, FileFlow.readBackupFile file )
+
+--         BackupTextLoaded text ->
+--             FileFlow.handleBackupText text model
+
+--         ExportBackupClicked ->
+--             ( model, FileFlow.exportBackup model )
+
+
 updateFileFlow : FileFlowMsg -> Model -> ( Model, Cmd Msg )
 updateFileFlow msg model =
     case msg of
@@ -156,20 +211,14 @@ updateFileFlow msg model =
         SetReadMode mode ->
             ( { model | readMode = mode }, Cmd.none )
 
-        SetImportFormat format ->
-            ( { model | importFormat = format }, Cmd.none )
-
-        SetExportFormat format ->
-            ( { model | exportFormat = format }, Cmd.none )
-
         RequestOpenFile ->
-            ( model, FileFlow.openFile model.importFormat )
+            ( model, FileFlow.openFile )
 
         FileSelected file ->
             ( model, FileFlow.readFile file )
 
-        FileTextLoaded text ->
-            FileFlow.handleFileText text model
+        FileLoaded fileName text ->
+            FileFlow.handleFileLoaded fileName text model
 
         ImportNameChanged text ->
             ( FileFlow.updatePendingName text model, Cmd.none )
@@ -183,8 +232,8 @@ updateFileFlow msg model =
         CancelPendingImport ->
             ( { model | pendingImport = Nothing }, Cmd.none )
 
-        ExportClicked ->
-            ( model, FileFlow.exportCurrentDataset model )
+        ExportClicked format ->
+            ( model, FileFlow.exportCurrentDataset format model )
 
         RequestOpenBackupFile ->
             ( model, FileFlow.openBackupFile )
@@ -197,7 +246,6 @@ updateFileFlow msg model =
 
         ExportBackupClicked ->
             ( model, FileFlow.exportBackup model )
-
 
 
 updateFilter : FilterMsg -> Model -> ( Model, Cmd Msg )
