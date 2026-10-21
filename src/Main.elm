@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Browser
+import Browser.Events
 import Dict
 import Json.Decode as Decode
 import MockData
@@ -11,7 +12,7 @@ import View
 import Types exposing
     ( CardSize(..), FileFormat(..), Model, Msg(..)
     , EditModalMsg(..), SortModalMsg(..), ReadMode(..)
-    , SearchState, SearchMode(..)
+    , SearchState, SearchMode(..), DetailModalMsg(..)
     )
 
 
@@ -68,15 +69,30 @@ defaultModel =
     , renameModal = Nothing
     , topVisibleCardId = Nothing
     , searchState = { query = "", mode = SearchAll }
+    , detailModalItemId = Nothing
     }
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
+subscriptions model =
     Sub.batch
         [ Ports.openSortModalWithTopCard (OpenWithTopCard >> SortModalMsg)
         , Ports.receiveClosedSortModal (\data -> SortModalMsg (CloseAndApply data.newOrder data.topCardId))
         , Ports.topCardIdReceived TopCardIdReceived
         , Ports.idGenerated CreateItemWithId
         , Ports.idsArrayGenerated DatasetFileImport
+        , detailKeySubscription model
         ]
+
+-- [追加] 詳細モーダルが開いているときのみキーボード入力を購読
+detailKeySubscription : Model -> Sub Msg
+detailKeySubscription model =
+    case model.detailModalItemId of
+        Just _ ->
+            Browser.Events.onKeyDown
+                (Decode.field "key" Decode.string
+                    |> Decode.map (\key -> DetailModalMsg (KeyDown key))
+                )
+
+        Nothing ->
+            Sub.none

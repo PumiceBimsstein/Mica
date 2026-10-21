@@ -15,6 +15,7 @@ import Update.DatasetEdit exposing (confirmEditItem, deleteEditingItem)
 import Update.ItemManager exposing (createNewItemWithUuid)
 import Update.EditModalManager exposing (closeEditModal, openEditModal)
 import Update.SortModalManager exposing (applySortAndClose, openSortModal)
+import Update.DetailModalManager exposing (handleDetailModalMsg)
 import Update.EditModalState exposing
     ( setBooleanField
     , setTextField
@@ -116,6 +117,9 @@ update msg model =
 
         SearchMsg searchMsg ->
             updateSearch searchMsg model
+        
+        DetailModalMsg detailMsg ->
+            handleDetailModalMsg detailMsg model
 
 
 updateDataset : DatasetMsg -> Model -> ( Model, Cmd Msg )
@@ -200,16 +204,20 @@ updateFilter : FilterMsg -> Model -> ( Model, Cmd Msg )
 updateFilter msg model =
     case msg of
         ToggleOption fieldKey optionValue ->
-            ( updateFilterUi fieldKey (Filter.toggleOption optionValue) model, Cmd.none )
+            saveAfter (updateFilterUi fieldKey (Filter.toggleOption optionValue) model)
+            --( updateFilterUi fieldKey (Filter.toggleOption optionValue) model, Cmd.none )
 
         SetBetweenRelation fieldKey relation ->
-            ( updateFilterUi fieldKey (\ui -> { ui | betweenRelation = relation }) model, Cmd.none )
+            saveAfter (updateFilterUi fieldKey (\ui -> { ui | betweenRelation = relation }) model)
+             --updateFilterUi fieldKey (\ui -> { ui | betweenRelation = relation }) model, Cmd.none )
 
         SetWithinRelation fieldKey relation ->
-            ( updateFilterUi fieldKey (\ui -> { ui | withinRelation = relation }) model, Cmd.none )
+            saveAfter (updateFilterUi fieldKey (\ui -> { ui | withinRelation = relation }) model)
+            --( updateFilterUi fieldKey (\ui -> { ui | withinRelation = relation }) model, Cmd.none )
 
         ToggleCollapsed fieldKey ->
-            ( updateFilterUi fieldKey (\ui -> { ui | collapsed = not ui.collapsed }) model, Cmd.none )
+            saveAfter (updateFilterUi fieldKey (\ui -> { ui | collapsed = not ui.collapsed }) model)
+            --( updateFilterUi fieldKey (\ui -> { ui | collapsed = not ui.collapsed }) model, Cmd.none )
 
         ToggleRelationPopup fieldKey ->
             ( updateFilterUi fieldKey (\ui -> { ui | relationPopupOpen = not ui.relationPopupOpen }) model, Cmd.none )

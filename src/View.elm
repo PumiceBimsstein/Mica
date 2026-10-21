@@ -7,6 +7,7 @@ import Html.Events exposing (onClick, onInput)
 import Html.Keyed as Keyed
 import Types exposing (CardSize(..), Dataset, EditModalMsg(..), Item, Model, Msg(..), SortModalMsg(..))
 import View.Card as Card
+import View.DetailModal as DetailModal
 import View.EditModal as EditModal
 import View.FileModal as FileModal
 import View.SettingsModal as SettingsModal
@@ -21,6 +22,7 @@ view model =
         , FileModal.view model
         , SettingsModal.view model
         , EditModal.view model
+        , DetailModal.view model
         , sortModal model
         , actionButtonGroup model
         , scrollToTopButton

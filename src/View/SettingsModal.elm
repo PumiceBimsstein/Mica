@@ -300,6 +300,7 @@ linkFieldSelector labelText fields current toMsg =
             , onInput (\s -> FieldSettingsMsg (toMsg (stringToMaybe s)))
             ]
             (option [ value "", selected (current == Nothing) ] [ text "なし" ]
+                :: option [ value "__detail__", selected (current == Just "__detail__") ] [ text "詳細表示" ] -- [追加]
                 :: List.map (fieldOption current) fields
             )
         ]

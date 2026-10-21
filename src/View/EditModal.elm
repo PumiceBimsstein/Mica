@@ -31,7 +31,7 @@ overlay editState model =
             not (List.any (\item -> item.id == editState.editingItemId) dataset.items)
 
     in
-    div [ class "fixed inset-0 flex items-center justify-center z-50" ]
+    div [ class "fixed inset-0 flex items-center justify-center z-60" ]
         [ -- 画面全体を覆う背景（クリックで保存して閉じる）
           div
             [ class "absolute inset-0 bg-black/15"

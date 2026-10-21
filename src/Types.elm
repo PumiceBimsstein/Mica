@@ -30,6 +30,7 @@ module Types exposing
     , TextListItemState
     , Value(..)
     , WithinRelation(..)
+    , DetailModalMsg(..)
     )
 
 import Dict exposing (Dict)
@@ -255,6 +256,7 @@ type alias Model =
     , renameModal : Maybe DatasetRenameState
     , topVisibleCardId : Maybe String
     , searchState : SearchState
+    , detailModalItemId : Maybe String
     }
 
 
@@ -275,6 +277,7 @@ type Msg
     | FieldSettingsMsg FieldSettingsMsg
     | EditModalMsg EditModalMsg
     | SearchMsg SearchMsg
+    | DetailModalMsg DetailModalMsg
     | TopCardIdReceived (Maybe String)
     | CreateItemWithId String
     | DatasetFileImport (List String)
@@ -353,3 +356,9 @@ type SearchMsg
     | ToggleSearchMode
     | ToggleSearchField String
 
+type DetailModalMsg
+    = OpenDetail String
+    | CloseDetail
+    | NextCard
+    | PrevCard
+    | KeyDown String
