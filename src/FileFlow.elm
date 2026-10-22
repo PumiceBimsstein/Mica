@@ -3,7 +3,6 @@ module FileFlow exposing
     , exportBackup
     , exportCurrentDataset
     , handleBackupText
-    --, handleFileText
     , handleFileLoaded
     , openBackupFile
     , openFile
@@ -64,44 +63,7 @@ readFile file =
     Task.perform (\content -> FileFlowMsg (FileLoaded fileName content)) (File.toString file)
 
 
--- acceptFor : FileFormat -> List String
--- acceptFor format =
---     case format of
---         JsonFormat ->
---             [ "application/json", ".json" ]
-
---         CsvFormat ->
---             [ "text/csv", ".csv" ]
-
-
--- readFile : File -> Cmd Msg
--- readFile file =
---     Task.perform (FileTextLoaded >> FileFlowMsg) (File.toString file)
-
-
-
 -- 読み込んだテキストの処理
-
-
--- handleFileText : String -> Model -> ( Model, Cmd Msg )
--- handleFileText text model =
---     case parseRawItems model text of
---         Ok rawItems ->
---             startImport rawItems model
-
---         Err message ->
---             ( { model | importError = Just message, pendingImport = Nothing }, Cmd.none )
-
-
--- parseRawItems : Model -> String -> Result String (List (List ( String, Value )))
--- parseRawItems model text =
---     case model.importFormat of
---         JsonFormat ->
---             Import.decodeRawItems text
---                 |> Result.mapError (\_ -> "JSONの形式が正しくありません。")
-
---         CsvFormat ->
---             CsvCodec.decodeRawItems (existingDatasetFor model) text
 
 handleFileLoaded : String -> String -> Model -> ( Model, Cmd Msg )
 handleFileLoaded fileName text model =
@@ -147,37 +109,6 @@ existingDatasetFor model =
     else
         Just model.dataset
 
--- existingDatasetFor : Model -> Maybe Dataset
--- existingDatasetFor model =
---     Just model.dataset
-
-
--- startImport : List (List ( String, Value )) -> Model -> ( Model, Cmd Msg )
--- startImport rawItems model =
---     let
---         target = model.dataset
---         newKeys = Import.findNewKeys target.fields rawItems
---         pending =
---             { mode = model.readMode
---             , rawItems = rawItems
---             , newKeys = newKeys
---             , nameInput = ""
---             }
---     in
---     if List.isEmpty newKeys then
---         -- 新プロパティがなければそのままUUID生成を要求
---         ( { model | pendingImport = Just pending, importError = Nothing }
---         , Ports.generateUuids (List.length rawItems)
---         )
---     else
---         -- 新プロパティの確認ダイアログを表示
---         ( { model | pendingImport = Just pending, importError = Nothing }, Cmd.none )
-
-
-
--- newPendingImport : List (List ( String, Value )) -> PendingImport
--- newPendingImport rawItems =
---     { mode = NewDataset, rawItems = rawItems, newKeys = [], nameInput = "" }
 
 startImport : List (List ( String, Value )) -> Model -> ( Model, Cmd Msg )
 startImport rawItems model =
@@ -197,29 +128,6 @@ startExistingDatasetImport : List (List ( String, Value )) -> Model -> ( Model, 
 startExistingDatasetImport rawItems model =
     resolveOrPrompt rawItems model.dataset model
 
-
--- resolveOrPrompt : List (List ( String, Value )) -> Dataset -> Model -> ( Model, Cmd Msg )
--- resolveOrPrompt rawItems target model =
---     let
---         newKeys =
---             Import.findNewKeys target.fields rawItems
-
---         pending =
---             { mode = model.readMode, rawItems = rawItems, newKeys = newKeys, nameInput = "" }
---     in
---     if List.isEmpty newKeys then
---         -- 新プロパティがない場合も UUID の生成を JS ポートへ要求する
---         let
---             count =
---                 List.length rawItems
---         in
---         ( { model | pendingImport = Just pending, importError = Nothing }
---         , Ports.generateUuids count
---         )
-
---     else
---         -- 新プロパティがある場合はモーダルでユーザーの選択（resolveChoice）を待つ
---         ( { model | pendingImport = Just pending, importError = Nothing }, Cmd.none )
 
 resolveOrPrompt : List (List ( String, Value )) -> Dataset -> Model -> ( Model, Cmd Msg )
 resolveOrPrompt rawItems target model =
@@ -288,26 +196,7 @@ save model =
 updatePendingName : String -> Model -> Model
 updatePendingName text model =
     { model | pendingImport = Maybe.map (\p -> { p | nameInput = text }) model.pendingImport }
-    --{ model | pendingImport = Maybe.map (setNameInput text) model.pendingImport }
 
-
--- setNameInput : String -> PendingImport -> PendingImport
--- setNameInput text pending =
---     { pending | nameInput = text }
-
-
--- confirmNewDataset : Model -> ( Model, Cmd Msg )
--- confirmNewDataset model =
---     case model.pendingImport of
---         Just pending ->
---             let
---                 count =
---                     List.length pending.rawItems
---             in
---             ( model, Ports.generateUuids count )
-
---         Nothing ->
---             ( model, Cmd.none )
 
 confirmNewDataset : Model -> ( Model, Cmd Msg )
 confirmNewDataset model =
@@ -353,10 +242,6 @@ datasetNameOrDefault input =
 
 
 -- 書き出し
-
--- exportCurrentDataset : Model -> Cmd Msg
--- exportCurrentDataset model =
---     downloadDataset model.exportFormat model.dataset
 
 exportCurrentDataset : FileFormat -> Model -> Cmd Msg
 exportCurrentDataset format model =
@@ -434,7 +319,7 @@ exportBackup model =
         dataset = model.dataset
     in
     File.Download.string
-        (dataset.name ++ "-backup.json")
+        ("Mica-backup-" ++ dataset.name ++ ".json")
         "application/json"
         (Encode.encode 2 (DomainJson.encodeDataset dataset))
 

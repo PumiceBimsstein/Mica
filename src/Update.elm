@@ -205,19 +205,15 @@ updateFilter msg model =
     case msg of
         ToggleOption fieldKey optionValue ->
             saveAfter (updateFilterUi fieldKey (Filter.toggleOption optionValue) model)
-            --( updateFilterUi fieldKey (Filter.toggleOption optionValue) model, Cmd.none )
 
         SetBetweenRelation fieldKey relation ->
             saveAfter (updateFilterUi fieldKey (\ui -> { ui | betweenRelation = relation }) model)
-             --updateFilterUi fieldKey (\ui -> { ui | betweenRelation = relation }) model, Cmd.none )
 
         SetWithinRelation fieldKey relation ->
             saveAfter (updateFilterUi fieldKey (\ui -> { ui | withinRelation = relation }) model)
-            --( updateFilterUi fieldKey (\ui -> { ui | withinRelation = relation }) model, Cmd.none )
 
         ToggleCollapsed fieldKey ->
             saveAfter (updateFilterUi fieldKey (\ui -> { ui | collapsed = not ui.collapsed }) model)
-            --( updateFilterUi fieldKey (\ui -> { ui | collapsed = not ui.collapsed }) model, Cmd.none )
 
         ToggleRelationPopup fieldKey ->
             ( updateFilterUi fieldKey (\ui -> { ui | relationPopupOpen = not ui.relationPopupOpen }) model, Cmd.none )
@@ -324,26 +320,6 @@ saveAfter model =
 
 
 -- 起動時読込
-
--- handleStateLoaded : Decode.Value -> Model -> ( Model, Cmd Msg )
--- handleStateLoaded value model =
---     case Storage.decodeState value of
---         Ok state ->
---             applyOrSeed state model
-
---         Err _ ->
---             ( model, Cmd.none )
-
-
--- applyOrSeed : Storage.PersistedState -> Model -> ( Model, Cmd Msg )
--- applyOrSeed state model =
---     if List.isEmpty state.dataset.items then
---         saveAfter model
-
---     else
---         ( Storage.applyPersistedState state model, Cmd.none )
-
-
 
 -- ファイル操作ウィンドウ・データセット切り替え・削除
 

@@ -8894,7 +8894,7 @@ var $author$project$FileFlow$exportBackup = function (model) {
 	var dataset = model.j;
 	return A3(
 		$elm$file$File$Download$string,
-		dataset.a8 + '-backup.json',
+		'Mica-backup-' + (dataset.a8 + '.json'),
 		'application/json',
 		A2(
 			$elm$json$Json$Encode$encode,

@@ -39,17 +39,14 @@ import Json.Decode as Decode
 import Set exposing (Set)
 
 
-{-| 初期バージョンで扱う値の型。
-文字列 / 文字列配列 / 真偽値の三種類に限定する。
--}
+-- 初期バージョンで扱う値の型。文字列 / 文字列配列 / 真偽値の三種類に限定する。
 type Value
     = Text String
     | TextList (List String)
     | Boolean Bool
 
 
-{-| フィールドの表示方法。データ上の型とは独立した概念。
--}
+-- フィールドの表示方法。データ上の型とは独立した概念。
 type DisplayRole
     = PlainText
     | Title
@@ -57,8 +54,6 @@ type DisplayRole
     | Link
 
 
-{-| 一つのフィールドをどう扱うかの設定。
--}
 type alias FieldConfig =
     { key : String
     , label : String
@@ -87,14 +82,6 @@ type CardSize
     | Large
 
 
-{-| メインデータ一件分。fields の並び順がそのままプロパティの表示・入出力順序になる。
-id はIndexedDB保存など内部処理で使う識別子で、name はユーザーが自由に
-付け替えられる表示名。
-imageLinkField / titleLinkField は、画像・タイトルクリック時の遷移先として
-使用するフィールドの key。
-filterOrder は、フィルターとして表示する際の並び順（フィールドキーのリスト）。
-fields の並び順（カード詳細表示・入出力の順序）とは独立して管理する。
--}
 type alias Dataset =
     { id : String
     , name : String
@@ -106,23 +93,17 @@ type alias Dataset =
     }
 
 
-{-| ファイル読み込みの三モード。
--}
 type ReadMode
     = NewDataset
     | AppendData
     | ReplaceData
 
 
-{-| 読み込み・書き出しのファイル形式。
--}
 type FileFormat
     = JsonFormat
     | CsvFormat
 
 
-{-| 追加・置き換え時に、既存データに無い新しいプロパティが見つかった場合の選択肢。
--}
 type AppendChoice
     = AddNewFields
     | IgnoreNewFields
@@ -140,33 +121,25 @@ type alias PendingImport =
     }
 
 
-{-| Undo用に、データそのもの（datasets / selectedDatasetId）だけを切り取った状態。
-カードサイズやモーダルの開閉といったUI状態は含めない。
--}
+-- Undo用に、データそのもの（datasets / selectedDatasetId）だけを切り取った状態。
 type alias Snapshot =
     { dataset : Dataset
     }
 
 
-{-| フィルターと他のフィルターとの関係。
--}
+-- フィルターと他のフィルターとの関係。
 type BetweenRelation
     = RelAnd
     | RelOr
     | RelNot
 
 
-{-| 一つのフィルター内で複数選択肢を選んだ場合の、選択肢同士の関係。
--}
+-- 一つのフィルター内の選択肢同士の関係。
 type WithinRelation
     = WithinAnd
     | WithinOr
 
 
-{-| フィールドごとのフィルターUI状態。選択肢そのもの（件数など）は
-Datasetから毎回導出するため保持せず、ユーザーの選択・関係設定・折り畳み状態だけを持つ。
-relationPopupOpen は「他のフィルターとの関係」を選ぶ小ウィンドウの開閉状態。
--}
 type alias FilterUiState =
     { selected : Set String
     , betweenRelation : BetweenRelation
@@ -176,25 +149,20 @@ type alias FilterUiState =
     }
 
 
-{-| 検索モード。全文検索か、指定フィールドのみかを選択できる。
--}
 type SearchMode
     = SearchAll
     | SearchFields (Set String)
 
 
-{-| 検索の状態を管理する。
-query: ユーザーが入力した検索ワード
-mode: 検索モード（全文検索 or フィールド指定）
--}
+--query: 入力した検索ワード
+--mode: 検索モード（全文検索 or フィールド指定）
 type alias SearchState =
     { query : String
     , mode : SearchMode
     }
 
 
-{-| カード編集ウィンドウ
--}
+-- カード編集ウィンドウ
 type alias TextInputSize =
     { width : Int
     , height : Int
@@ -239,7 +207,7 @@ type alias Model =
     , settingsModalOpen : Bool
     , sortModalOpen : Bool
     , actionMenuOpen : Bool
-    , filterSelectOpen : Bool -- [追加]
+    , filterSelectOpen : Bool
     , mainAreaCardScale : Float
     , sortModalCardScale : Float
     , targetTopCardId : Maybe String
@@ -262,7 +230,6 @@ type alias Model =
 
 type Msg
     = SetCardSize CardSize
-    --| StateLoaded Decode.Value
     | ToggleSettingsModal Bool
     | ToggleActionMenu
     | ToggleFilterSelectDropdown Bool
@@ -335,12 +302,9 @@ type EditModalMsg
 type FileFlowMsg
     = ToggleModal Bool
     | SetReadMode ReadMode
-    --| SetImportFormat FileFormat
-    --| SetExportFormat FileFormat
     | RequestOpenFile
     | FileSelected File.File
-    --| FileTextLoaded String
-    | FileLoaded String String -- fileName, content
+    | FileLoaded String String
     | ImportNameChanged String
     | ConfirmNewDataset
     | ResolveNewProperties AppendChoice
