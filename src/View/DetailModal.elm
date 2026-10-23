@@ -165,7 +165,7 @@ modalContent dataset item currentNumber totalCount =
             [ div [ class "flex items-center gap-3" ]
                 [ span [ class "text-xs font-semibold px-2.5 py-1 rounded-full bg-neutral-200 text-neutral-700" ]
                     [ text (String.fromInt currentNumber ++ " / " ++ String.fromInt totalCount) ]
-                , h2 [ class "text-lg font-bold text-neutral-800 truncate max-w-lg" ] [ text title ]
+                , h2 [ class "text-lg font-title font-bold text-neutral-800 truncate max-w-lg" ] [ text title ]
                 ]
             , div [ class "flex items-center gap-2" ]
                 [ button

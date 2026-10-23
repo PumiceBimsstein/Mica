@@ -38,6 +38,7 @@ overlay dataset =
             [ header
             , fieldList dataset
             , linkFieldSection dataset
+            , cardDisplaySection dataset
             ]
         ]
 
@@ -323,3 +324,20 @@ stringToMaybe s =
 sectionTitle : String -> Html Msg
 sectionTitle labelText =
     div [ class "text-xs font-medium text-neutral-400" ] [ text labelText ]
+
+
+cardDisplaySection : Dataset -> Html Msg
+cardDisplaySection dataset =
+    div [ class "flex flex-col gap-2 border-t border-neutral-100 pt-4" ]
+        [ sectionTitle "カード表示設定"
+        , label [ class "flex items-center gap-2 text-sm text-neutral-700 cursor-pointer select-none" ]
+            [ input
+                [ type_ "checkbox"
+                , checked dataset.wrapTitleOnCard
+                , onClick (FieldSettingsMsg (SetWrapTitleOnCard (not dataset.wrapTitleOnCard)))
+                , class "w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-400"
+                ]
+                []
+            , span [] [ text "タイトルを折り返して表示" ]
+            ]
+        ]

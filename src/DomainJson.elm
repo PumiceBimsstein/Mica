@@ -161,6 +161,7 @@ encodeDataset dataset =
         , ( "imageLinkField", encodeMaybeString dataset.imageLinkField )
         , ( "titleLinkField", encodeMaybeString dataset.titleLinkField )
         , ( "filterOrder", Encode.list Encode.string dataset.filterOrder )
+        , ( "wrapTitleOnCard", Encode.bool dataset.wrapTitleOnCard )
         ]
 
 
@@ -174,16 +175,29 @@ encodeMaybeString maybeValue =
             Encode.null
 
 
+-- decodeDataset : Decode.Decoder Dataset
+-- decodeDataset =
+--     Decode.map7 Dataset
+--         (Decode.field "id" Decode.string)
+--         (Decode.field "name" Decode.string)
+--         (Decode.field "fields" (Decode.list decodeFieldConfig))
+--         (Decode.field "items" (Decode.list decodeItem))
+--         (Decode.field "imageLinkField" (Decode.nullable Decode.string))
+--         (Decode.field "titleLinkField" (Decode.nullable Decode.string))
+--         decodeFilterOrder
+
 decodeDataset : Decode.Decoder Dataset
 decodeDataset =
-    Decode.map7 Dataset
-        (Decode.field "id" Decode.string)
-        (Decode.field "name" Decode.string)
-        (Decode.field "fields" (Decode.list decodeFieldConfig))
-        (Decode.field "items" (Decode.list decodeItem))
-        (Decode.field "imageLinkField" (Decode.nullable Decode.string))
-        (Decode.field "titleLinkField" (Decode.nullable Decode.string))
-        decodeFilterOrder
+    Decode.succeed Dataset
+        |> decodeAndMap (Decode.field "id" Decode.string)
+        |> decodeAndMap (Decode.field "name" Decode.string)
+        |> decodeAndMap (Decode.field "fields" (Decode.list decodeFieldConfig))
+        |> decodeAndMap (Decode.field "items" (Decode.list decodeItem))
+        |> decodeAndMap (Decode.field "imageLinkField" (Decode.nullable Decode.string))
+        |> decodeAndMap (Decode.field "titleLinkField" (Decode.nullable Decode.string))
+        |> decodeAndMap decodeFilterOrder
+        |> decodeAndMap (Decode.oneOf [ Decode.field "wrapTitleOnCard" Decode.bool, Decode.succeed False ])
+
 
 
 {-| filterOrderが無い（このフィールドを追加する前に保存されたデータ）場合は

@@ -3,8 +3,7 @@ module View.EditModal exposing (view)
 import Dict
 import Html exposing (Html, button, div, h2, input, label, span, text, textarea)
 import Html.Attributes exposing (checked, class, type_, value)
-import Html.Events exposing (onClick, onInput, stopPropagationOn)
-import Json.Decode as Decode
+import Html.Events exposing (onClick, onInput)
 import ItemAccess exposing (getValue)
 import Types exposing (Dataset, EditModalMsg(..), EditModalState, EditingFieldValue(..), FieldConfig, Item, Model, Msg(..), TextListItemState, Value(..))
 
@@ -26,20 +25,21 @@ view model =
 overlay : EditModalState -> Model -> Html Msg
 overlay editState model =
     let
-        dataset = model.dataset
+        dataset =
+            model.dataset
+
         isNewItem =
             not (List.any (\item -> item.id == editState.editingItemId) dataset.items)
-
     in
-    div [ class "fixed inset-0 flex items-center justify-center z-60" ]
+    div [ class "fixed inset-0 flex items-center justify-center z-60 p-4" ]
         [ -- 画面全体を覆う背景（クリックで保存して閉じる）
           div
-            [ class "absolute inset-0 bg-black/15"
+            [ class "absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
             , onClick (EditModalMsg Confirm)
             ]
             []
-        , -- パネル本体（背景の上に重なる兄弟要素）
-          div [ class "relative bg-white rounded-lg border border-neutral-200 w-[36rem] max-h-[80vh] overflow-y-auto flex flex-col z-10" ]
+        , -- パネル本体
+          div [ class "relative bg-white rounded-xl shadow-xl border border-neutral-200/80 w-full max-w-xl max-h-[85vh] overflow-hidden flex flex-col z-10" ]
             [ header editState model
             , formContent editState model
             , footer isNewItem
@@ -47,20 +47,12 @@ overlay editState model =
         ]
 
 
-overlayClasses : String
-overlayClasses =
-    "fixed inset-0 bg-black/15 flex items-center justify-center z-50"
-
-
-panelClasses : String
-panelClasses =
-    "bg-white rounded-lg border border-neutral-200 w-[36rem] max-h-[80vh] overflow-y-auto flex flex-col"
-
-
 header : EditModalState -> Model -> Html Msg
 header editState model =
     let
-        dataset = model.dataset
+        dataset =
+            model.dataset
+
         isNewItem =
             not (List.any (\item -> item.id == editState.editingItemId) dataset.items)
 
@@ -71,26 +63,19 @@ header editState model =
             else
                 "アイテムを編集"
     in
-    div [ class headerClasses ]
-        [ h2 [ class headerTitleClasses ] [ text title ]
-        , button [ class headerCloseClasses, onClick (EditModalMsg Close)] [ text "×" ]
+    div [ class "px-6 py-4 border-b border-neutral-100 flex items-center justify-between shrink-0 bg-neutral-50/50" ]
+        [ h2 [ class "text-base font-bold text-neutral-800" ] [ text title ]
+        , button
+            [ class "text-neutral-400 hover:text-neutral-700 p-1 text-base rounded-md transition leading-none cursor-pointer"
+            , onClick (EditModalMsg Close)
+            ]
+            [ text "✕" ]
         ]
 
-headerClasses : String
-headerClasses =
-    "px-5 py-4 border-b border-neutral-200 flex items-center justify-between shrink-0"
-
-headerTitleClasses : String
-headerTitleClasses =
-    "text-lg font-medium text-neutral-900"
-
-headerCloseClasses : String
-headerCloseClasses =
-    "text-neutral-400 hover:text-neutral-600 text-xl leading-none"
 
 formContent : EditModalState -> Model -> Html Msg
 formContent editState model =
-    div [ class "px-5 py-4 flex-1 overflow-y-auto flex flex-col gap-5" ]
+    div [ class "px-6 py-5 flex-1 overflow-y-auto flex flex-col gap-4" ]
         (List.map (fieldForm editState model) (getFieldsForEdit editState model))
 
 
@@ -113,8 +98,8 @@ findItem itemId model =
 
 fieldForm : EditModalState -> Model -> FieldConfig -> Html Msg
 fieldForm editState model field =
-    div [ class "flex flex-col gap-2" ]
-        [ label [ class "text-sm font-medium text-neutral-900" ] [ text field.label ]
+    div [ class "flex flex-col gap-1.5" ]
+        [ label [ class "text-xs font-semibold text-neutral-600" ] [ text field.label ]
         , case Dict.get field.key editState.editingValues of
             Just (EditingText content size) ->
                 textFieldEditor field.key content size
@@ -170,55 +155,43 @@ fieldForm editState model field =
 
 textFieldEditor : String -> String -> { width : Int, height : Int } -> Html Msg
 textFieldEditor fieldKey content _ =
-    div [ class "flex flex-col gap-1" ]
-        [ textarea
-            [ class textareaClasses
-            , value content
-            , onInput (EditModalMsg << TextFieldChanged fieldKey)
-            , Html.Attributes.rows 1
-            ]
-            []
+    textarea
+        [ class textareaClasses
+        , value content
+        , onInput (EditModalMsg << TextFieldChanged fieldKey)
+        , Html.Attributes.rows 1
         ]
-
-
-textareaClasses : String
-textareaClasses =
-    "border border-neutral-200 rounded px-3 py-1.5 text-sm font-sans resize bg-white text-neutral-900 min-h-[38px]"
+        []
 
 
 textListFieldEditor : String -> Types.EditingTextListState -> Html Msg
 textListFieldEditor fieldKey state =
-    div [ class "flex flex-col gap-1" ]
-        [ textarea
-            [ class textareaClasses
-            , value state.rawInput
-            , onInput (EditModalMsg << TextListFieldChanged fieldKey)
-            , Html.Attributes.rows 1
-            ]
-            []
+    textarea
+        [ class textareaClasses
+        , value state.rawInput
+        , onInput (EditModalMsg << TextListFieldChanged fieldKey)
+        , Html.Attributes.rows 1
         ]
+        []
 
 
 textListItemField : String -> Int -> TextListItemState -> Html Msg
 textListItemField fieldKey index item =
-    div [ class "flex gap-2" ]
-        [ textarea
-            ( [ class textareaClasses
-              , value item.value
-              , onInput (EditModalMsg << TextListItemChanged fieldKey index)
-              , Html.Attributes.rows 1
-              , Html.Attributes.style "flex" "1"
-              ]
-                ++ (if item.size.height > 0 then
-                        [ Html.Attributes.style "height" (String.fromInt item.size.height ++ "px") ]
+    textarea
+        ( [ class textareaClasses
+          , value item.value
+          , onInput (EditModalMsg << TextListItemChanged fieldKey index)
+          , Html.Attributes.rows 1
+          , Html.Attributes.style "flex" "1"
+          ]
+            ++ (if item.size.height > 0 then
+                    [ Html.Attributes.style "height" (String.fromInt item.size.height ++ "px") ]
 
-                    else
-                        []
-                   )
-            )
-            []
-        ]
-
+                else
+                    []
+               )
+        )
+        []
 
 
 booleanFieldEditor : FieldConfig -> Bool -> Html Msg
@@ -227,9 +200,10 @@ booleanFieldEditor field isChecked =
         label_ =
             Maybe.withDefault "はい" field.trueLabel
     in
-    label [ class "flex items-center gap-2 text-sm" ]
+    label [ class "flex items-center gap-2 text-sm cursor-pointer select-none py-1" ]
         [ input
             [ type_ "checkbox"
+            , class "w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-400"
             , checked isChecked
             , onClick (EditModalMsg (BooleanFieldChanged field.key (not isChecked)))
             ]
@@ -240,7 +214,7 @@ booleanFieldEditor field isChecked =
 
 footer : Bool -> Html Msg
 footer isNewItem =
-    div [ class "px-5 py-4 border-t border-neutral-200 flex gap-2 justify-between shrink-0" ]
+    div [ class "px-6 py-4 border-t border-neutral-100 flex items-center justify-between shrink-0 bg-neutral-50/30" ]
         [ if isNewItem then
             div [] []
 
@@ -250,7 +224,7 @@ footer isNewItem =
                 , onClick (EditModalMsg DeleteItem)
                 ]
                 [ text "このカードを削除" ]
-        , div [ class "flex gap-2" ]
+        , div [ class "flex items-center gap-2 ml-auto" ]
             [ button
                 [ class cancelButtonClasses
                 , onClick (EditModalMsg Cancel)
@@ -265,16 +239,24 @@ footer isNewItem =
         ]
 
 
+-- MARK: クラス定義
+
+
+textareaClasses : String
+textareaClasses =
+    "w-full border border-neutral-200 rounded-md px-3 py-2 text-sm bg-white text-neutral-900 min-h-[38px] transition focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-400"
+
+
 cancelButtonClasses : String
 cancelButtonClasses =
-    "px-4 py-2 text-sm border border-neutral-200 rounded text-neutral-700 hover:bg-neutral-50"
+    "px-3.5 py-1.5 text-xs font-medium rounded-md border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition cursor-pointer"
 
 
 saveButtonClasses : String
 saveButtonClasses =
-    "px-4 py-2 text-sm bg-blue-700 text-white rounded hover:bg-blue-800"
+    "px-4 py-1.5 text-xs font-medium rounded-md bg-neutral-900 text-white hover:bg-neutral-800 shadow-xs transition cursor-pointer"
 
 
 deleteButtonClasses : String
 deleteButtonClasses =
-    "px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 font-medium"
+    "px-2.5 py-1.5 text-xs font-medium text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-md transition cursor-pointer"

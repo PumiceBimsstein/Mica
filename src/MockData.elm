@@ -16,6 +16,7 @@ dataset =
     , imageLinkField = Just "infoUrl"
     , titleLinkField = Just "infoUrl"
     , filterOrder = []
+    , wrapTitleOnCard = False
     }
 
 

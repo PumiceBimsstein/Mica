@@ -1,2 +1,37 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+
+@theme {
+  /* 本文用フォント */
+  --font-sans:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Hiragino Sans",
+    "Hiragino Kaku Gothic ProN",
+    "Yu Gothic UI",
+    "Yu Gothic",
+    Meiryo,
+    "Noto Sans JP",
+    sans-serif;
+
+  /* ★ タイトル専用フォント（Tailwind の class「font-title」として使えるようになります） */
+  --font-title:
+    "Hiragino Mincho ProN",
+    "Yu Mincho",
+    YuMincho,
+    "BIZ UDPMincho",
+    "MS PMincho",
+    serif;
+}
+
+html,
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "palt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}

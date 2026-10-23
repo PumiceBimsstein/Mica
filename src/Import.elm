@@ -150,6 +150,7 @@ buildNewDataset newId name uuids rawItems =
     , imageLinkField = Nothing
     , titleLinkField = Nothing
     , filterOrder = []
+    , wrapTitleOnCard = False
     }
 
 

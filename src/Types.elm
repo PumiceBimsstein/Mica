@@ -90,6 +90,7 @@ type alias Dataset =
     , imageLinkField : Maybe String
     , titleLinkField : Maybe String
     , filterOrder : List String
+    , wrapTitleOnCard : Bool
     }
 
 
@@ -271,6 +272,7 @@ type FilterMsg
     | ToggleRelationPopup String
     | MoveUp String
     | MoveDown String
+    | ClearAllFilters
 
 type FieldSettingsMsg
     = SetLabel String String
@@ -283,6 +285,7 @@ type FieldSettingsMsg
     | MoveFieldDown String
     | SetImageLinkField (Maybe String)
     | SetTitleLinkField (Maybe String)
+    | SetWrapTitleOnCard Bool
 
 type EditModalMsg
     = EditButtonClicked String

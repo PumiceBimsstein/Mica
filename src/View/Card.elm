@@ -44,26 +44,26 @@ view dataset size isSelected hoveredItemId item =
 
 viewSmall : Dataset -> Bool -> Bool -> Item -> Html Msg
 viewSmall dataset isSelected isHovered item =
-    [ smallCardBody dataset item ]
-        |> appendEditButtonIf isHovered item.id
-        |> div (buildCardAttributes smallCardClasses isSelected item.id)
+    div (buildCardAttributes smallCardClasses isSelected item.id)
+        (appendEditButtonIf isHovered item.id
+            [ smallCardBody dataset item ]
+        )
 
 
 viewMedium : Dataset -> Bool -> Bool -> Item -> Html Msg
 viewMedium dataset isSelected isHovered item =
-    [ mediumCardImage dataset item
-    , mediumCardFooter dataset item isHovered
-    ]
-        |> div (buildCardAttributes mediumCardClasses isSelected item.id)
+    div (buildCardAttributes mediumCardClasses isSelected item.id)
+        [ mediumCardImage dataset item
+        , mediumCardFooter dataset item isHovered
+        ]
 
 
 viewLarge : Dataset -> Bool -> Bool -> Item -> Html Msg
 viewLarge dataset isSelected isHovered item =
-    [ largeCardImage dataset item
-    , largeCardDetail dataset item isHovered
-    ]
-        |> div (buildCardAttributes largeCardClasses isSelected item.id)
-
+    div (buildCardAttributes largeCardClasses isSelected item.id)
+        [ largeCardImage dataset item
+        , largeCardDetail dataset item isHovered
+        ]
 
 
 -- MARK: 各サイズ内パーツ
@@ -81,38 +81,45 @@ smallCardBody dataset item =
 
 mediumCardImage : Dataset -> Item -> Html Msg
 mediumCardImage dataset item =
-    imageUrl dataset item
-        |> Maybe.map (renderLinkedImage dataset item)
-        |> Maybe.withDefault (text "")
-        |> List.singleton
-        |> div [ class "h-56 flex items-center justify-center bg-neutral-50 overflow-hidden" ]
+    div [ class "h-56 flex items-center justify-center bg-neutral-50 overflow-hidden" ]
+        [ case imageUrl dataset item of
+            Just url ->
+                renderLinkedImage dataset item url
+
+            Nothing ->
+                text ""
+        ]
 
 
 mediumCardFooter : Dataset -> Item -> Bool -> Html Msg
 mediumCardFooter dataset item isHovered =
-    [ renderTitle dataset item ]
-        |> appendEditButtonIf isHovered item.id
-        |> div [ class "px-2 py-2 flex-1 flex flex-col justify-between" ]
+    div [ class "px-2 py-2 flex-1 flex flex-col justify-between" ]
+        (appendEditButtonIf isHovered item.id
+            [ renderTitle dataset item ]
+        )
 
 
 largeCardImage : Dataset -> Item -> Html Msg
 largeCardImage dataset item =
-    imageUrl dataset item
-        |> Maybe.map (renderLinkedImage dataset item)
-        |> Maybe.withDefault (text "")
-        |> List.singleton
-        |> div [ class "w-48 shrink-0 flex items-center justify-center bg-neutral-50" ]
+    div [ class "w-48 shrink-0 flex items-center justify-center bg-neutral-50" ]
+        [ case imageUrl dataset item of
+            Just url ->
+                renderLinkedImage dataset item url
+
+            Nothing ->
+                text ""
+        ]
 
 
 largeCardDetail : Dataset -> Item -> Bool -> Html Msg
 largeCardDetail dataset item isHovered =
-    dataset.fields
-        |> detailFields
-        |> List.map (detailRow item)
-        |> (::) (renderTitle dataset item)
-        |> appendEditButtonIf isHovered item.id
-        |> div [ class "flex-1 px-4 py-3 flex flex-col gap-2 relative" ]
-
+    let
+        rows =
+            renderTitle dataset item
+                :: List.map (detailRow item) (detailFields dataset.fields)
+    in
+    div [ class "flex-1 px-4 py-3 flex flex-col gap-2 relative" ]
+        (appendEditButtonIf isHovered item.id rows)
 
 
 -- MARK: タイトル・画像描画パイプライン
@@ -123,36 +130,77 @@ renderTitle dataset item =
     let
         target =
             resolveLinkTarget dataset.titleLinkField item
+
+        classes =
+            titleClasses dataset.wrapTitleOnCard
     in
     titleText dataset item
         |> Maybe.withDefault "(無題)"
         |> text
-        |> wrapTitleWithLink target titleClasses item.id
+        |> wrapTitleWithLink target classes item.id
 
+
+-- Card.elm
 
 renderFallbackTitle : Dataset -> Item -> Html Msg
 renderFallbackTitle dataset item =
-    titleText dataset item
-        |> Maybe.withDefault "(無題)"
-        |> text
-        |> List.singleton
-        |> div [ class "px-3 text-center text-sm text-neutral-700" ]
+    let
+        targetlink =
+            resolveLinkTarget dataset.imageLinkField item
 
+        titleString =
+            titleText dataset item
+                |> Maybe.withDefault "(無題)"
+
+        baseClasses =
+            "w-full h-full flex items-center justify-center px-3 text-center text-sm text-neutral-700 font-title font-medium tracking-wide"
+    in
+    case targetlink of
+        LinkDetail ->
+            button
+                [ class (baseClasses ++ " cursor-pointer hover:text-blue-600 hover:underline")
+                , onClick (DetailModalMsg (OpenDetail item.id))
+                , title titleString
+                ]
+                [ text titleString ]
+
+        LinkUrl url ->
+            a
+                [ class (baseClasses ++ " hover:text-blue-600 hover:underline")
+                , href url
+                , target "_blank"
+                , title titleString
+                ]
+                [ text titleString ]
+
+        NoLink ->
+            div [ class baseClasses, title titleString ]
+                [ text titleString ]
 
 renderLinkedImage : Dataset -> Item -> String -> Html Msg
 renderLinkedImage dataset item url =
     let
         target =
             resolveLinkTarget dataset.imageLinkField item
+
+        titleString =
+            titleText dataset item
+                |> Maybe.withDefault ""
+
+        imageNode =
+            renderRawImage titleString url
     in
-    renderRawImage url
-        |> wrapImageWithLink target item.id
+    wrapImageWithLink target item.id titleString imageNode
 
 
-renderRawImage : String -> Html Msg
-renderRawImage imgSrc =
-    img [ src imgSrc, class "w-full h-full object-contain" ] []
-
+renderRawImage : String -> String -> Html Msg
+renderRawImage titleString imgSrc =
+    img
+        [ src imgSrc
+        , class "w-full h-full object-contain"
+        , title titleString
+        ]
+        []
 
 
 -- MARK: リンク判定・ラッピングの純粋関数
@@ -204,13 +252,14 @@ wrapTitleWithLink linktarget baseClasses itemId content =
             h3 [ class baseClasses ] [ content ]
 
 
-wrapImageWithLink : CardLinkTarget -> String -> Html Msg -> Html Msg
-wrapImageWithLink linktarget itemId imageNode =
+wrapImageWithLink : CardLinkTarget -> String -> String -> Html Msg -> Html Msg
+wrapImageWithLink linktarget itemId titleString imageNode =
     case linktarget of
         LinkDetail ->
             button
                 [ class "block w-full h-full cursor-pointer hover:opacity-90 transition p-0 border-0 bg-transparent text-left"
                 , onClick (DetailModalMsg (OpenDetail itemId))
+                , title titleString
                 ]
                 [ imageNode ]
 
@@ -219,6 +268,7 @@ wrapImageWithLink linktarget itemId imageNode =
                 [ class "block w-full h-full cursor-pointer hover:opacity-90 transition"
                 , href url
                 , target "_blank"
+                , title titleString
                 ]
                 [ imageNode ]
 
@@ -357,9 +407,21 @@ largeCardClasses =
     "w-full max-w-3xl rounded-md border border-neutral-200 bg-white overflow-hidden flex group"
 
 
-titleClasses : String
-titleClasses =
-    "text-sm text-neutral-900 truncate block"
+-- titleClasses : String
+-- titleClasses =
+--     "text-base text-neutral-900 truncate block font-title font-semibold tracking-wide"
+
+titleClasses : Bool -> String
+titleClasses shouldWrap =
+    let
+        overflowClass =
+            if shouldWrap then
+                "break-words whitespace-normal leading-snug"
+
+            else
+                "truncate block"
+    in
+    "text-sm text-neutral-900 font-title font-semibold tracking-wide " ++ overflowClass
 
 
 editButtonClasses : String

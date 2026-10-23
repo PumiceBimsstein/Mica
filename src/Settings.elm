@@ -11,6 +11,7 @@ module Settings exposing
     , setTitleLinkField
     , setTrueLabel
     , setFalseLabel
+    , setWrapTitleOnCard
     )
 
 {-| 設定ウィンドウ・フィルターパネルで行う、フィールド設定の変更に関する純粋なロジック。
@@ -197,3 +198,8 @@ swapAt i j a b idx x =
 atIndex : Int -> List a -> Maybe a
 atIndex idx list =
     list |> List.drop idx |> List.head
+
+
+setWrapTitleOnCard : Bool -> Dataset -> Dataset
+setWrapTitleOnCard value dataset =
+    { dataset | wrapTitleOnCard = value }

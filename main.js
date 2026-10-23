@@ -5362,13 +5362,9 @@ var $author$project$Storage$cardSizeFromString = function (s) {
 };
 var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Storage$decodeCardSize = A2($elm$json$Json$Decode$andThen, $author$project$Storage$cardSizeFromString, $elm$json$Json$Decode$string);
-var $author$project$Types$Dataset = F7(
-	function (id, name, fields, items, imageLinkField, titleLinkField, filterOrder) {
-		return {ad: fields, aV: filterOrder, ag: id, a0: imageLinkField, ah: items, a8: name, br: titleLinkField};
-	});
-var $author$project$Types$FieldConfig = F9(
-	function (key, label, displayRole, showOnCard, filterable, isBool, isTextList, trueLabel, falseLabel) {
-		return {aL: displayRole, aU: falseLabel, aY: filterable, a4: isBool, a5: isTextList, ai: key, a6: label, bk: showOnCard, bu: trueLabel};
+var $author$project$Types$Dataset = F8(
+	function (id, name, fields, items, imageLinkField, titleLinkField, filterOrder, wrapTitleOnCard) {
+		return {ad: fields, aV: filterOrder, ag: id, a0: imageLinkField, ah: items, a8: name, br: titleLinkField, bz: wrapTitleOnCard};
 	});
 var $elm$json$Json$Decode$bool = _Json_decodeBool;
 var $author$project$DomainJson$decodeAndMap = $elm$json$Json$Decode$map2(
@@ -5376,6 +5372,10 @@ var $author$project$DomainJson$decodeAndMap = $elm$json$Json$Decode$map2(
 		function (a, f) {
 			return f(a);
 		}));
+var $author$project$Types$FieldConfig = F9(
+	function (key, label, displayRole, showOnCard, filterable, isBool, isTextList, trueLabel, falseLabel) {
+		return {aL: displayRole, aU: falseLabel, aY: filterable, a4: isBool, a5: isTextList, ai: key, a6: label, bk: showOnCard, bu: trueLabel};
+	});
 var $author$project$Types$Image = 2;
 var $author$project$Types$Link = 3;
 var $author$project$Types$PlainText = 0;
@@ -5617,7 +5617,6 @@ var $author$project$DomainJson$decodeItem = A3(
 		$elm$json$Json$Decode$field,
 		'values',
 		$elm$json$Json$Decode$dict($author$project$DomainJson$decodeValue)));
-var $elm$json$Json$Decode$map7 = _Json_map7;
 var $elm$json$Json$Decode$null = _Json_decodeNull;
 var $elm$json$Json$Decode$nullable = function (decoder) {
 	return $elm$json$Json$Decode$oneOf(
@@ -5627,28 +5626,48 @@ var $elm$json$Json$Decode$nullable = function (decoder) {
 				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder)
 			]));
 };
-var $author$project$DomainJson$decodeDataset = A8(
-	$elm$json$Json$Decode$map7,
-	$author$project$Types$Dataset,
-	A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
+var $author$project$DomainJson$decodeDataset = A2(
+	$author$project$DomainJson$decodeAndMap,
+	$elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$field, 'wrapTitleOnCard', $elm$json$Json$Decode$bool),
+				$elm$json$Json$Decode$succeed(false)
+			])),
 	A2(
-		$elm$json$Json$Decode$field,
-		'fields',
-		$elm$json$Json$Decode$list($author$project$DomainJson$decodeFieldConfig)),
-	A2(
-		$elm$json$Json$Decode$field,
-		'items',
-		$elm$json$Json$Decode$list($author$project$DomainJson$decodeItem)),
-	A2(
-		$elm$json$Json$Decode$field,
-		'imageLinkField',
-		$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string)),
-	A2(
-		$elm$json$Json$Decode$field,
-		'titleLinkField',
-		$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string)),
-	$author$project$DomainJson$decodeFilterOrder);
+		$author$project$DomainJson$decodeAndMap,
+		$author$project$DomainJson$decodeFilterOrder,
+		A2(
+			$author$project$DomainJson$decodeAndMap,
+			A2(
+				$elm$json$Json$Decode$field,
+				'titleLinkField',
+				$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string)),
+			A2(
+				$author$project$DomainJson$decodeAndMap,
+				A2(
+					$elm$json$Json$Decode$field,
+					'imageLinkField',
+					$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string)),
+				A2(
+					$author$project$DomainJson$decodeAndMap,
+					A2(
+						$elm$json$Json$Decode$field,
+						'items',
+						$elm$json$Json$Decode$list($author$project$DomainJson$decodeItem)),
+					A2(
+						$author$project$DomainJson$decodeAndMap,
+						A2(
+							$elm$json$Json$Decode$field,
+							'fields',
+							$elm$json$Json$Decode$list($author$project$DomainJson$decodeFieldConfig)),
+						A2(
+							$author$project$DomainJson$decodeAndMap,
+							A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
+							A2(
+								$author$project$DomainJson$decodeAndMap,
+								A2($elm$json$Json$Decode$field, 'id', $elm$json$Json$Decode$string),
+								$elm$json$Json$Decode$succeed($author$project$Types$Dataset)))))))));
 var $author$project$Types$RelAnd = 0;
 var $author$project$Types$RelNot = 2;
 var $author$project$Types$RelOr = 1;
@@ -5697,7 +5716,7 @@ var $author$project$Storage$decodeFilterUiState = A5(
 	$elm$json$Json$Decode$map4,
 	F4(
 		function (selected, between, within, collapsed) {
-			return {P: between, aJ: collapsed, bf: false, n: selected, aA: within};
+			return {P: between, aJ: collapsed, bf: false, m: selected, aA: within};
 		}),
 	A2(
 		$elm$json$Json$Decode$field,
@@ -5891,7 +5910,8 @@ var $author$project$MockData$dataset = {
 	a0: $elm$core$Maybe$Just('infoUrl'),
 	ah: $author$project$MockData$items,
 	a8: 'サンプル書籍データ',
-	br: $elm$core$Maybe$Just('infoUrl')
+	br: $elm$core$Maybe$Just('infoUrl'),
+	bz: false
 };
 var $author$project$Main$defaultModel = {
 	aE: false,
@@ -6760,7 +6780,10 @@ var $author$project$DomainJson$encodeDataset = function (dataset) {
 				$author$project$DomainJson$encodeMaybeString(dataset.br)),
 				_Utils_Tuple2(
 				'filterOrder',
-				A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$string, dataset.aV))
+				A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$string, dataset.aV)),
+				_Utils_Tuple2(
+				'wrapTitleOnCard',
+				$elm$json$Json$Encode$bool(dataset.bz))
 			]));
 };
 var $elm$json$Json$Encode$dict = F3(
@@ -6811,7 +6834,7 @@ var $author$project$Storage$encodeFilterUiState = function (ui) {
 				A2(
 					$elm$json$Json$Encode$list,
 					$elm$json$Json$Encode$string,
-					$elm$core$Set$toList(ui.n))),
+					$elm$core$Set$toList(ui.m))),
 				_Utils_Tuple2(
 				'betweenRelation',
 				$author$project$Storage$encodeBetweenRelation(ui.P)),
@@ -7094,7 +7117,8 @@ var $author$project$Import$buildNewDataset = F4(
 			a0: $elm$core$Maybe$Nothing,
 			ah: A2($author$project$Import$buildItems, uuids, rawItems),
 			a8: name,
-			br: $elm$core$Maybe$Nothing
+			br: $elm$core$Maybe$Nothing,
+			bz: false
 		};
 	});
 var $elm$core$String$trim = _String_trim;
@@ -7207,7 +7231,7 @@ var $author$project$Update$DetailModalManager$getAt = F2(
 		return (index < 0) ? $elm$core$Maybe$Nothing : $elm$core$List$head(
 			A2($elm$core$List$drop, index, list));
 	});
-var $author$project$Filter$defaultFilterUi = {P: 0, aJ: false, bf: false, n: $elm$core$Set$empty, aA: 1};
+var $author$project$Filter$defaultFilterUi = {P: 0, aJ: false, bf: false, m: $elm$core$Set$empty, aA: 1};
 var $author$project$Filter$filterUiFor = F2(
 	function (key, filterUi) {
 		return A2(
@@ -7254,7 +7278,7 @@ var $author$project$Filter$optionKeysOfItem = F2(
 	});
 var $author$project$Filter$itemMatchesFilter = F3(
 	function (field, ui, item) {
-		if ($elm$core$Set$isEmpty(ui.n)) {
+		if ($elm$core$Set$isEmpty(ui.m)) {
 			return true;
 		} else {
 			var itemValues = A2($author$project$Filter$optionKeysOfItem, field.ai, item);
@@ -7266,12 +7290,12 @@ var $author$project$Filter$itemMatchesFilter = F3(
 				return A2(
 					$elm$core$List$any,
 					optionIsPresent,
-					$elm$core$Set$toList(ui.n));
+					$elm$core$Set$toList(ui.m));
 			} else {
 				return A2(
 					$elm$core$List$all,
 					optionIsPresent,
-					$elm$core$Set$toList(ui.n));
+					$elm$core$Set$toList(ui.m));
 			}
 		}
 	});
@@ -7286,7 +7310,7 @@ var $author$project$Filter$passesAllFilters = F3(
 			$elm$core$List$filter,
 			function (_v1) {
 				var ui = _v1.b;
-				return !$elm$core$Set$isEmpty(ui.n);
+				return !$elm$core$Set$isEmpty(ui.m);
 			},
 			A2(
 				$elm$core$List$map,
@@ -8787,6 +8811,12 @@ var $author$project$Settings$setTrueLabel = F3(
 					dataset.ad)
 			});
 	});
+var $author$project$Settings$setWrapTitleOnCard = F2(
+	function (value, dataset) {
+		return _Utils_update(
+			dataset,
+			{bz: value});
+	});
 var $author$project$Update$updateCurrentDataset = F2(
 	function (transform, model) {
 		return $author$project$Update$saveAfter(
@@ -8859,11 +8889,17 @@ var $author$project$Update$updateFieldSettings = F2(
 					$author$project$Update$updateCurrentDataset,
 					$author$project$Settings$setImageLinkField(value),
 					model);
-			default:
+			case 9:
 				var value = msg.a;
 				return A2(
 					$author$project$Update$updateCurrentDataset,
 					$author$project$Settings$setTitleLinkField(value),
+					model);
+			default:
+				var value = msg.a;
+				return A2(
+					$author$project$Update$updateCurrentDataset,
+					$author$project$Settings$setWrapTitleOnCard(value),
 					model);
 		}
 	});
@@ -9635,6 +9671,17 @@ var $author$project$Update$updateFileFlow = F2(
 					$author$project$FileFlow$exportBackup(model));
 		}
 	});
+var $author$project$Filter$clearAllFilters = function (filterUi) {
+	return A2(
+		$elm$core$Dict$map,
+		F2(
+			function (_v0, ui) {
+				return _Utils_update(
+					ui,
+					{m: $elm$core$Set$empty});
+			}),
+		filterUi);
+};
 var $author$project$Filter$orderedFilterableFields = function (dataset) {
 	var filterableFields = A2(
 		$elm$core$List$filter,
@@ -9726,7 +9773,7 @@ var $author$project$Filter$toggleOption = F2(
 		return _Utils_update(
 			ui,
 			{
-				n: A2($author$project$Filter$toggleMember, optionValue, ui.n)
+				m: A2($author$project$Filter$toggleMember, optionValue, ui.m)
 			});
 	});
 var $author$project$Update$updateFilterUi = F3(
@@ -9745,6 +9792,13 @@ var $author$project$Update$updateFilterUi = F3(
 var $author$project$Update$updateFilter = F2(
 	function (msg, model) {
 		switch (msg.$) {
+			case 7:
+				return $author$project$Update$saveAfter(
+					_Utils_update(
+						model,
+						{
+							aX: $author$project$Filter$clearAllFilters(model.aX)
+						}));
 			case 0:
 				var fieldKey = msg.a;
 				var optionValue = msg.b;
@@ -10190,7 +10244,7 @@ var $author$project$Filter$isFilterActive = F2(
 			$elm$core$List$any,
 			function (field) {
 				return !$elm$core$Set$isEmpty(
-					A2($author$project$Filter$filterUiFor, field.ai, filterUiDict).n);
+					A2($author$project$Filter$filterUiFor, field.ai, filterUiDict).m);
 			},
 			A2(
 				$elm$core$List$filter,
@@ -10613,7 +10667,10 @@ var $author$project$View$Card$resolveLinkTarget = F2(
 			return $author$project$View$Card$NoLink;
 		}
 	});
-var $author$project$View$Card$titleClasses = 'text-sm text-neutral-900 truncate block';
+var $author$project$View$Card$titleClasses = function (shouldWrap) {
+	var overflowClass = shouldWrap ? 'break-words whitespace-normal leading-snug' : 'truncate block';
+	return 'text-sm text-neutral-900 font-title font-semibold tracking-wide ' + overflowClass;
+};
 var $author$project$ItemAccess$findFieldByRole = F2(
 	function (role, fields) {
 		return $elm$core$List$head(
@@ -10678,10 +10735,11 @@ var $author$project$View$Card$wrapTitleWithLink = F4(
 var $author$project$View$Card$renderTitle = F2(
 	function (dataset, item) {
 		var target = A2($author$project$View$Card$resolveLinkTarget, dataset.br, item);
+		var classes = $author$project$View$Card$titleClasses(dataset.bz);
 		return A4(
 			$author$project$View$Card$wrapTitleWithLink,
 			target,
-			$author$project$View$Card$titleClasses,
+			classes,
 			item.ag,
 			$elm$html$Html$text(
 				A2(
@@ -10691,23 +10749,20 @@ var $author$project$View$Card$renderTitle = F2(
 	});
 var $author$project$View$Card$largeCardDetail = F3(
 	function (dataset, item, isHovered) {
+		var rows = A2(
+			$elm$core$List$cons,
+			A2($author$project$View$Card$renderTitle, dataset, item),
+			A2(
+				$elm$core$List$map,
+				$author$project$View$Card$detailRow(item),
+				$author$project$ItemAccess$detailFields(dataset.ad)));
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
 					$elm$html$Html$Attributes$class('flex-1 px-4 py-3 flex flex-col gap-2 relative')
 				]),
-			A3(
-				$author$project$View$Card$appendEditButtonIf,
-				isHovered,
-				item.ag,
-				A2(
-					$elm$core$List$cons,
-					A2($author$project$View$Card$renderTitle, dataset, item),
-					A2(
-						$elm$core$List$map,
-						$author$project$View$Card$detailRow(item),
-						$author$project$ItemAccess$detailFields(dataset.ad)))));
+			A3($author$project$View$Card$appendEditButtonIf, isHovered, item.ag, rows));
 	});
 var $author$project$View$Card$imageUrl = F2(
 	function (dataset, item) {
@@ -10725,18 +10780,20 @@ var $elm$html$Html$Attributes$src = function (url) {
 		'src',
 		_VirtualDom_noJavaScriptOrHtmlUri(url));
 };
-var $author$project$View$Card$renderRawImage = function (imgSrc) {
-	return A2(
-		$elm$html$Html$img,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$src(imgSrc),
-				$elm$html$Html$Attributes$class('w-full h-full object-contain')
-			]),
-		_List_Nil);
-};
-var $author$project$View$Card$wrapImageWithLink = F3(
-	function (linktarget, itemId, imageNode) {
+var $author$project$View$Card$renderRawImage = F2(
+	function (titleString, imgSrc) {
+		return A2(
+			$elm$html$Html$img,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$src(imgSrc),
+					$elm$html$Html$Attributes$class('w-full h-full object-contain'),
+					$elm$html$Html$Attributes$title(titleString)
+				]),
+			_List_Nil);
+	});
+var $author$project$View$Card$wrapImageWithLink = F4(
+	function (linktarget, itemId, titleString, imageNode) {
 		switch (linktarget.$) {
 			case 0:
 				return A2(
@@ -10746,7 +10803,8 @@ var $author$project$View$Card$wrapImageWithLink = F3(
 							$elm$html$Html$Attributes$class('block w-full h-full cursor-pointer hover:opacity-90 transition p-0 border-0 bg-transparent text-left'),
 							$elm$html$Html$Events$onClick(
 							$author$project$Types$DetailModalMsg(
-								$author$project$Types$OpenDetail(itemId)))
+								$author$project$Types$OpenDetail(itemId))),
+							$elm$html$Html$Attributes$title(titleString)
 						]),
 					_List_fromArray(
 						[imageNode]));
@@ -10758,7 +10816,8 @@ var $author$project$View$Card$wrapImageWithLink = F3(
 						[
 							$elm$html$Html$Attributes$class('block w-full h-full cursor-pointer hover:opacity-90 transition'),
 							$elm$html$Html$Attributes$href(url),
-							$elm$html$Html$Attributes$target('_blank')
+							$elm$html$Html$Attributes$target('_blank'),
+							$elm$html$Html$Attributes$title(titleString)
 						]),
 					_List_fromArray(
 						[imageNode]));
@@ -10768,17 +10827,14 @@ var $author$project$View$Card$wrapImageWithLink = F3(
 	});
 var $author$project$View$Card$renderLinkedImage = F3(
 	function (dataset, item, url) {
+		var titleString = A2(
+			$elm$core$Maybe$withDefault,
+			'',
+			A2($author$project$View$Card$titleText, dataset, item));
 		var target = A2($author$project$View$Card$resolveLinkTarget, dataset.a0, item);
-		return A3(
-			$author$project$View$Card$wrapImageWithLink,
-			target,
-			item.ag,
-			$author$project$View$Card$renderRawImage(url));
+		var imageNode = A2($author$project$View$Card$renderRawImage, titleString, url);
+		return A4($author$project$View$Card$wrapImageWithLink, target, item.ag, titleString, imageNode);
 	});
-var $elm$core$List$singleton = function (value) {
-	return _List_fromArray(
-		[value]);
-};
 var $author$project$View$Card$largeCardImage = F2(
 	function (dataset, item) {
 		return A2(
@@ -10787,14 +10843,18 @@ var $author$project$View$Card$largeCardImage = F2(
 				[
 					$elm$html$Html$Attributes$class('w-48 shrink-0 flex items-center justify-center bg-neutral-50')
 				]),
-			$elm$core$List$singleton(
-				A2(
-					$elm$core$Maybe$withDefault,
-					$elm$html$Html$text(''),
-					A2(
-						$elm$core$Maybe$map,
-						A2($author$project$View$Card$renderLinkedImage, dataset, item),
-						A2($author$project$View$Card$imageUrl, dataset, item)))));
+			_List_fromArray(
+				[
+					function () {
+					var _v0 = A2($author$project$View$Card$imageUrl, dataset, item);
+					if (!_v0.$) {
+						var url = _v0.a;
+						return A3($author$project$View$Card$renderLinkedImage, dataset, item, url);
+					} else {
+						return $elm$html$Html$text('');
+					}
+				}()
+				]));
 	});
 var $author$project$View$Card$viewLarge = F4(
 	function (dataset, isSelected, isHovered, item) {
@@ -10833,14 +10893,18 @@ var $author$project$View$Card$mediumCardImage = F2(
 				[
 					$elm$html$Html$Attributes$class('h-56 flex items-center justify-center bg-neutral-50 overflow-hidden')
 				]),
-			$elm$core$List$singleton(
-				A2(
-					$elm$core$Maybe$withDefault,
-					$elm$html$Html$text(''),
-					A2(
-						$elm$core$Maybe$map,
-						A2($author$project$View$Card$renderLinkedImage, dataset, item),
-						A2($author$project$View$Card$imageUrl, dataset, item)))));
+			_List_fromArray(
+				[
+					function () {
+					var _v0 = A2($author$project$View$Card$imageUrl, dataset, item);
+					if (!_v0.$) {
+						var url = _v0.a;
+						return A3($author$project$View$Card$renderLinkedImage, dataset, item, url);
+					} else {
+						return $elm$html$Html$text('');
+					}
+				}()
+				]));
 	});
 var $author$project$View$Card$viewMedium = F4(
 	function (dataset, isSelected, isHovered, item) {
@@ -10855,18 +10919,56 @@ var $author$project$View$Card$viewMedium = F4(
 	});
 var $author$project$View$Card$renderFallbackTitle = F2(
 	function (dataset, item) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('px-3 text-center text-sm text-neutral-700')
-				]),
-			$elm$core$List$singleton(
-				$elm$html$Html$text(
-					A2(
-						$elm$core$Maybe$withDefault,
-						'(無題)',
-						A2($author$project$View$Card$titleText, dataset, item)))));
+		var titleString = A2(
+			$elm$core$Maybe$withDefault,
+			'(無題)',
+			A2($author$project$View$Card$titleText, dataset, item));
+		var targetlink = A2($author$project$View$Card$resolveLinkTarget, dataset.a0, item);
+		var baseClasses = 'w-full h-full flex items-center justify-center px-3 text-center text-sm text-neutral-700 font-title font-medium tracking-wide';
+		switch (targetlink.$) {
+			case 0:
+				return A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class(baseClasses + ' cursor-pointer hover:text-blue-600 hover:underline'),
+							$elm$html$Html$Events$onClick(
+							$author$project$Types$DetailModalMsg(
+								$author$project$Types$OpenDetail(item.ag))),
+							$elm$html$Html$Attributes$title(titleString)
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(titleString)
+						]));
+			case 1:
+				var url = targetlink.a;
+				return A2(
+					$elm$html$Html$a,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class(baseClasses + ' hover:text-blue-600 hover:underline'),
+							$elm$html$Html$Attributes$href(url),
+							$elm$html$Html$Attributes$target('_blank'),
+							$elm$html$Html$Attributes$title(titleString)
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(titleString)
+						]));
+			default:
+				return A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class(baseClasses),
+							$elm$html$Html$Attributes$title(titleString)
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(titleString)
+						]));
+		}
 	});
 var $author$project$View$Card$smallCardBody = F2(
 	function (dataset, item) {
@@ -11323,7 +11425,7 @@ var $author$project$View$DetailModal$modalContent = F4(
 									$elm$html$Html$h2,
 									_List_fromArray(
 										[
-											$elm$html$Html$Attributes$class('text-lg font-bold text-neutral-800 truncate max-w-lg')
+											$elm$html$Html$Attributes$class('text-lg font-title font-bold text-neutral-800 truncate max-w-lg')
 										]),
 									_List_fromArray(
 										[
@@ -11510,15 +11612,15 @@ var $author$project$View$DetailModal$view = function (model) {
 var $author$project$Types$Confirm = {$: 9};
 var $author$project$Types$Cancel = {$: 10};
 var $author$project$Types$DeleteItem = {$: 11};
-var $author$project$View$EditModal$cancelButtonClasses = 'px-4 py-2 text-sm border border-neutral-200 rounded text-neutral-700 hover:bg-neutral-50';
-var $author$project$View$EditModal$deleteButtonClasses = 'px-4 py-2 text-sm bg-red-600 text-white rounded hover:bg-red-700 font-medium';
-var $author$project$View$EditModal$saveButtonClasses = 'px-4 py-2 text-sm bg-blue-700 text-white rounded hover:bg-blue-800';
+var $author$project$View$EditModal$cancelButtonClasses = 'px-3.5 py-1.5 text-xs font-medium rounded-md border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition cursor-pointer';
+var $author$project$View$EditModal$deleteButtonClasses = 'px-2.5 py-1.5 text-xs font-medium text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-md transition cursor-pointer';
+var $author$project$View$EditModal$saveButtonClasses = 'px-4 py-1.5 text-xs font-medium rounded-md bg-neutral-900 text-white hover:bg-neutral-800 shadow-xs transition cursor-pointer';
 var $author$project$View$EditModal$footer = function (isNewItem) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$class('px-5 py-4 border-t border-neutral-200 flex gap-2 justify-between shrink-0')
+				$elm$html$Html$Attributes$class('px-6 py-4 border-t border-neutral-100 flex items-center justify-between shrink-0 bg-neutral-50/30')
 			]),
 		_List_fromArray(
 			[
@@ -11538,7 +11640,7 @@ var $author$project$View$EditModal$footer = function (isNewItem) {
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$class('flex gap-2')
+						$elm$html$Html$Attributes$class('flex items-center gap-2 ml-auto')
 					]),
 				_List_fromArray(
 					[
@@ -11582,7 +11684,7 @@ var $author$project$View$EditModal$booleanFieldEditor = F2(
 			$elm$html$Html$label,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('flex items-center gap-2 text-sm')
+					$elm$html$Html$Attributes$class('flex items-center gap-2 text-sm cursor-pointer select-none py-1')
 				]),
 			_List_fromArray(
 				[
@@ -11591,6 +11693,7 @@ var $author$project$View$EditModal$booleanFieldEditor = F2(
 					_List_fromArray(
 						[
 							$elm$html$Html$Attributes$type_('checkbox'),
+							$elm$html$Html$Attributes$class('w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-400'),
 							$elm$html$Html$Attributes$checked(isChecked),
 							$elm$html$Html$Events$onClick(
 							$author$project$Types$EditModalMsg(
@@ -11630,32 +11733,23 @@ var $elm$html$Html$Attributes$rows = function (n) {
 		$elm$core$String$fromInt(n));
 };
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
-var $author$project$View$EditModal$textareaClasses = 'border border-neutral-200 rounded px-3 py-1.5 text-sm font-sans resize bg-white text-neutral-900 min-h-[38px]';
+var $author$project$View$EditModal$textareaClasses = 'w-full border border-neutral-200 rounded-md px-3 py-2 text-sm bg-white text-neutral-900 min-h-[38px] transition focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-400';
 var $author$project$View$EditModal$textFieldEditor = F3(
 	function (fieldKey, content, _v0) {
 		return A2(
-			$elm$html$Html$div,
+			$elm$html$Html$textarea,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('flex flex-col gap-1')
-				]),
-			_List_fromArray(
-				[
+					$elm$html$Html$Attributes$class($author$project$View$EditModal$textareaClasses),
+					$elm$html$Html$Attributes$value(content),
+					$elm$html$Html$Events$onInput(
 					A2(
-					$elm$html$Html$textarea,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class($author$project$View$EditModal$textareaClasses),
-							$elm$html$Html$Attributes$value(content),
-							$elm$html$Html$Events$onInput(
-							A2(
-								$elm$core$Basics$composeL,
-								$author$project$Types$EditModalMsg,
-								$author$project$Types$TextFieldChanged(fieldKey))),
-							$elm$html$Html$Attributes$rows(1)
-						]),
-					_List_Nil)
-				]));
+						$elm$core$Basics$composeL,
+						$author$project$Types$EditModalMsg,
+						$author$project$Types$TextFieldChanged(fieldKey))),
+					$elm$html$Html$Attributes$rows(1)
+				]),
+			_List_Nil);
 	});
 var $author$project$Types$TextListFieldChanged = F2(
 	function (a, b) {
@@ -11664,28 +11758,19 @@ var $author$project$Types$TextListFieldChanged = F2(
 var $author$project$View$EditModal$textListFieldEditor = F2(
 	function (fieldKey, state) {
 		return A2(
-			$elm$html$Html$div,
+			$elm$html$Html$textarea,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('flex flex-col gap-1')
-				]),
-			_List_fromArray(
-				[
+					$elm$html$Html$Attributes$class($author$project$View$EditModal$textareaClasses),
+					$elm$html$Html$Attributes$value(state.be),
+					$elm$html$Html$Events$onInput(
 					A2(
-					$elm$html$Html$textarea,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class($author$project$View$EditModal$textareaClasses),
-							$elm$html$Html$Attributes$value(state.be),
-							$elm$html$Html$Events$onInput(
-							A2(
-								$elm$core$Basics$composeL,
-								$author$project$Types$EditModalMsg,
-								$author$project$Types$TextListFieldChanged(fieldKey))),
-							$elm$html$Html$Attributes$rows(1)
-						]),
-					_List_Nil)
-				]));
+						$elm$core$Basics$composeL,
+						$author$project$Types$EditModalMsg,
+						$author$project$Types$TextListFieldChanged(fieldKey))),
+					$elm$html$Html$Attributes$rows(1)
+				]),
+			_List_Nil);
 	});
 var $author$project$View$EditModal$fieldForm = F3(
 	function (editState, model, field) {
@@ -11693,7 +11778,7 @@ var $author$project$View$EditModal$fieldForm = F3(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('flex flex-col gap-2')
+					$elm$html$Html$Attributes$class('flex flex-col gap-1.5')
 				]),
 			_List_fromArray(
 				[
@@ -11701,7 +11786,7 @@ var $author$project$View$EditModal$fieldForm = F3(
 					$elm$html$Html$label,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class('text-sm font-medium text-neutral-900')
+							$elm$html$Html$Attributes$class('text-xs font-semibold text-neutral-600')
 						]),
 					_List_fromArray(
 						[
@@ -11802,7 +11887,7 @@ var $author$project$View$EditModal$formContent = F2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('px-5 py-4 flex-1 overflow-y-auto flex flex-col gap-5')
+					$elm$html$Html$Attributes$class('px-6 py-5 flex-1 overflow-y-auto flex flex-col gap-4')
 				]),
 			A2(
 				$elm$core$List$map,
@@ -11810,9 +11895,6 @@ var $author$project$View$EditModal$formContent = F2(
 				A2($author$project$View$EditModal$getFieldsForEdit, editState, model)));
 	});
 var $author$project$Types$Close = {$: 2};
-var $author$project$View$EditModal$headerClasses = 'px-5 py-4 border-b border-neutral-200 flex items-center justify-between shrink-0';
-var $author$project$View$EditModal$headerCloseClasses = 'text-neutral-400 hover:text-neutral-600 text-xl leading-none';
-var $author$project$View$EditModal$headerTitleClasses = 'text-lg font-medium text-neutral-900';
 var $author$project$View$EditModal$header = F2(
 	function (editState, model) {
 		var dataset = model.j;
@@ -11827,7 +11909,7 @@ var $author$project$View$EditModal$header = F2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class($author$project$View$EditModal$headerClasses)
+					$elm$html$Html$Attributes$class('px-6 py-4 border-b border-neutral-100 flex items-center justify-between shrink-0 bg-neutral-50/50')
 				]),
 			_List_fromArray(
 				[
@@ -11835,7 +11917,7 @@ var $author$project$View$EditModal$header = F2(
 					$elm$html$Html$h2,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class($author$project$View$EditModal$headerTitleClasses)
+							$elm$html$Html$Attributes$class('text-base font-bold text-neutral-800')
 						]),
 					_List_fromArray(
 						[
@@ -11845,13 +11927,13 @@ var $author$project$View$EditModal$header = F2(
 					$elm$html$Html$button,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class($author$project$View$EditModal$headerCloseClasses),
+							$elm$html$Html$Attributes$class('text-neutral-400 hover:text-neutral-700 p-1 text-base rounded-md transition leading-none cursor-pointer'),
 							$elm$html$Html$Events$onClick(
 							$author$project$Types$EditModalMsg($author$project$Types$Close))
 						]),
 					_List_fromArray(
 						[
-							$elm$html$Html$text('×')
+							$elm$html$Html$text('✕')
 						]))
 				]));
 	});
@@ -11868,7 +11950,7 @@ var $author$project$View$EditModal$overlay = F2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('fixed inset-0 flex items-center justify-center z-60')
+					$elm$html$Html$Attributes$class('fixed inset-0 flex items-center justify-center z-60 p-4')
 				]),
 			_List_fromArray(
 				[
@@ -11876,7 +11958,7 @@ var $author$project$View$EditModal$overlay = F2(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class('absolute inset-0 bg-black/15'),
+							$elm$html$Html$Attributes$class('absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity'),
 							$elm$html$Html$Events$onClick(
 							$author$project$Types$EditModalMsg($author$project$Types$Confirm))
 						]),
@@ -11885,7 +11967,7 @@ var $author$project$View$EditModal$overlay = F2(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class('relative bg-white rounded-lg border border-neutral-200 w-[36rem] max-h-[80vh] overflow-y-auto flex flex-col z-10')
+							$elm$html$Html$Attributes$class('relative bg-white rounded-xl shadow-xl border border-neutral-200/80 w-full max-w-xl max-h-[85vh] overflow-hidden flex flex-col z-10')
 						]),
 					_List_fromArray(
 						[
@@ -12568,10 +12650,65 @@ var $author$project$View$FileModal$view = function (model) {
 var $author$project$Types$ToggleSettingsModal = function (a) {
 	return {$: 1, a: a};
 };
-var $author$project$View$SettingsModal$boolConfigClasses = 'self-end flex items-center gap-4 bg-neutral-50 p-2 rounded border border-neutral-100 text-xs mt-1';
 var $author$project$Types$FieldSettingsMsg = function (a) {
 	return {$: 12, a: a};
 };
+var $author$project$Types$SetWrapTitleOnCard = function (a) {
+	return {$: 10, a: a};
+};
+var $author$project$View$SettingsModal$sectionTitle = function (labelText) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('text-xs font-medium text-neutral-400')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(labelText)
+			]));
+};
+var $author$project$View$SettingsModal$cardDisplaySection = function (dataset) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('flex flex-col gap-2 border-t border-neutral-100 pt-4')
+			]),
+		_List_fromArray(
+			[
+				$author$project$View$SettingsModal$sectionTitle('カード表示設定'),
+				A2(
+				$elm$html$Html$label,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('flex items-center gap-2 text-sm text-neutral-700 cursor-pointer select-none')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$input,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$type_('checkbox'),
+								$elm$html$Html$Attributes$checked(dataset.bz),
+								$elm$html$Html$Events$onClick(
+								$author$project$Types$FieldSettingsMsg(
+									$author$project$Types$SetWrapTitleOnCard(!dataset.bz))),
+								$elm$html$Html$Attributes$class('w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-400')
+							]),
+						_List_Nil),
+						A2(
+						$elm$html$Html$span,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('タイトルを折り返して表示')
+							]))
+					]))
+			]));
+};
+var $author$project$View$SettingsModal$boolConfigClasses = 'self-end flex items-center gap-4 bg-neutral-50 p-2 rounded border border-neutral-100 text-xs mt-1';
 var $author$project$Types$SetFalseLabel = F2(
 	function (a, b) {
 		return {$: 5, a: a, b: b};
@@ -13051,18 +13188,6 @@ var $author$project$View$SettingsModal$linkFieldSelector = F4(
 var $author$project$View$SettingsModal$imageLinkSelector = function (dataset) {
 	return A4($author$project$View$SettingsModal$linkFieldSelector, '画像クリック時', dataset.ad, dataset.a0, $author$project$Types$SetImageLinkField);
 };
-var $author$project$View$SettingsModal$sectionTitle = function (labelText) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('text-xs font-medium text-neutral-400')
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text(labelText)
-			]));
-};
 var $author$project$Types$SetTitleLinkField = function (a) {
 	return {$: 9, a: a};
 };
@@ -13111,53 +13236,37 @@ var $author$project$View$SettingsModal$overlay = function (dataset) {
 					[
 						$author$project$View$SettingsModal$header,
 						$author$project$View$SettingsModal$fieldList(dataset),
-						$author$project$View$SettingsModal$linkFieldSection(dataset)
+						$author$project$View$SettingsModal$linkFieldSection(dataset),
+						$author$project$View$SettingsModal$cardDisplaySection(dataset)
 					]))
 			]));
 };
 var $author$project$View$SettingsModal$view = function (model) {
 	return model.bj ? $author$project$View$SettingsModal$overlay(model.j) : $elm$html$Html$text('');
 };
-var $author$project$Types$SetCardSize = function (a) {
-	return {$: 0, a: a};
-};
-var $author$project$View$Sidebar$displayLevelButton = function (current) {
-	var nextSize = function () {
-		switch (current) {
-			case 0:
-				return 1;
-			case 1:
-				return 2;
-			default:
-				return 0;
-		}
-	}();
-	var label = function () {
-		switch (current) {
-			case 0:
-				return '小';
-			case 1:
-				return '中';
-			default:
-				return '大';
-		}
-	}();
-	var buttonClasses = 'px-3 py-1 text-sm rounded border border-neutral-200 text-neutral-700 hover:bg-neutral-100';
-	return A2(
-		$elm$html$Html$button,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class(buttonClasses),
-				$elm$html$Html$Events$onClick(
-				$author$project$Types$SetCardSize(nextSize)),
-				$elm$html$Html$Attributes$title('表示レベル: クリックで切り替え')
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text('表示レベル: ' + label)
-			]));
-};
-var $author$project$View$Sidebar$fileButtonClasses = 'w-full px-3 py-1 text-sm rounded border border-neutral-200 text-neutral-700 hover:bg-neutral-100';
+var $author$project$View$Sidebar$fileButtonClasses = 'flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-medium rounded-lg border border-neutral-200 bg-white' + ' text-neutral-700 hover:bg-neutral-100 shadow-xs transition cursor-pointer';
+var $author$project$View$Sidebar$folderIcon = A2(
+	$elm$svg$Svg$svg,
+	_List_fromArray(
+		[
+			$elm$svg$Svg$Attributes$class('w-3.5 h-3.5 text-neutral-400 shrink-0'),
+			$elm$svg$Svg$Attributes$viewBox('0 0 24 24'),
+			$elm$svg$Svg$Attributes$fill('none'),
+			$elm$svg$Svg$Attributes$stroke('currentColor'),
+			$elm$svg$Svg$Attributes$strokeWidth('2'),
+			$elm$svg$Svg$Attributes$strokeLinecap('round'),
+			$elm$svg$Svg$Attributes$strokeLinejoin('round')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$svg$Svg$path,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$d('M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z')
+				]),
+			_List_Nil)
+		]));
 var $author$project$View$Sidebar$fileButton = A2(
 	$elm$html$Html$button,
 	_List_fromArray(
@@ -13169,8 +13278,94 @@ var $author$project$View$Sidebar$fileButton = A2(
 		]),
 	_List_fromArray(
 		[
+			$author$project$View$Sidebar$folderIcon,
 			$elm$html$Html$text('ファイル')
 		]));
+var $author$project$View$Sidebar$cogIcon = A2(
+	$elm$svg$Svg$svg,
+	_List_fromArray(
+		[
+			$elm$svg$Svg$Attributes$class('w-3.5 h-3.5 text-neutral-400 shrink-0'),
+			$elm$svg$Svg$Attributes$viewBox('0 0 24 24'),
+			$elm$svg$Svg$Attributes$fill('none'),
+			$elm$svg$Svg$Attributes$stroke('currentColor'),
+			$elm$svg$Svg$Attributes$strokeWidth('2'),
+			$elm$svg$Svg$Attributes$strokeLinecap('round'),
+			$elm$svg$Svg$Attributes$strokeLinejoin('round')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$svg$Svg$path,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$d('M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z')
+				]),
+			_List_Nil),
+			A2(
+			$elm$svg$Svg$path,
+			_List_fromArray(
+				[
+					$elm$svg$Svg$Attributes$d('M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z')
+				]),
+			_List_Nil)
+		]));
+var $author$project$View$Sidebar$settingsButton = A2(
+	$elm$html$Html$button,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-medium rounded-lg border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100 shadow-xs transition cursor-pointer'),
+			$elm$html$Html$Events$onClick(
+			$author$project$Types$ToggleSettingsModal(true))
+		]),
+	_List_fromArray(
+		[
+			$author$project$View$Sidebar$cogIcon,
+			$elm$html$Html$text('項目設定')
+		]));
+var $author$project$View$Sidebar$actionRow = A2(
+	$elm$html$Html$div,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('grid grid-cols-2 gap-2')
+		]),
+	_List_fromArray(
+		[$author$project$View$Sidebar$fileButton, $author$project$View$Sidebar$settingsButton]));
+var $author$project$Types$SetCardSize = function (a) {
+	return {$: 0, a: a};
+};
+var $author$project$View$Sidebar$sizeTab = F3(
+	function (current, target, label) {
+		var isActive = _Utils_eq(current, target);
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class(
+					isActive ? 'py-1.5 rounded-md bg-white text-neutral-900 font-semibold shadow-xs transition text-center cursor-default' : 'py-1.5 rounded-md text-neutral-500 hover:text-neutral-900 hover:bg-neutral-200/50 transition text-center cursor-pointer'),
+					$elm$html$Html$Events$onClick(
+					$author$project$Types$SetCardSize(target)),
+					$elm$html$Html$Attributes$title('表示サイズ: ' + label)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(label)
+				]));
+	});
+var $author$project$View$Sidebar$cardSizeSegment = function (current) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('grid grid-cols-3 p-1 bg-neutral-200/70 rounded-lg text-xs font-medium gap-1')
+			]),
+		_List_fromArray(
+			[
+				A3($author$project$View$Sidebar$sizeTab, current, 0, '画像'),
+				A3($author$project$View$Sidebar$sizeTab, current, 1, 'タイトル'),
+				A3($author$project$View$Sidebar$sizeTab, current, 2, '詳細')
+			]));
+};
 var $author$project$Types$FilterMsg = function (a) {
 	return {$: 11, a: a};
 };
@@ -13502,7 +13697,7 @@ var $author$project$Filter$passesFiltersExcept = F4(
 			$elm$core$List$filter,
 			function (_v1) {
 				var ui = _v1.b;
-				return !$elm$core$Set$isEmpty(ui.n);
+				return !$elm$core$Set$isEmpty(ui.m);
 			},
 			A2(
 				$elm$core$List$map,
@@ -13696,7 +13891,7 @@ var $author$project$View$FilterPanel$optionRow = F3(
 						[
 							$elm$html$Html$Attributes$type_('checkbox'),
 							$elm$html$Html$Attributes$checked(
-							A2($elm$core$Set$member, option.M, ui.n)),
+							A2($elm$core$Set$member, option.M, ui.m)),
 							$elm$html$Html$Events$onClick(
 							$author$project$Types$FilterMsg(
 								A2($author$project$Types$ToggleOption, field.ai, option.M)))
@@ -13731,7 +13926,7 @@ var $author$project$View$FilterPanel$optionListWithActiveFilters = F4(
 		var displayedOptions = ui.aJ ? A2(
 			$elm$core$List$filter,
 			function (opt) {
-				return A2($elm$core$Set$member, opt.M, ui.n);
+				return A2($elm$core$Set$member, opt.M, ui.m);
 			},
 			allOptions) : allOptions;
 		return $elm$core$List$isEmpty(displayedOptions) ? $elm$html$Html$text('') : A2(
@@ -13800,6 +13995,7 @@ var $author$project$View$Sidebar$filterArea = function (model) {
 				A2($author$project$View$FilterPanel$view, model, model.j)
 			]));
 };
+var $author$project$Types$ClearAllFilters = {$: 7};
 var $author$project$Types$ToggleFilterSelectDropdown = function (a) {
 	return {$: 3, a: a};
 };
@@ -13887,6 +14083,7 @@ var $author$project$View$Sidebar$filterSelectDropdown = function (model) {
 			]));
 };
 var $author$project$View$Sidebar$filterSectionHeader = function (model) {
+	var hasActiveFilters = A2($author$project$Filter$isFilterActive, model.aX, model.j);
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -13914,18 +14111,40 @@ var $author$project$View$Sidebar$filterSectionHeader = function (model) {
 								$elm$html$Html$text('フィルター')
 							])),
 						A2(
-						$elm$html$Html$button,
+						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class(
-								model.aW ? 'px-2 py-0.5 text-xs rounded border border-neutral-300 bg-neutral-200 text-neutral-800 font-medium shadow-sm transition' : 'px-2 py-0.5 text-xs rounded border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 shadow-sm transition'),
-								$elm$html$Html$Events$onClick(
-								$author$project$Types$ToggleFilterSelectDropdown(!model.aW))
+								$elm$html$Html$Attributes$class('flex items-center gap-1.5')
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text(
-								model.aW ? '✕ 閉じる' : '+ 項目選択')
+								hasActiveFilters ? A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('px-1.5 py-0.5 text-xs text-neutral-500 hover:text-red-600 hover:bg-red-50 rounded transition cursor-pointer'),
+										$elm$html$Html$Events$onClick(
+										$author$project$Types$FilterMsg($author$project$Types$ClearAllFilters)),
+										$elm$html$Html$Attributes$title('選択中のフィルターをすべて解除')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('すべて解除')
+									])) : $elm$html$Html$text(''),
+								A2(
+								$elm$html$Html$button,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class(
+										model.aW ? 'px-2 py-0.5 text-xs rounded border border-neutral-300 bg-neutral-200 text-neutral-800 font-medium shadow-sm transition' : 'px-2 py-0.5 text-xs rounded border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 shadow-sm transition'),
+										$elm$html$Html$Events$onClick(
+										$author$project$Types$ToggleFilterSelectDropdown(!model.aW))
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text(
+										model.aW ? '✕ 閉じる' : '+ 項目選択')
+									]))
 							]))
 					])),
 				$author$project$View$Sidebar$filterSelectDropdown(model)
@@ -13937,7 +14156,7 @@ var $author$project$View$Sidebar$appTitle = function (model) {
 		$elm$html$Html$h1,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$class('text-lg font-semibold text-neutral-900 truncate')
+				$elm$html$Html$Attributes$class('text-lg font-title font-semibold text-neutral-900 truncate text-center px-8 w-full')
 			]),
 		_List_fromArray(
 			[
@@ -13989,12 +14208,21 @@ var $author$project$View$Sidebar$headerRow = function (model) {
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$class('flex items-center justify-between gap-2')
+				$elm$html$Html$Attributes$class('relative flex items-center justify-center min-h-[32px]')
 			]),
 		_List_fromArray(
 			[
 				$author$project$View$Sidebar$appTitle(model),
-				$author$project$View$Sidebar$undoButton(model)
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('absolute right-0')
+					]),
+				_List_fromArray(
+					[
+						$author$project$View$Sidebar$undoButton(model)
+					]))
 			]));
 };
 var $author$project$Types$SearchMsg = function (a) {
@@ -14150,21 +14378,7 @@ var $author$project$View$Sidebar$searchArea = function (model) {
 				A2($author$project$View$Sidebar$searchFieldCheckboxes, model.bi, model.j)
 			]));
 };
-var $author$project$View$Sidebar$placeholderButtonClasses = 'px-3 py-1 text-sm rounded border border-neutral-200 text-neutral-700 hover:bg-neutral-100';
-var $author$project$View$Sidebar$settingsButton = A2(
-	$elm$html$Html$button,
-	_List_fromArray(
-		[
-			$elm$html$Html$Attributes$class($author$project$View$Sidebar$placeholderButtonClasses),
-			$elm$html$Html$Events$onClick(
-			$author$project$Types$ToggleSettingsModal(true))
-		]),
-	_List_fromArray(
-		[
-			$elm$html$Html$text('項目設定')
-		]));
-var $author$project$View$Sidebar$sidebarClasses = 'w-72 shrink-0 h-screen overflow-y-auto border-r border-neutral-200 bg-neutral-50 px-4 py-5 flex flex-col gap-4';
-var $author$project$View$Sidebar$topButtonRowClasses = 'flex items-center gap-2';
+var $author$project$View$Sidebar$sidebarClasses = 'w-72 shrink-0 h-screen overflow-y-auto border-r border-neutral-200 bg-neutral-50 px-4 py-5 flex flex-col gap-3.5';
 var $author$project$View$Sidebar$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
@@ -14175,18 +14389,8 @@ var $author$project$View$Sidebar$view = function (model) {
 		_List_fromArray(
 			[
 				$author$project$View$Sidebar$headerRow(model),
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class($author$project$View$Sidebar$topButtonRowClasses)
-					]),
-				_List_fromArray(
-					[
-						$author$project$View$Sidebar$displayLevelButton(model.aH),
-						$author$project$View$Sidebar$settingsButton
-					])),
-				$author$project$View$Sidebar$fileButton,
+				$author$project$View$Sidebar$cardSizeSegment(model.aH),
+				$author$project$View$Sidebar$actionRow,
 				$author$project$View$Sidebar$searchArea(model),
 				$author$project$View$Sidebar$filterSectionHeader(model),
 				$author$project$View$Sidebar$filterArea(model)

@@ -203,6 +203,9 @@ updateFileFlow msg model =
 updateFilter : FilterMsg -> Model -> ( Model, Cmd Msg )
 updateFilter msg model =
     case msg of
+        ClearAllFilters ->
+            saveAfter { model | filterUi = Filter.clearAllFilters model.filterUi }
+
         ToggleOption fieldKey optionValue ->
             saveAfter (updateFilterUi fieldKey (Filter.toggleOption optionValue) model)
 
@@ -257,6 +260,10 @@ updateFieldSettings msg model =
 
         SetTitleLinkField value ->
             updateCurrentDataset (Settings.setTitleLinkField value) model
+        
+        SetWrapTitleOnCard value ->
+            updateCurrentDataset (Settings.setWrapTitleOnCard value) model
+
 
 
 updateEditModalMsg : EditModalMsg -> Model -> ( Model, Cmd Msg )

@@ -1,5 +1,6 @@
 module Filter exposing
     ( FilterOption
+    , clearAllFilters
     , defaultFilterUi
     , filterUiFor
     , isFilterActive
@@ -38,6 +39,11 @@ import Types
         , Value(..)
         , WithinRelation(..)
         )
+
+
+clearAllFilters : Dict String FilterUiState -> Dict String FilterUiState
+clearAllFilters filterUi =
+    Dict.map (\_ ui -> { ui | selected = Set.empty }) filterUi
 
 
 defaultFilterUi : FilterUiState

@@ -84,7 +84,7 @@ subscriptions model =
         , detailKeySubscription model
         ]
 
--- [追加] 詳細モーダルが開いているときのみキーボード入力を購読
+-- 詳細モーダルが開いているときのみキーボード入力を購読
 detailKeySubscription : Model -> Sub Msg
 detailKeySubscription model =
     case model.detailModalItemId of
