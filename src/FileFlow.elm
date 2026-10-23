@@ -33,7 +33,7 @@ import Storage
 import Task
 import Types
     exposing
-        ( AppendChoice
+        ( AppendChoice(..)
         , Dataset
         , FieldConfig
         , FileFormat(..)
@@ -120,13 +120,18 @@ startImport rawItems model =
             resolveOrPrompt rawItems model.dataset model
 
 
+-- newPendingImport : List (List ( String, Value )) -> PendingImport
+-- newPendingImport rawItems =
+--     { mode = NewDataset, rawItems = rawItems, newKeys = [], nameInput = "" }
+
 newPendingImport : List (List ( String, Value )) -> PendingImport
 newPendingImport rawItems =
-    { mode = NewDataset, rawItems = rawItems, newKeys = [], nameInput = "" }
-
--- startExistingDatasetImport : List (List ( String, Value )) -> Model -> ( Model, Cmd Msg )
--- startExistingDatasetImport rawItems model =
---     resolveOrPrompt rawItems model.dataset model
+    { mode = NewDataset
+    , rawItems = rawItems
+    , newKeys = []
+    , nameInput = ""
+    , choice = AddNewFields
+    }
 
 
 resolveOrPrompt : List (List ( String, Value )) -> Dataset -> Model -> ( Model, Cmd Msg )
@@ -136,7 +141,12 @@ resolveOrPrompt rawItems target model =
             Import.findNewKeys target.fields rawItems
 
         pending =
-            { mode = model.readMode, rawItems = rawItems, newKeys = newKeys, nameInput = "" }
+            { mode = model.readMode
+            , rawItems = rawItems
+            , newKeys = newKeys
+            , nameInput = ""
+            , choice = AddNewFields
+            }
     in
     if List.isEmpty newKeys then
         let
@@ -150,8 +160,6 @@ resolveOrPrompt rawItems target model =
     else
         ( { model | pendingImport = Just pending, importError = Nothing }, Cmd.none )
 
-
-
 -- 追加・置き換えインポート解決時：UUID 生成要求を JS ポートへ送る
 resolveChoice : AppendChoice -> Model -> ( Model, Cmd Msg )
 resolveChoice choice model =
@@ -160,8 +168,11 @@ resolveChoice choice model =
             let
                 count =
                     List.length pending.rawItems
+
+                updatedPending =
+                    { pending | choice = choice }
             in
-            ( { model | pendingImport = Just pending }
+            ( { model | pendingImport = Just updatedPending }
             , Ports.generateUuids count
             )
 
@@ -225,11 +236,6 @@ finaliseNewDatasetImport uuids model =
 
         Nothing ->
             ( model, Cmd.none )
-
-
--- nextDatasetId : Model -> String
--- nextDatasetId model =
---     model.dataset.id
 
 
 datasetNameOrDefault : String -> String

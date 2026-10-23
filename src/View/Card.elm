@@ -368,11 +368,23 @@ editButton itemId =
 -- MARK: データ抽出ヘルパー
 
 
+-- imageUrl : Dataset -> Item -> Maybe String
+-- imageUrl dataset item =
+--     findFieldByRole Image dataset.fields
+--         |> Maybe.andThen (\field -> getText field.key item)
+
 imageUrl : Dataset -> Item -> Maybe String
 imageUrl dataset item =
     findFieldByRole Image dataset.fields
         |> Maybe.andThen (\field -> getText field.key item)
+        |> Maybe.andThen
+            (\url ->
+                if String.isEmpty (String.trim url) then
+                    Nothing
 
+                else
+                    Just url
+            )
 
 titleText : Dataset -> Item -> Maybe String
 titleText dataset item =

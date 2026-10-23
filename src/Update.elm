@@ -392,7 +392,7 @@ processPendingImport uuids model pending =
 
 applyImportToCurrentDataset : List String -> Types.PendingImport -> Model -> ( Model, Cmd Msg )
 applyImportToCurrentDataset uuids pending model =
-    FileFlow.applyImportAndSave Types.AddNewFields uuids pending model
+    FileFlow.applyImportAndSave pending.choice uuids pending model
 
 -- applyAndSaveImport : List String -> Types.PendingImport -> Model -> ( Model, Cmd Msg )
 -- applyAndSaveImport uuids pending model =

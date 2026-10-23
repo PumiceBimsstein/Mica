@@ -129,6 +129,14 @@ modalContent dataset item currentNumber totalCount =
         maybeImg =
             findFieldByRole Image dataset.fields
                 |> Maybe.andThen (\field -> getText field.key item)
+                |> Maybe.andThen
+                    (\url ->
+                        if String.isEmpty (String.trim url) then
+                            Nothing
+
+                        else
+                            Just url
+                    )
 
         title =
             findFieldByRole Title dataset.fields

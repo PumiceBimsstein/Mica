@@ -119,6 +119,7 @@ type alias PendingImport =
     , rawItems : List (List ( String, Value ))
     , newKeys : List String
     , nameInput : String
+    , choice : AppendChoice
     }
 
 
