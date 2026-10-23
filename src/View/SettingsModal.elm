@@ -42,14 +42,14 @@ overlay dataset =
             ]
         ]
 
-overlayClasses : String
-overlayClasses =
-    "fixed inset-0 bg-black/30 flex items-center justify-center z-50"
+-- overlayClasses : String
+-- overlayClasses =
+--     "fixed inset-0 bg-black/30 flex items-center justify-center z-50"
 
 
-panelClasses : String
-panelClasses =
-    "bg-white rounded-md shadow-lg w-[36rem] max-h-[80vh] overflow-y-auto p-5 flex flex-col gap-4"
+-- panelClasses : String
+-- panelClasses =
+--     "bg-white rounded-md shadow-lg w-[36rem] max-h-[80vh] overflow-y-auto p-5 flex flex-col gap-4"
 
 
 header : Html Msg
@@ -89,7 +89,6 @@ fieldRow total index dataset field =
             [ displayRoleButtons field
             , div [ class "flex items-center gap-3" ]
                 [ showOnCardCheckbox field
-                --, filterableCheckbox field
                 ]
             ]
         , booleanDisplayConfig dataset field

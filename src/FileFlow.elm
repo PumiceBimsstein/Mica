@@ -124,9 +124,9 @@ newPendingImport : List (List ( String, Value )) -> PendingImport
 newPendingImport rawItems =
     { mode = NewDataset, rawItems = rawItems, newKeys = [], nameInput = "" }
 
-startExistingDatasetImport : List (List ( String, Value )) -> Model -> ( Model, Cmd Msg )
-startExistingDatasetImport rawItems model =
-    resolveOrPrompt rawItems model.dataset model
+-- startExistingDatasetImport : List (List ( String, Value )) -> Model -> ( Model, Cmd Msg )
+-- startExistingDatasetImport rawItems model =
+--     resolveOrPrompt rawItems model.dataset model
 
 
 resolveOrPrompt : List (List ( String, Value )) -> Dataset -> Model -> ( Model, Cmd Msg )
@@ -227,9 +227,9 @@ finaliseNewDatasetImport uuids model =
             ( model, Cmd.none )
 
 
-nextDatasetId : Model -> String
-nextDatasetId model =
-    model.dataset.id
+-- nextDatasetId : Model -> String
+-- nextDatasetId model =
+--     model.dataset.id
 
 
 datasetNameOrDefault : String -> String

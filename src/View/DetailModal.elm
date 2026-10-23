@@ -59,18 +59,14 @@ view model =
 overlay : Dataset -> Item -> Bool -> Bool -> Int -> Int -> Html Msg
 overlay dataset item hasPrev hasNext currentNumber totalCount =
     div [ class "fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-10" ]
-        [ -- 背景（クリックで閉じる）
-          div
+        [ div
             [ class "absolute inset-0 bg-black/60 backdrop-blur-sm"
             , onClick (DetailModalMsg CloseDetail)
             ]
             []
-        , -- 左矢印（前へ）
-          navButton hasPrev PrevCard "left-4 md:left-8" chevronLeftIcon "前のカード (←)"
-        , -- モーダル本体（スクロール対応）
-          modalContent dataset item currentNumber totalCount
-        , -- 右矢印（次へ）
-          navButton hasNext NextCard "right-4 md:right-8" chevronRightIcon "次のカード (→)"
+        , navButton hasPrev PrevCard "left-4 md:left-8" chevronLeftIcon "前のカード (←)"
+        , modalContent dataset item currentNumber totalCount
+        , navButton hasNext NextCard "right-4 md:right-8" chevronRightIcon "次のカード (→)"
         ]
 
 navButton : Bool -> DetailModalMsg -> String -> Html Msg -> String -> Html Msg
@@ -94,7 +90,6 @@ navButton enabled action positionClasses iconNode tip =
 
 
 -- MARK: SVG 矢印アイコン（視覚的重心を補正）
--- src/View/DetailModal.elm のアイコン定義を修正
 
 chevronLeftIcon : Html Msg
 chevronLeftIcon =
@@ -103,7 +98,7 @@ chevronLeftIcon =
         , SvgAttr.height "24"
         , SvgAttr.viewBox "0 0 24 24"
         , SvgAttr.fill "none"
-        , SvgAttr.stroke "currentColor"       -- ボタンの文字色（text-neutral-700）を直接参照
+        , SvgAttr.stroke "currentColor"
         , SvgAttr.strokeWidth "2.5"
         , SvgAttr.strokeLinecap "round"
         , SvgAttr.strokeLinejoin "round"
@@ -119,32 +114,13 @@ chevronRightIcon =
         , SvgAttr.height "24"
         , SvgAttr.viewBox "0 0 24 24"
         , SvgAttr.fill "none"
-        , SvgAttr.stroke "currentColor"       -- ボタンの文字色（text-neutral-700）を直接参照
+        , SvgAttr.stroke "currentColor"
         , SvgAttr.strokeWidth "2.5"
         , SvgAttr.strokeLinecap "round"
         , SvgAttr.strokeLinejoin "round"
         , SvgAttr.class "shrink-0 translate-x-0.5 pointer-events-none"
         ]
         [ path [ SvgAttr.d "M9 5l7 7-7 7" ] [] ]
-
--- navButton : Bool -> DetailModalMsg -> String -> String -> String -> Html Msg
--- navButton enabled action positionClasses label tip =
---     button
---         [ class
---             ("fixed top-1/2 -translate-y-1/2 z-50 w-12 h-12 rounded-full flex items-center justify-center text-3xl font-light transition shadow-lg "
---                 ++ positionClasses
---                 ++ (if enabled then
---                         " bg-white/90 text-neutral-800 hover:bg-white hover:scale-110 cursor-pointer"
-
---                     else
---                         " bg-white/30 text-neutral-400 opacity-40 cursor-not-allowed"
---                    )
---             )
---         , onClick (DetailModalMsg action)
---         , disabled (not enabled)
---         , Html.Attributes.title tip
---         ]
---         [ text label ]
 
 
 modalContent : Dataset -> Item -> Int -> Int -> Html Msg

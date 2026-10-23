@@ -2,7 +2,7 @@ module View exposing (view)
 
 import Filter
 import Html exposing (Html, div, text, button, node)
-import Html.Attributes exposing (class, id, style, disabled, value, type_, attribute, title)
+import Html.Attributes exposing (class, id, style, disabled, value, type_, title)
 import Html.Events exposing (onClick, onInput)
 import Html.Keyed as Keyed
 import Types exposing (CardSize(..), Dataset, EditModalMsg(..), Item, Model, Msg(..), SortModalMsg(..))
@@ -103,9 +103,9 @@ actionButtonGroup model =
                     text ""
                 ]
 
-actionButtonRapperClasses : String
-actionButtonRapperClasses =
-    "fixed top-6 right-6 z-30 flex flex-col gap-1.5 items-stretch bg-white border border-neutral-200 rounded-lg p-2 shadow-md min-w-[90px]"
+-- actionButtonRapperClasses : String
+-- actionButtonRapperClasses =
+--     "fixed top-6 right-6 z-30 flex flex-col gap-1.5 items-stretch bg-white border border-neutral-200 rounded-lg p-2 shadow-md min-w-[90px]"
 
 actionButtonClasses : String
 actionButtonClasses =
@@ -126,10 +126,10 @@ scrollToTopButtonClasses =
     "fixed bottom-6 right-6 z-40 px-3 py-1.5 text-xs text-neutral-600 bg-white/70 border border-neutral-300 rounded shadow-sm opacity-50 hover:opacity-100 transition-opacity duration-200"
 
 
-emptyState : Html Msg
-emptyState =
-    div [ class "text-neutral-400 text-sm" ]
-        [ text "データがありません。ファイル操作からデータを読み込んでください。" ]
+-- emptyState : Html Msg
+-- emptyState =
+--     div [ class "text-neutral-400 text-sm" ]
+--         [ text "データがありません。ファイル操作からデータを読み込んでください。" ]
 
 
 noMatchState : Html Msg

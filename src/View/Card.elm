@@ -17,9 +17,7 @@ import Types
         )
 
 
-
 -- MARK: メインエントリ
-
 
 view : Dataset -> CardSize -> Bool -> Maybe String -> Item -> Html Msg
 view dataset size isSelected hoveredItemId item =
@@ -406,10 +404,6 @@ largeCardClasses : String
 largeCardClasses =
     "w-full max-w-3xl rounded-md border border-neutral-200 bg-white overflow-hidden flex group"
 
-
--- titleClasses : String
--- titleClasses =
---     "text-base text-neutral-900 truncate block font-title font-semibold tracking-wide"
 
 titleClasses : Bool -> String
 titleClasses shouldWrap =

@@ -47,7 +47,6 @@ decodeValue =
 
 -- Item
 
-
 encodeItem : Item -> Encode.Value
 encodeItem item =
     Encode.object
@@ -174,17 +173,6 @@ encodeMaybeString maybeValue =
         Nothing ->
             Encode.null
 
-
--- decodeDataset : Decode.Decoder Dataset
--- decodeDataset =
---     Decode.map7 Dataset
---         (Decode.field "id" Decode.string)
---         (Decode.field "name" Decode.string)
---         (Decode.field "fields" (Decode.list decodeFieldConfig))
---         (Decode.field "items" (Decode.list decodeItem))
---         (Decode.field "imageLinkField" (Decode.nullable Decode.string))
---         (Decode.field "titleLinkField" (Decode.nullable Decode.string))
---         decodeFilterOrder
 
 decodeDataset : Decode.Decoder Dataset
 decodeDataset =

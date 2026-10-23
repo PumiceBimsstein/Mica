@@ -5,7 +5,7 @@ import Html exposing (Html, button, div, h2, input, label, span, text, textarea)
 import Html.Attributes exposing (checked, class, type_, value)
 import Html.Events exposing (onClick, onInput)
 import ItemAccess exposing (getValue)
-import Types exposing (Dataset, EditModalMsg(..), EditModalState, EditingFieldValue(..), FieldConfig, Item, Model, Msg(..), TextListItemState, Value(..))
+import Types exposing (EditModalMsg(..), EditModalState, EditingFieldValue(..), FieldConfig, Item, Model, Msg(..), Value(..))
 
 
 view : Model -> Html Msg
@@ -172,25 +172,6 @@ textListFieldEditor fieldKey state =
         , onInput (EditModalMsg << TextListFieldChanged fieldKey)
         , Html.Attributes.rows 1
         ]
-        []
-
-
-textListItemField : String -> Int -> TextListItemState -> Html Msg
-textListItemField fieldKey index item =
-    textarea
-        ( [ class textareaClasses
-          , value item.value
-          , onInput (EditModalMsg << TextListItemChanged fieldKey index)
-          , Html.Attributes.rows 1
-          , Html.Attributes.style "flex" "1"
-          ]
-            ++ (if item.size.height > 0 then
-                    [ Html.Attributes.style "height" (String.fromInt item.size.height ++ "px") ]
-
-                else
-                    []
-               )
-        )
         []
 
 

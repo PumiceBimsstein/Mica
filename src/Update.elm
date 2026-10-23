@@ -3,14 +3,14 @@ module Update exposing (update)
 import Dict
 import FileFlow
 import Filter
-import Search
+-- import Search
 import History
-import Json.Decode as Decode
+-- import Json.Decode as Decode
 import Ports
 import Set
 import Settings
 import Storage
-import Search
+-- import Search
 import Update.DatasetEdit exposing (confirmEditItem, deleteEditingItem)
 import Update.ItemManager exposing (createNewItemWithUuid)
 import Update.EditModalManager exposing (closeEditModal, openEditModal)
@@ -394,18 +394,16 @@ applyImportToCurrentDataset : List String -> Types.PendingImport -> Model -> ( M
 applyImportToCurrentDataset uuids pending model =
     FileFlow.applyImportAndSave Types.AddNewFields uuids pending model
 
-applyAndSaveImport : List String -> Types.PendingImport -> Model -> ( Model, Cmd Msg )
-applyAndSaveImport uuids pending model =
-    FileFlow.applyImportAndSave Types.AddNewFields uuids pending model
+-- applyAndSaveImport : List String -> Types.PendingImport -> Model -> ( Model, Cmd Msg )
+-- applyAndSaveImport uuids pending model =
+--     FileFlow.applyImportAndSave Types.AddNewFields uuids pending model
 
 
-clearPendingImport : Model -> Model
-clearPendingImport model =
-    { model | pendingImport = Nothing }
+-- clearPendingImport : Model -> Model
+-- clearPendingImport model =
+--     { model | pendingImport = Nothing }
 
 
-{-| 編集中の全テキストリストフィールドのrawInputをパースしてitemsを確定させる
--}
 confirmAllTextLists : EditModalState -> EditModalState
 confirmAllTextLists editState =
     let

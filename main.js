@@ -5335,12 +5335,12 @@ var $author$project$Storage$applyPersistedState = F2(
 	function (state, model) {
 		return _Utils_update(
 			model,
-			{aH: state.aH, j: state.j, aX: state.aX});
+			{aH: state.aH, m: state.m, aX: state.aX});
 	});
 var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $author$project$Storage$PersistedState = F3(
 	function (dataset, cardSize, filterUi) {
-		return {aH: cardSize, j: dataset, aX: filterUi};
+		return {aH: cardSize, m: dataset, aX: filterUi};
 	});
 var $elm$json$Json$Decode$andThen = _Json_andThen;
 var $author$project$Types$Large = 2;
@@ -5716,7 +5716,7 @@ var $author$project$Storage$decodeFilterUiState = A5(
 	$elm$json$Json$Decode$map4,
 	F4(
 		function (selected, between, within, collapsed) {
-			return {P: between, aJ: collapsed, bf: false, m: selected, aA: within};
+			return {P: between, aJ: collapsed, bf: false, l: selected, aA: within};
 		}),
 	A2(
 		$elm$json$Json$Decode$field,
@@ -5916,7 +5916,7 @@ var $author$project$MockData$dataset = {
 var $author$project$Main$defaultModel = {
 	aE: false,
 	aH: 1,
-	j: $author$project$MockData$dataset,
+	m: $author$project$MockData$dataset,
 	aa: $elm$core$Maybe$Nothing,
 	aN: $elm$core$Maybe$Nothing,
 	aO: false,
@@ -5952,7 +5952,7 @@ var $author$project$Main$init = function (flags) {
 	var _v0 = $author$project$Storage$decodeState(flags);
 	if (!_v0.$) {
 		var state = _v0.a;
-		return $elm$core$List$isEmpty(state.j.ah) ? _Utils_Tuple2($author$project$Main$defaultModel, $elm$core$Platform$Cmd$none) : _Utils_Tuple2(
+		return $elm$core$List$isEmpty(state.m.ah) ? _Utils_Tuple2($author$project$Main$defaultModel, $elm$core$Platform$Cmd$none) : _Utils_Tuple2(
 			A2($author$project$Storage$applyPersistedState, state, $author$project$Main$defaultModel),
 			$elm$core$Platform$Cmd$none);
 	} else {
@@ -6478,7 +6478,7 @@ var $author$project$Update$ItemManager$insertNewItem = F3(
 	});
 var $author$project$History$maxSize = 20;
 var $author$project$History$snapshotOf = function (model) {
-	return {j: model.j};
+	return {m: model.m};
 };
 var $elm$core$List$takeReverse = F3(
 	function (n, list, kept) {
@@ -6834,7 +6834,7 @@ var $author$project$Storage$encodeFilterUiState = function (ui) {
 				A2(
 					$elm$json$Json$Encode$list,
 					$elm$json$Json$Encode$string,
-					$elm$core$Set$toList(ui.m))),
+					$elm$core$Set$toList(ui.l))),
 				_Utils_Tuple2(
 				'betweenRelation',
 				$author$project$Storage$encodeBetweenRelation(ui.P)),
@@ -6855,7 +6855,7 @@ var $author$project$Storage$encodeState = function (model) {
 			[
 				_Utils_Tuple2(
 				'dataset',
-				$author$project$DomainJson$encodeDataset(model.j)),
+				$author$project$DomainJson$encodeDataset(model.m)),
 				_Utils_Tuple2(
 				'cardSize',
 				$author$project$Storage$encodeCardSize(model.aH)),
@@ -6878,7 +6878,7 @@ var $author$project$Update$ItemManager$updateModelDatasets = F2(
 	function (model, updatedDataset) {
 		return _Utils_update(
 			model,
-			{j: updatedDataset});
+			{m: updatedDataset});
 	});
 var $author$project$Update$ItemManager$appendItemAndSave = F4(
 	function (uuid, maybeTopId, model, dataset) {
@@ -6893,7 +6893,7 @@ var $author$project$Update$ItemManager$appendItemAndSave = F4(
 	});
 var $author$project$Update$ItemManager$createNewItemWithUuid = F3(
 	function (uuid, maybeTopId, model) {
-		return A4($author$project$Update$ItemManager$appendItemAndSave, uuid, maybeTopId, model, model.j);
+		return A4($author$project$Update$ItemManager$appendItemAndSave, uuid, maybeTopId, model, model.m);
 	});
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
@@ -7065,14 +7065,14 @@ var $author$project$FileFlow$save = function (model) {
 };
 var $author$project$FileFlow$applyImportAndSave = F4(
 	function (choice, uuids, pending, model) {
-		var _v0 = A4($author$project$Import$applyChoice, choice, uuids, pending, model.j);
+		var _v0 = A4($author$project$Import$applyChoice, choice, uuids, pending, model.m);
 		if (!_v0.$) {
 			var updated = _v0.a;
 			return $author$project$FileFlow$save(
 				_Utils_update(
 					model,
 					{
-						j: updated,
+						m: updated,
 						Q: false,
 						A: A2($author$project$History$push, model, model.A),
 						f: $elm$core$Maybe$Nothing
@@ -7133,7 +7133,7 @@ var $author$project$FileFlow$finaliseNewDatasetImport = F2(
 			var pending = _v0.a;
 			var newDataset = A4(
 				$author$project$Import$buildNewDataset,
-				model.j.ag,
+				model.m.ag,
 				$author$project$FileFlow$datasetNameOrDefault(pending.O),
 				uuids,
 				pending.G);
@@ -7141,7 +7141,7 @@ var $author$project$FileFlow$finaliseNewDatasetImport = F2(
 				_Utils_update(
 					model,
 					{
-						j: newDataset,
+						m: newDataset,
 						Q: false,
 						A: A2($author$project$History$push, model, model.A),
 						f: $elm$core$Maybe$Nothing
@@ -7231,7 +7231,7 @@ var $author$project$Update$DetailModalManager$getAt = F2(
 		return (index < 0) ? $elm$core$Maybe$Nothing : $elm$core$List$head(
 			A2($elm$core$List$drop, index, list));
 	});
-var $author$project$Filter$defaultFilterUi = {P: 0, aJ: false, bf: false, m: $elm$core$Set$empty, aA: 1};
+var $author$project$Filter$defaultFilterUi = {P: 0, aJ: false, bf: false, l: $elm$core$Set$empty, aA: 1};
 var $author$project$Filter$filterUiFor = F2(
 	function (key, filterUi) {
 		return A2(
@@ -7278,7 +7278,7 @@ var $author$project$Filter$optionKeysOfItem = F2(
 	});
 var $author$project$Filter$itemMatchesFilter = F3(
 	function (field, ui, item) {
-		if ($elm$core$Set$isEmpty(ui.m)) {
+		if ($elm$core$Set$isEmpty(ui.l)) {
 			return true;
 		} else {
 			var itemValues = A2($author$project$Filter$optionKeysOfItem, field.ai, item);
@@ -7290,12 +7290,12 @@ var $author$project$Filter$itemMatchesFilter = F3(
 				return A2(
 					$elm$core$List$any,
 					optionIsPresent,
-					$elm$core$Set$toList(ui.m));
+					$elm$core$Set$toList(ui.l));
 			} else {
 				return A2(
 					$elm$core$List$all,
 					optionIsPresent,
-					$elm$core$Set$toList(ui.m));
+					$elm$core$Set$toList(ui.l));
 			}
 		}
 	});
@@ -7310,7 +7310,7 @@ var $author$project$Filter$passesAllFilters = F3(
 			$elm$core$List$filter,
 			function (_v1) {
 				var ui = _v1.b;
-				return !$elm$core$Set$isEmpty(ui.m);
+				return !$elm$core$Set$isEmpty(ui.l);
 			},
 			A2(
 				$elm$core$List$map,
@@ -7447,7 +7447,7 @@ var $author$project$Update$DetailModalManager$navigateCard = F2(
 		var _v0 = model.aa;
 		if (!_v0.$) {
 			var currentId = _v0.a;
-			var items = A3($author$project$Filter$visibleItems, model.bi, model.aX, model.j);
+			var items = A3($author$project$Filter$visibleItems, model.bi, model.aX, model.m);
 			var ids = A2(
 				$elm$core$List$map,
 				function ($) {
@@ -7547,7 +7547,7 @@ var $author$project$History$applySnapshot = F2(
 	function (snapshot, model) {
 		return _Utils_update(
 			model,
-			{j: snapshot.j});
+			{m: snapshot.m});
 	});
 var $author$project$History$pop = function (stack) {
 	if (stack.b) {
@@ -7582,13 +7582,13 @@ var $author$project$Update$DatasetManager$closeRenameModal = function (model) {
 };
 var $author$project$Update$DatasetManager$applyDatasetRename = F2(
 	function (renameState, model) {
-		var oldDataset = model.j;
+		var oldDataset = model.m;
 		var updatedDataset = _Utils_update(
 			oldDataset,
 			{a8: renameState.a8});
 		return _Utils_update(
 			model,
-			{j: updatedDataset});
+			{m: updatedDataset});
 	});
 var $author$project$Update$DatasetManager$recordHistory = F2(
 	function (snapshot, model) {
@@ -7620,7 +7620,7 @@ var $author$project$Update$DatasetManager$openRenameModal = function (model) {
 		model,
 		{
 			bg: $elm$core$Maybe$Just(
-				{aK: model.j.ag, a8: model.j.a8})
+				{aK: model.m.ag, a8: model.m.a8})
 		});
 };
 var $author$project$Update$DatasetManager$updateRenameModalName = F2(
@@ -8105,7 +8105,7 @@ var $author$project$Update$DatasetEdit$applyDatasetChange = F2(
 		return _Utils_update(
 			model,
 			{
-				j: updatedDataset,
+				m: updatedDataset,
 				A: A2($author$project$History$push, model, model.A)
 			});
 	});
@@ -8113,7 +8113,7 @@ var $author$project$Update$DatasetEdit$getEditingContext = function (model) {
 	return A2(
 		$elm$core$Maybe$map,
 		function (editState) {
-			return _Utils_Tuple2(editState, model.j);
+			return _Utils_Tuple2(editState, model.m);
 		},
 		model.aN);
 };
@@ -8371,7 +8371,7 @@ var $author$project$Update$EditModalManager$findItemInDataset = F2(
 	});
 var $author$project$Update$EditModalManager$findItemWithDataset = F2(
 	function (itemId, model) {
-		return A2($author$project$Update$EditModalManager$findItemInDataset, itemId, model.j);
+		return A2($author$project$Update$EditModalManager$findItemInDataset, itemId, model.m);
 	});
 var $author$project$Update$EditModalManager$openEditModal = F2(
 	function (itemId, model) {
@@ -8823,7 +8823,7 @@ var $author$project$Update$updateCurrentDataset = F2(
 			_Utils_update(
 				model,
 				{
-					j: transform(model.j)
+					m: transform(model.m)
 				}));
 	});
 var $author$project$Update$updateFieldSettings = F2(
@@ -8927,7 +8927,7 @@ var $elm$file$File$Download$string = F3(
 			A3(_File_download, name, mime, content));
 	});
 var $author$project$FileFlow$exportBackup = function (model) {
-	var dataset = model.j;
+	var dataset = model.m;
 	return A3(
 		$elm$file$File$Download$string,
 		'Mica-backup-' + (dataset.a8 + '.json'),
@@ -9052,7 +9052,7 @@ var $author$project$FileFlow$downloadDataset = F2(
 	});
 var $author$project$FileFlow$exportCurrentDataset = F2(
 	function (format, model) {
-		return A2($author$project$FileFlow$downloadDataset, format, model.j);
+		return A2($author$project$FileFlow$downloadDataset, format, model.m);
 	});
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $author$project$FileFlow$restoreDataset = F2(
@@ -9065,7 +9065,7 @@ var $author$project$FileFlow$restoreDataset = F2(
 		return $author$project$FileFlow$save(
 			_Utils_update(
 				pushed,
-				{j: dataset, Q: false}));
+				{m: dataset, Q: false}));
 	});
 var $author$project$FileFlow$handleBackupText = F2(
 	function (text, model) {
@@ -9397,7 +9397,7 @@ var $author$project$Import$decodeRawItems = function (text) {
 };
 var $elm$core$String$endsWith = _String_endsWith;
 var $author$project$FileFlow$existingDatasetFor = function (model) {
-	return (!model.U) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(model.j);
+	return (!model.U) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(model.m);
 };
 var $elm$core$Result$mapError = F2(
 	function (f, result) {
@@ -9494,7 +9494,7 @@ var $author$project$FileFlow$startImport = F2(
 					}),
 				$elm$core$Platform$Cmd$none);
 		} else {
-			return A3($author$project$FileFlow$resolveOrPrompt, rawItems, model.j, model);
+			return A3($author$project$FileFlow$resolveOrPrompt, rawItems, model.m, model);
 		}
 	});
 var $author$project$FileFlow$handleFileLoaded = F3(
@@ -9678,7 +9678,7 @@ var $author$project$Filter$clearAllFilters = function (filterUi) {
 			function (_v0, ui) {
 				return _Utils_update(
 					ui,
-					{m: $elm$core$Set$empty});
+					{l: $elm$core$Set$empty});
 			}),
 		filterUi);
 };
@@ -9773,7 +9773,7 @@ var $author$project$Filter$toggleOption = F2(
 		return _Utils_update(
 			ui,
 			{
-				m: A2($author$project$Filter$toggleMember, optionValue, ui.m)
+				l: A2($author$project$Filter$toggleMember, optionValue, ui.l)
 			});
 	});
 var $author$project$Update$updateFilterUi = F3(
@@ -10006,7 +10006,7 @@ var $author$project$Update$SortModalManager$updateModelDataset = F2(
 		return _Utils_update(
 			model,
 			{
-				j: transform(model.j)
+				m: transform(model.m)
 			});
 	});
 var $author$project$Update$SortModalManager$applyDatasetReorder = F2(
@@ -10244,7 +10244,7 @@ var $author$project$Filter$isFilterActive = F2(
 			$elm$core$List$any,
 			function (field) {
 				return !$elm$core$Set$isEmpty(
-					A2($author$project$Filter$filterUiFor, field.ai, filterUiDict).m);
+					A2($author$project$Filter$filterUiFor, field.ai, filterUiDict).l);
 			},
 			A2(
 				$elm$core$List$filter,
@@ -10360,7 +10360,7 @@ var $elm$html$Html$Events$onClick = function (msg) {
 };
 var $elm$html$Html$Attributes$title = $elm$html$Html$Attributes$stringProperty('title');
 var $author$project$View$actionButtonGroup = function (model) {
-	var isFiltered = A2($author$project$Filter$isFilterActive, model.aX, model.j);
+	var isFiltered = A2($author$project$Filter$isFilterActive, model.aX, model.m);
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -11064,8 +11064,8 @@ var $author$project$View$mainContent = function (model) {
 				A3(
 				$author$project$View$cardGrid,
 				model,
-				model.j,
-				A3($author$project$Filter$visibleItems, model.bi, model.aX, model.j))
+				model.m,
+				A3($author$project$Filter$visibleItems, model.bi, model.aX, model.m))
 			]));
 };
 var $author$project$View$mainArea = function (model) {
@@ -11187,7 +11187,7 @@ var $author$project$View$sortModal = function (model) {
 		return $elm$html$Html$text('');
 	} else {
 		var scaleStr = $elm$core$String$fromFloat(model.bm);
-		var dataset = model.j;
+		var dataset = model.m;
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -11558,7 +11558,7 @@ var $author$project$View$DetailModal$view = function (model) {
 		return $elm$html$Html$text('');
 	} else {
 		var currentId = _v0.a;
-		var visibleItems = A3($author$project$Filter$visibleItems, model.bi, model.aX, model.j);
+		var visibleItems = A3($author$project$Filter$visibleItems, model.bi, model.aX, model.m);
 		var totalCount = $elm$core$List$length(visibleItems);
 		var maybeCurrentItem = $elm$core$List$head(
 			A2(
@@ -11566,7 +11566,7 @@ var $author$project$View$DetailModal$view = function (model) {
 				function (it) {
 					return _Utils_eq(it.ag, currentId);
 				},
-				model.j.ah));
+				model.m.ah));
 		var currentIndex = A2($author$project$View$DetailModal$findItemIndex, currentId, visibleItems);
 		var hasNext = A2(
 			$elm$core$Maybe$withDefault,
@@ -11590,7 +11590,7 @@ var $author$project$View$DetailModal$view = function (model) {
 			var item = maybeCurrentItem.a;
 			return A6(
 				$author$project$View$DetailModal$overlay,
-				model.j,
+				model.m,
 				item,
 				hasPrev,
 				hasNext,
@@ -11720,7 +11720,7 @@ var $author$project$View$EditModal$findItem = F2(
 				function (item) {
 					return _Utils_eq(item.ag, itemId);
 				},
-				model.j.ah));
+				model.m.ah));
 	});
 var $author$project$Types$TextFieldChanged = F2(
 	function (a, b) {
@@ -11876,7 +11876,7 @@ var $author$project$View$EditModal$getFieldsForEdit = F2(
 	function (editState, model) {
 		var _v0 = A2($author$project$View$EditModal$findItem, editState.aP, model);
 		if (!_v0.$) {
-			return model.j.ad;
+			return model.m.ad;
 		} else {
 			return _List_Nil;
 		}
@@ -11897,7 +11897,7 @@ var $author$project$View$EditModal$formContent = F2(
 var $author$project$Types$Close = {$: 2};
 var $author$project$View$EditModal$header = F2(
 	function (editState, model) {
-		var dataset = model.j;
+		var dataset = model.m;
 		var isNewItem = !A2(
 			$elm$core$List$any,
 			function (item) {
@@ -11939,7 +11939,7 @@ var $author$project$View$EditModal$header = F2(
 	});
 var $author$project$View$EditModal$overlay = F2(
 	function (editState, model) {
-		var dataset = model.j;
+		var dataset = model.m;
 		var isNewItem = !A2(
 			$elm$core$List$any,
 			function (item) {
@@ -12634,7 +12634,7 @@ var $author$project$View$FileModal$overlay = function (model) {
 							]),
 						_List_fromArray(
 							[
-								$author$project$View$FileModal$currentDatasetCard(model.j),
+								$author$project$View$FileModal$currentDatasetCard(model.m),
 								$author$project$View$FileModal$importSection(model),
 								$author$project$View$FileModal$exportSection,
 								$author$project$View$FileModal$backupSection,
@@ -13242,7 +13242,7 @@ var $author$project$View$SettingsModal$overlay = function (dataset) {
 			]));
 };
 var $author$project$View$SettingsModal$view = function (model) {
-	return model.bj ? $author$project$View$SettingsModal$overlay(model.j) : $elm$html$Html$text('');
+	return model.bj ? $author$project$View$SettingsModal$overlay(model.m) : $elm$html$Html$text('');
 };
 var $author$project$View$Sidebar$fileButtonClasses = 'flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-medium rounded-lg border border-neutral-200 bg-white' + ' text-neutral-700 hover:bg-neutral-100 shadow-xs transition cursor-pointer';
 var $author$project$View$Sidebar$folderIcon = A2(
@@ -13697,7 +13697,7 @@ var $author$project$Filter$passesFiltersExcept = F4(
 			$elm$core$List$filter,
 			function (_v1) {
 				var ui = _v1.b;
-				return !$elm$core$Set$isEmpty(ui.m);
+				return !$elm$core$Set$isEmpty(ui.l);
 			},
 			A2(
 				$elm$core$List$map,
@@ -13891,7 +13891,7 @@ var $author$project$View$FilterPanel$optionRow = F3(
 						[
 							$elm$html$Html$Attributes$type_('checkbox'),
 							$elm$html$Html$Attributes$checked(
-							A2($elm$core$Set$member, option.M, ui.m)),
+							A2($elm$core$Set$member, option.M, ui.l)),
 							$elm$html$Html$Events$onClick(
 							$author$project$Types$FilterMsg(
 								A2($author$project$Types$ToggleOption, field.ai, option.M)))
@@ -13926,7 +13926,7 @@ var $author$project$View$FilterPanel$optionListWithActiveFilters = F4(
 		var displayedOptions = ui.aJ ? A2(
 			$elm$core$List$filter,
 			function (opt) {
-				return A2($elm$core$Set$member, opt.M, ui.m);
+				return A2($elm$core$Set$member, opt.M, ui.l);
 			},
 			allOptions) : allOptions;
 		return $elm$core$List$isEmpty(displayedOptions) ? $elm$html$Html$text('') : A2(
@@ -13992,7 +13992,7 @@ var $author$project$View$Sidebar$filterArea = function (model) {
 			]),
 		_List_fromArray(
 			[
-				A2($author$project$View$FilterPanel$view, model, model.j)
+				A2($author$project$View$FilterPanel$view, model, model.m)
 			]));
 };
 var $author$project$Types$ClearAllFilters = {$: 7};
@@ -14078,12 +14078,12 @@ var $author$project$View$Sidebar$filterSelectDropdown = function (model) {
 							[
 								$elm$html$Html$Attributes$class('flex flex-col gap-0.5')
 							]),
-						A2($elm$core$List$map, $author$project$View$Sidebar$filterFieldCheckbox, model.j.ad))
+						A2($elm$core$List$map, $author$project$View$Sidebar$filterFieldCheckbox, model.m.ad))
 					]))
 			]));
 };
 var $author$project$View$Sidebar$filterSectionHeader = function (model) {
-	var hasActiveFilters = A2($author$project$Filter$isFilterActive, model.aX, model.j);
+	var hasActiveFilters = A2($author$project$Filter$isFilterActive, model.aX, model.m);
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -14160,7 +14160,7 @@ var $author$project$View$Sidebar$appTitle = function (model) {
 			]),
 		_List_fromArray(
 			[
-				$elm$html$Html$text(model.j.a8)
+				$elm$html$Html$text(model.m.a8)
 			]));
 };
 var $author$project$Types$UndoRequested = {$: 4};
@@ -14375,7 +14375,7 @@ var $author$project$View$Sidebar$searchArea = function (model) {
 			[
 				$author$project$View$Sidebar$searchInput(model.bi),
 				$author$project$View$Sidebar$searchModeButtons(model.bi),
-				A2($author$project$View$Sidebar$searchFieldCheckboxes, model.bi, model.j)
+				A2($author$project$View$Sidebar$searchFieldCheckboxes, model.bi, model.m)
 			]));
 };
 var $author$project$View$Sidebar$sidebarClasses = 'w-72 shrink-0 h-screen overflow-y-auto border-r border-neutral-200 bg-neutral-50 px-4 py-5 flex flex-col gap-3.5';

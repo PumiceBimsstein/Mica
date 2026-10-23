@@ -15,7 +15,6 @@ import Types
         , Msg(..)
         , FilterMsg(..)
         , WithinRelation(..)
-        , SearchState
         )
 
 
@@ -35,21 +34,6 @@ view model dataset =
         div [ class "flex flex-col gap-2" ]
             (List.indexedMap (\i field -> filterBlock model dataset i total field) orderedFields)
 
-
--- filterBlock : Model -> Dataset -> Int -> Int -> FieldConfig -> Html Msg
--- filterBlock model dataset index total field =
---     let
---         ui =
---             Filter.filterUiFor field.key model.filterUi
---     in
---     div [ class "border border-neutral-200 rounded-md bg-white" ]
---         [ filterHeader field ui index total
---         , if ui.collapsed then
---             text ""
-
---           else
---             optionListWithActiveFilters model dataset field ui
---         ]
 
 filterBlock : Model -> Dataset -> Int -> Int -> FieldConfig -> Html Msg
 filterBlock model dataset index total field =
@@ -125,29 +109,6 @@ moveButtonClasses enabled =
 
 
 -- 関係設定（他のフィルターとの関係・選択肢同士の関係）を一つのポップアップにまとめる
-
--- relationPopupTrigger : FieldConfig -> FilterUiState -> Html Msg
--- relationPopupTrigger field ui =
---     div [ class "relative" ]
---         [ button
---             [ class relationBadgeClasses
---             , onClick (FilterMsg (ToggleRelationPopup field.key))
---             ]
---             [ text "関係" ]
---         , if ui.relationPopupOpen then
---             div []
---                 [ -- 画面全体を覆う暗いオーバーレイ（背景の操作を禁止し、クリックで閉じる）
---                   div
---                     [ class "fixed inset-0 bg-black/15 z-40"
---                     , onClick (FilterMsg (ToggleRelationPopup field.key))
---                     ]
---                     []
---                 , relationPopup field ui
---                 ]
-
---           else
---             text ""
---         ]
 
 relationPopupTrigger : FieldConfig -> FilterUiState -> Html Msg
 relationPopupTrigger field ui =
@@ -241,25 +202,6 @@ popupOptionClasses isActive =
 
 
 -- 選択肢一覧
-
-
--- optionListWithActiveFilters : Model -> Dataset -> FieldConfig -> FilterUiState -> Html Msg
--- optionListWithActiveFilters model dataset field ui =
---     let
---         rawOptions =
---             Filter.optionsForWithActiveFilters model.searchState model.filterUi dataset field
-
---         options =
---             if field.isBool then
---                 rawOptions
---                     |> List.map (formatBoolOption field)
---                     |> sortBoolOptions
-
---             else
---                 rawOptions
---     in
---     div [ class "px-2 pb-2 flex flex-col gap-1 border-t border-neutral-100 pt-2" ]
---         (List.map (optionRow field ui) options)
 
 optionListWithActiveFilters : Model -> Dataset -> FieldConfig -> FilterUiState -> Html Msg
 optionListWithActiveFilters model dataset field ui =

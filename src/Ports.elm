@@ -4,7 +4,7 @@ port module Ports exposing
     --, stateLoaded
     , openSortModalWithTopCard
     , receiveClosedSortModal
-    , requestTopCardId
+    -- , requestTopCardId
     , scrollToCard
     , scrollToTop
     , topCardIdReceived
@@ -19,7 +19,7 @@ port module Ports exposing
 委譲するためのport定義。このモジュールにロジックは置かない。
 -}
 
-import Json.Decode as Decode
+-- import Json.Decode as Decode
 import Json.Encode as Encode
 import Types exposing (Msg(..))
 
@@ -33,7 +33,7 @@ port saveState : Encode.Value -> Cmd msg
 --port stateLoaded : (Decode.Value -> msg) -> Sub msg
 
 
-port requestTopCardId : () -> Cmd msg
+-- port requestTopCardId : () -> Cmd msg
 
 
 port openSortModalWithTopCard : (String -> msg) -> Sub msg

@@ -22,7 +22,6 @@ import Types exposing (Dataset, FieldConfig, Item, Value(..))
 
 -- 読み込み
 
-
 decodeRawItems : Maybe Dataset -> String -> Result String (List (List ( String, Value )))
 decodeRawItems maybeExisting text =
     case Csv.parse text of
