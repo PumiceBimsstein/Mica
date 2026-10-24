@@ -2,7 +2,7 @@ module Update.DatasetEdit exposing (confirmEditItem, deleteEditingItem)
 
 import Dict
 import History
-import Types exposing (Dataset, EditModalState, Item, Model, EditingFieldValue(..), Value(..), TextListItemState)
+import Types exposing (Dataset, EditModalState, Item, Model, EditingFieldValue(..), Value(..))
 
 
 {-| 現在編集中のアイテムを削除し、Undo履歴を積んでデータセットを更新した Model を返す。

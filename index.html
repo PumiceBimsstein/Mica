@@ -28,7 +28,6 @@
         console.warn("card-viewer: failed to load initial state", err);
       }
 
-      // 必ず Elm を起動する（savedState がなければ null を渡してモックデータ表示）
       window.appInstance = Elm.Main.init({
         node: document.getElementById("app"),
         flags: savedState !== undefined ? savedState : null

@@ -35,7 +35,6 @@ module Types exposing
 
 import Dict exposing (Dict)
 import File
-import Json.Decode as Decode
 import Set exposing (Set)
 
 

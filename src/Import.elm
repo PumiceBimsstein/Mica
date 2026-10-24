@@ -32,10 +32,26 @@ decodeRawItems text =
     Decode.decodeString rawItemsDecoder text
 
 
+-- rawItemsDecoder : Decode.Decoder (List (List ( String, Value )))
+-- rawItemsDecoder =
+--     Decode.list (Decode.keyValuePairs DomainJson.decodeValue)
+
 rawItemsDecoder : Decode.Decoder (List (List ( String, Value )))
 rawItemsDecoder =
-    Decode.list (Decode.keyValuePairs DomainJson.decodeValue)
+    Decode.list
+        (Decode.keyValuePairs (Decode.nullable DomainJson.decodeValue)
+            |> Decode.map (List.filterMap dropNull)
+        )
 
+-- null のプロパティはフィールドごとスキップ
+dropNull : ( String, Maybe Value ) -> Maybe ( String, Value )
+dropNull ( key, maybeVal ) =
+    case maybeVal of
+        Just val ->
+            Just ( key, val )
+
+        Nothing ->
+            Nothing
 
 -- キー順序・新規キーの判定
 

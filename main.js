@@ -9389,8 +9389,23 @@ var $author$project$CsvCodec$decodeRawItems = F2(
 				A3($author$project$CsvCodec$rowsToItems, maybeExisting, header, rows));
 		}
 	});
+var $author$project$Import$dropNull = function (_v0) {
+	var key = _v0.a;
+	var maybeVal = _v0.b;
+	if (!maybeVal.$) {
+		var val = maybeVal.a;
+		return $elm$core$Maybe$Just(
+			_Utils_Tuple2(key, val));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Import$rawItemsDecoder = $elm$json$Json$Decode$list(
-	$elm$json$Json$Decode$keyValuePairs($author$project$DomainJson$decodeValue));
+	A2(
+		$elm$json$Json$Decode$map,
+		$elm$core$List$filterMap($author$project$Import$dropNull),
+		$elm$json$Json$Decode$keyValuePairs(
+			$elm$json$Json$Decode$nullable($author$project$DomainJson$decodeValue))));
 var $author$project$Import$decodeRawItems = function (text) {
 	return A2($elm$json$Json$Decode$decodeString, $author$project$Import$rawItemsDecoder, text);
 };
