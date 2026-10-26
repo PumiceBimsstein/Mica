@@ -1,19 +1,33 @@
 module Update.EditModalState exposing
-    ( setBooleanField
+    ( addNewFieldToState
+    , confirmTextListField
+    , defaultNewFieldForm
+    , setBooleanField
+    , setNewFieldBool
+    , setNewFieldName
+    , setNewFieldType
+    , setNewFieldValue
     , setTextField
     , setTextListField
-    , confirmTextListField
     , setTextListItem
     , setTextListItemSize
     , setTextSize
+    , toggleAddFieldForm
     )
 
 import Dict
-import Types exposing (EditModalState, EditingFieldValue(..))
+import Types
+    exposing
+        ( DisplayRole(..)
+        , EditModalState
+        , EditingFieldValue(..)
+        , FieldConfig
+        , NewFieldForm
+        , NewFieldType(..)
+        )
 
 
-{-| 指定キーの EditingFieldValue を安全に更新するヘルパー
--}
+-- 指定キーの EditingFieldValue を安全に更新するヘルパー
 
 updateField : String -> EditingFieldValue -> (EditingFieldValue -> EditingFieldValue) -> EditModalState -> EditModalState
 updateField fieldKey defaultValue transform editState =
@@ -29,8 +43,7 @@ updateField fieldKey defaultValue transform editState =
     { editState | editingValues = Dict.update fieldKey updater editState.editingValues }
 
 
-{-| テキスト入力値の更新（テキストフィールド専用）
--}
+-- テキスト入力値の更新（テキストフィールド専用）
 setTextField : String -> String -> EditModalState -> EditModalState
 setTextField fieldKey newValue =
     updateField fieldKey (EditingText "" { width = 0, height = 0 })
@@ -44,8 +57,7 @@ setTextField fieldKey newValue =
         )
 
 
-{-| テキストリスト入力値の更新（ユーザー入力時、rawInputのみ更新）
--}
+-- テキストリスト入力値の更新（ユーザー入力時、rawInputのみ更新）
 setTextListField : String -> String -> EditModalState -> EditModalState
 setTextListField fieldKey newValue =
     updateField fieldKey (EditingTextList { rawInput = "", items = [] })
@@ -59,8 +71,7 @@ setTextListField fieldKey newValue =
         )
 
 
-{-| テキストリスト入力値の確定（rawInputをパースしてitemsを更新）
--}
+-- テキストリスト入力値の確定（rawInputをパースしてitemsを更新）
 confirmTextListField : String -> EditModalState -> EditModalState
 confirmTextListField fieldKey =
     updateField fieldKey (EditingTextList { rawInput = "", items = [] })
@@ -82,8 +93,7 @@ parseCommaSeparatedText rawInput =
         |> List.filter (not << String.isEmpty)
         |> List.map (\val -> { value = val, size = { width = 0, height = 0 } })
 
-{-| テキストエリアサイズの更新
--}
+-- テキストエリアサイズの更新
 setTextSize : String -> Int -> Int -> EditModalState -> EditModalState
 setTextSize fieldKey width height =
     updateField fieldKey (EditingText "" { width = width, height = height })
@@ -97,8 +107,8 @@ setTextSize fieldKey width height =
         )
 
 
-{-| テキストリスト項目値の更新（インデックス指定）
--}
+-- テキストリスト項目値の更新（インデックス指定）
+
 setTextListItem : String -> Int -> String -> EditModalState -> EditModalState
 setTextListItem fieldKey index newValue =
     updateField fieldKey (EditingTextList { rawInput = "", items = [] })
@@ -124,8 +134,7 @@ setTextListItem fieldKey index newValue =
         )
 
 
-{-| テキストリスト項目サイズの更新（インデックス指定）
--}
+-- テキストリスト項目サイズの更新（インデックス指定）
 setTextListItemSize : String -> Int -> Int -> Int -> EditModalState -> EditModalState
 setTextListItemSize fieldKey index width height =
     updateField fieldKey (EditingTextList { rawInput = "", items = [] })
@@ -150,8 +159,7 @@ setTextListItemSize fieldKey index width height =
                     other
         )
 
-{-| チェックボックス値の更新
--}
+-- チェックボックス値の更新
 setBooleanField : String -> Bool -> EditModalState -> EditModalState
 setBooleanField fieldKey newValue =
     updateField fieldKey (EditingBoolean False)
@@ -163,3 +171,108 @@ setBooleanField fieldKey newValue =
                 other ->
                     other
         )
+
+-- MARK:新規項目追加
+
+defaultNewFieldForm : NewFieldForm
+defaultNewFieldForm =
+    { name = ""
+    , fieldType = NewFieldString
+    , stringValue = ""
+    , boolValue = False
+    }
+
+
+toggleAddFieldForm : EditModalState -> EditModalState
+toggleAddFieldForm state =
+    { state | isAddingField = not state.isAddingField }
+
+
+setNewFieldName : String -> EditModalState -> EditModalState
+setNewFieldName name state =
+    let
+        form =
+            state.newFieldForm
+    in
+    { state | newFieldForm = { form | name = name } }
+
+
+setNewFieldType : NewFieldType -> EditModalState -> EditModalState
+setNewFieldType fieldType state =
+    let
+        form =
+            state.newFieldForm
+    in
+    { state | newFieldForm = { form | fieldType = fieldType } }
+
+
+setNewFieldValue : String -> EditModalState -> EditModalState
+setNewFieldValue val state =
+    let
+        form =
+            state.newFieldForm
+    in
+    { state | newFieldForm = { form | stringValue = val } }
+
+
+setNewFieldBool : Bool -> EditModalState -> EditModalState
+setNewFieldBool val state =
+    let
+        form =
+            state.newFieldForm
+    in
+    { state | newFieldForm = { form | boolValue = val } }
+
+addNewFieldToState : EditModalState -> EditModalState
+addNewFieldToState state =
+    let
+        trimmedName =
+            String.trim state.newFieldForm.name
+
+        alreadyExists =
+            List.any (\f -> f.key == trimmedName) state.fields
+    in
+    if String.isEmpty trimmedName || alreadyExists then
+        state
+
+    else
+        let
+            isBool =
+                state.newFieldForm.fieldType == NewFieldBoolean
+
+            newField : FieldConfig
+            newField =
+                { key = trimmedName
+                , label = trimmedName
+                , displayRole = PlainText
+                , showOnCard = True
+                , filterable = False
+                , isBool = isBool
+                , isTextList = False
+                , trueLabel =
+                    if isBool then
+                        Just "はい"
+
+                    else
+                        Nothing
+                , falseLabel =
+                    if isBool then
+                        Just "いいえ"
+
+                    else
+                        Nothing
+                }
+
+            newEditingValue =
+                if isBool then
+                    EditingBoolean state.newFieldForm.boolValue
+
+                else
+                    EditingText state.newFieldForm.stringValue { width = 536, height = 50 }
+        in
+        { state
+            | fields = state.fields ++ [ newField ]
+            , editingValues = Dict.insert trimmedName newEditingValue state.editingValues
+            , newFieldForm = defaultNewFieldForm
+            , isAddingField = False
+        }

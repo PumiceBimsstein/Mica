@@ -16,6 +16,8 @@ module Types exposing
     , Item
     , Model
     , Msg(..)
+    , NewFieldType(..)
+    , NewFieldForm
     , DatasetMsg(..)
     , SortModalMsg(..)
     , FilterMsg(..)
@@ -188,10 +190,26 @@ type EditingFieldValue
     | EditingBoolean Bool
 
 
+-- 新規フィールド追加
+type NewFieldType
+    = NewFieldString
+    | NewFieldBoolean
+
+
+type alias NewFieldForm =
+    { name : String
+    , fieldType : NewFieldType
+    , stringValue : String
+    , boolValue : Bool
+    }
+
+
 type alias EditModalState =
     { editingItemId : String
     , editingValues : Dict String EditingFieldValue
     , fields : List FieldConfig
+    , newFieldForm : NewFieldForm
+    , isAddingField : Bool
     }
 
 
@@ -301,6 +319,12 @@ type EditModalMsg
     | Cancel
     | DeleteItem
     | CreateNewItem
+    | ToggleAddFieldForm
+    | NewFieldNameChanged String
+    | NewFieldTypeChanged NewFieldType
+    | NewFieldValueChanged String
+    | NewFieldBoolChanged Bool
+    | AddField
 
 type FileFlowMsg
     = ToggleModal Bool

@@ -13,5 +13,5 @@ Thumbs.db
 .vscode/
 .idea/
 
-src/converttxt/
+src/converttext/
 src/convert.bat

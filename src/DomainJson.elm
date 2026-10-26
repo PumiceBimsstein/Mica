@@ -35,14 +35,35 @@ encodeValue value =
             Encode.bool b
 
 
+-- decodeValue : Decode.Decoder Value
+-- decodeValue =
+--     Decode.oneOf
+--         [ Decode.map Text Decode.string
+--         , Decode.map TextList (Decode.list Decode.string)
+--         , Decode.map Boolean Decode.bool
+--         ]
+
 decodeValue : Decode.Decoder Value
 decodeValue =
     Decode.oneOf
         [ Decode.map Text Decode.string
-        , Decode.map TextList (Decode.list Decode.string)
+        , Decode.map (splitTextList >> TextList) (Decode.list Decode.string)
         , Decode.map Boolean Decode.bool
         ]
 
+
+splitTextList : List String -> List String
+splitTextList rawList =
+    rawList
+        |> List.concatMap parseCommaSeparated
+
+
+parseCommaSeparated : String -> List String
+parseCommaSeparated str =
+    str
+        |> String.split ","
+        |> List.map String.trim
+        |> List.filter (not << String.isEmpty)
 
 
 -- Item

@@ -17,13 +17,19 @@ import Update.EditModalManager exposing (closeEditModal, openEditModal)
 import Update.SortModalManager exposing (applySortAndClose, openSortModal)
 import Update.DetailModalManager exposing (handleDetailModalMsg)
 import Update.EditModalState exposing
-    ( setBooleanField
+    ( addNewFieldToState
+    , confirmTextListField
+    , setBooleanField
+    , setNewFieldBool
+    , setNewFieldName
+    , setNewFieldType
+    , setNewFieldValue
     , setTextField
     , setTextListField
-    , confirmTextListField
     , setTextListItem
     , setTextListItemSize
     , setTextSize
+    , toggleAddFieldForm
     )
 import Update.DatasetManager exposing
     ( closeRenameModal
@@ -311,6 +317,24 @@ updateEditModalMsg msg model =
 
         CreateNewItem ->
             ( model, Ports.generateUuid () )
+        
+        ToggleAddFieldForm ->
+            ( updateEditModalState toggleAddFieldForm model, Cmd.none )
+
+        NewFieldNameChanged name ->
+            ( updateEditModalState (setNewFieldName name) model, Cmd.none )
+
+        NewFieldTypeChanged fieldType ->
+            ( updateEditModalState (setNewFieldType fieldType) model, Cmd.none )
+
+        NewFieldValueChanged val ->
+            ( updateEditModalState (setNewFieldValue val) model, Cmd.none )
+
+        NewFieldBoolChanged val ->
+            ( updateEditModalState (setNewFieldBool val) model, Cmd.none )
+
+        AddField ->
+            ( updateEditModalState addNewFieldToState model, Cmd.none )
         
 
 -- MARK: ヘルパー関数

@@ -2,7 +2,7 @@ module Update.DatasetEdit exposing (confirmEditItem, deleteEditingItem)
 
 import Dict
 import History
-import Types exposing (Dataset, EditModalState, Item, Model, EditingFieldValue(..), Value(..))
+import Types exposing (Dataset, EditModalState, Item, Model, FieldConfig, EditingFieldValue(..), Value(..))
 
 
 {-| 現在編集中のアイテムを削除し、Undo履歴を積んでデータセットを更新した Model を返す。
@@ -58,6 +58,25 @@ removeItemFromDataset itemId dataset =
     { dataset | items = List.filter (\item -> item.id /= itemId) dataset.items }
 
 
+-- saveItemToDataset : EditModalState -> Dataset -> Dataset
+-- saveItemToDataset editState dataset =
+--     let
+--         updatedItem =
+--             applyEditingValuesToItem editState
+
+--         isNewItem =
+--             not (List.any (\item -> item.id == editState.editingItemId) dataset.items)
+
+--         updatedItems =
+--             if isNewItem then
+--                 dataset.items ++ [ updatedItem ]
+
+--             else
+--                 List.map (updateItemIfMatch editState.editingItemId updatedItem) dataset.items
+--     in
+--     { dataset | items = updatedItems }
+
+
 saveItemToDataset : EditModalState -> Dataset -> Dataset
 saveItemToDataset editState dataset =
     let
@@ -73,8 +92,53 @@ saveItemToDataset editState dataset =
 
             else
                 List.map (updateItemIfMatch editState.editingItemId updatedItem) dataset.items
+
+        existingKeys =
+            List.map .key dataset.fields
+
+        newFields =
+            List.filter (\f -> not (List.member f.key existingKeys)) editState.fields
+
+        allFields =
+            dataset.fields ++ newFields
     in
-    { dataset | items = updatedItems }
+    { dataset
+        | fields = allFields
+        , items = fillMissingBools allFields updatedItems
+    }
+
+
+fillMissingBools : List FieldConfig -> List Item -> List Item
+fillMissingBools fields items =
+    let
+        boolKeys =
+            fields
+                |> List.filter .isBool
+                |> List.map .key
+    in
+    if List.isEmpty boolKeys then
+        items
+
+    else
+        List.map (fillItemBools boolKeys) items
+
+
+fillItemBools : List String -> Item -> Item
+fillItemBools boolKeys item =
+    let
+        filledValues =
+            List.foldl
+                (\key acc ->
+                    if Dict.member key acc then
+                        acc
+
+                    else
+                        Dict.insert key (Boolean False) acc
+                )
+                item.values
+                boolKeys
+    in
+    { item | values = filledValues }
 
 
 updateItemIfMatch : String -> Item -> Item -> Item

@@ -94,7 +94,7 @@ toFieldEntry dataset field =
 
 defaultFieldValue : Dataset -> FieldConfig -> Value
 defaultFieldValue dataset field =
-    if hasAnyBooleanValueInDataset dataset field then
+    if field.isBool || hasAnyBooleanValueInDataset dataset field then
         Boolean False
 
     else

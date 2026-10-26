@@ -2,11 +2,21 @@ module View.EditModal exposing (view)
 
 import Dict
 import Html exposing (Html, button, div, h2, input, label, span, text, textarea)
-import Html.Attributes exposing (checked, class, type_, value)
+import Html.Attributes exposing (checked, class, disabled, placeholder, type_, value)
 import Html.Events exposing (onClick, onInput)
 import ItemAccess exposing (getValue)
-import Types exposing (EditModalMsg(..), EditModalState, EditingFieldValue(..), FieldConfig, Item, Model, Msg(..), Value(..))
-
+import Types exposing
+    ( EditModalMsg(..)
+    , EditModalState
+    , EditingFieldValue(..)
+    , FieldConfig
+    , Item
+    , Model
+    , Msg(..)
+    , NewFieldType(..)
+    , NewFieldForm
+    , Value(..)
+    )
 
 view : Model -> Html Msg
 view model =
@@ -73,10 +83,184 @@ header editState model =
         ]
 
 
+-- formContent : EditModalState -> Model -> Html Msg
+-- formContent editState model =
+--     div [ class "px-6 py-5 flex-1 overflow-y-auto flex flex-col gap-4" ]
+--         (List.map (fieldForm editState model) (getFieldsForEdit editState model))
+
 formContent : EditModalState -> Model -> Html Msg
 formContent editState model =
     div [ class "px-6 py-5 flex-1 overflow-y-auto flex flex-col gap-4" ]
-        (List.map (fieldForm editState model) (getFieldsForEdit editState model))
+        (List.map (fieldForm editState model) editState.fields
+            ++ [ addFieldSection editState ]
+        )
+
+
+-- View/EditModal.elm (addFieldSection 周辺の差し替え)
+
+-- MARK: 新規フィールド追加セクション（小分けにしたView部品）
+
+addFieldSection : EditModalState -> Html Msg
+addFieldSection editState =
+    div [ class "border-t border-neutral-100 pt-4 mt-1 flex flex-col gap-3" ]
+        [ if editState.isAddingField then
+            addFieldPanel editState
+
+          else
+            addFieldTriggerButton
+        ]
+
+
+addFieldTriggerButton : Html Msg
+addFieldTriggerButton =
+    button
+        [ class "self-start flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-dashed border-neutral-300 text-neutral-600 hover:text-neutral-900 hover:border-neutral-400 hover:bg-neutral-50 transition cursor-pointer"
+        , onClick (EditModalMsg ToggleAddFieldForm)
+        ]
+        [ text "+ 新しいフィールドを追加" ]
+
+
+addFieldPanel : EditModalState -> Html Msg
+addFieldPanel editState =
+    let
+        trimmedName =
+            String.trim editState.newFieldForm.name
+
+        alreadyExists =
+            List.any (\f -> f.key == trimmedName) editState.fields
+
+        canAdd =
+            not (String.isEmpty trimmedName) && not alreadyExists
+    in
+    div [ class "bg-neutral-50/80 border border-neutral-200 rounded-lg p-3.5 flex flex-col gap-3" ]
+        [ addFieldHeader
+        , nameInputSection editState.newFieldForm.name alreadyExists
+        , typeSelectSection editState.newFieldForm.fieldType
+        , valueInputSection editState.newFieldForm
+        , addFieldActions canAdd
+        ]
+
+
+addFieldHeader : Html Msg
+addFieldHeader =
+    div [ class "flex items-center justify-between" ]
+        [ span [ class "text-xs font-bold text-neutral-800" ] [ text "新しいフィールドを追加" ]
+        , button
+            [ class "text-xs text-neutral-400 hover:text-neutral-600 cursor-pointer"
+            , onClick (EditModalMsg ToggleAddFieldForm)
+            ]
+            [ text "✕ 閉じる" ]
+        ]
+
+
+nameInputSection : String -> Bool -> Html Msg
+nameInputSection currentName isDuplicate =
+    div [ class "flex flex-col gap-1" ]
+        [ label [ class "text-[11px] font-semibold text-neutral-500" ] [ text "フィールド名" ]
+        , input
+            [ class "w-full border border-neutral-200 rounded-md px-2.5 py-1.5 text-xs bg-white text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-400"
+            , placeholder "項目名（例: 評価、発売日）"
+            , value currentName
+            , onInput (EditModalMsg << NewFieldNameChanged)
+            ]
+            []
+        , if isDuplicate then
+            span [ class "text-[11px] text-red-500" ] [ text "すでに同じ名前の項目が存在します" ]
+
+          else
+            text ""
+        ]
+
+
+typeSelectSection : NewFieldType -> Html Msg
+typeSelectSection currentType =
+    div [ class "flex flex-col gap-1" ]
+        [ label [ class "text-[11px] font-semibold text-neutral-500" ] [ text "値の型" ]
+        , div [ class "flex gap-2" ]
+            [ typeOptionButton (currentType == NewFieldString) (EditModalMsg (NewFieldTypeChanged NewFieldString)) "String（テキスト）"
+            , typeOptionButton (currentType == NewFieldBoolean) (EditModalMsg (NewFieldTypeChanged NewFieldBoolean)) "Boolean（真偽値）"
+            ]
+        ]
+
+
+typeOptionButton : Bool -> Msg -> String -> Html Msg
+typeOptionButton isSelected msg labelText =
+    button
+        [ class
+            (if isSelected then
+                "flex-1 py-1 px-2 text-xs font-semibold rounded bg-neutral-900 text-white"
+
+             else
+                "flex-1 py-1 px-2 text-xs rounded border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 cursor-pointer"
+            )
+        , onClick msg
+        ]
+        [ text labelText ]
+
+
+valueInputSection : NewFieldForm -> Html Msg
+valueInputSection form =
+    div [ class "flex flex-col gap-1" ]
+        [ label [ class "text-[11px] font-semibold text-neutral-500" ] [ text "値" ]
+        , case form.fieldType of
+            NewFieldString ->
+                textValueInput form.stringValue
+
+            NewFieldBoolean ->
+                boolValueInput form.boolValue
+        ]
+
+
+textValueInput : String -> Html Msg
+textValueInput currentVal =
+    input
+        [ class "w-full border border-neutral-200 rounded-md px-2.5 py-1.5 text-xs bg-white text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-400"
+        , placeholder "初期値"
+        , value currentVal
+        , onInput (EditModalMsg << NewFieldValueChanged)
+        ]
+        []
+
+
+boolValueInput : Bool -> Html Msg
+boolValueInput isChecked =
+    label [ class "flex items-center gap-2 text-xs cursor-pointer select-none py-1" ]
+        [ input
+            [ type_ "checkbox"
+            , class "w-4 h-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-400"
+            , checked isChecked
+            , onClick (EditModalMsg (NewFieldBoolChanged (not isChecked)))
+            ]
+            []
+        , span [ class "text-neutral-700 font-medium" ]
+            [ text
+                (if isChecked then
+                    "はい (True)"
+
+                 else
+                    "いいえ (False)"
+                )
+            ]
+        ]
+
+
+addFieldActions : Bool -> Html Msg
+addFieldActions canAdd =
+    div [ class "flex justify-end pt-1" ]
+        [ button
+            [ class
+                (if canAdd then
+                    "px-3 py-1.5 text-xs font-medium rounded-md bg-neutral-900 text-white hover:bg-neutral-800 transition cursor-pointer"
+
+                 else
+                    "px-3 py-1.5 text-xs font-medium rounded-md bg-neutral-200 text-neutral-400 cursor-not-allowed"
+                )
+            , disabled (not canAdd)
+            , onClick (EditModalMsg AddField)
+            ]
+            [ text "この項目を追加" ]
+        ]
+
 
 
 getFieldsForEdit : EditModalState -> Model -> List FieldConfig

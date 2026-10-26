@@ -21,7 +21,7 @@ import Types
         , Item
         , PendingImport
         , ReadMode(..)
-        , Value
+        , Value(..)
         )
 
 
@@ -110,6 +110,24 @@ defaultFieldConfig key =
 {-| キーとデータから型を推測して、フィールドを作成する。
 指定されたキーを持つ値がすべて Boolean 型ならば、isBool = True と設定する。
 -}
+-- inferFieldConfig : String -> List (List ( String, Value )) -> FieldConfig
+-- inferFieldConfig key rawItems =
+--     let
+--         base =
+--             defaultFieldConfig key
+
+--         valuesForKey =
+--             rawItems
+--                 |> List.concatMap (\item -> List.filterMap (\( k, v ) -> if k == key then Just v else Nothing) item)
+
+--         isBoolType =
+--             if List.isEmpty valuesForKey then
+--                 False
+--             else
+--                 List.all isBooleanValue valuesForKey
+--     in
+--     { base | isBool = isBoolType }
+
 inferFieldConfig : String -> List (List ( String, Value )) -> FieldConfig
 inferFieldConfig key rawItems =
     let
@@ -125,8 +143,17 @@ inferFieldConfig key rawItems =
                 False
             else
                 List.all isBooleanValue valuesForKey
+
+        isTextListType =
+            if List.isEmpty valuesForKey then
+                False
+            else
+                List.any isTextListValue valuesForKey
     in
-    { base | isBool = isBoolType }
+    { base
+        | isBool = isBoolType
+        , isTextList = isTextListType
+    }
 
 
 isBooleanValue : Value -> Bool
@@ -137,6 +164,16 @@ isBooleanValue val =
 
         _ ->
             False
+
+isTextListValue : Value -> Bool
+isTextListValue val =
+    case val of
+        Types.TextList _ ->
+            True
+
+        _ ->
+            False
+
 
 
 toItem : String -> List ( String, Value ) -> Item
@@ -153,16 +190,39 @@ buildItems uuids rawItems =
 -}
 
 
+-- buildNewDataset : String -> String -> List String -> List (List ( String, Value )) -> Dataset
+-- buildNewDataset newId name uuids rawItems =
+--     let
+--         keys =
+--             collectKeyOrder rawItems
+--     in
+--     { id = newId
+--     , name = name
+--     , fields = List.map (\key -> inferFieldConfig key rawItems) keys
+--     , items = buildItems uuids rawItems
+--     , imageLinkField = Nothing
+--     , titleLinkField = Nothing
+--     , filterOrder = []
+--     , wrapTitleOnCard = False
+--     }
+
+
 buildNewDataset : String -> String -> List String -> List (List ( String, Value )) -> Dataset
 buildNewDataset newId name uuids rawItems =
     let
         keys =
             collectKeyOrder rawItems
+
+        fields =
+            List.map (\key -> inferFieldConfig key rawItems) keys
+
+        items =
+            buildItems uuids rawItems
     in
     { id = newId
     , name = name
-    , fields = List.map (\key -> inferFieldConfig key rawItems) keys
-    , items = buildItems uuids rawItems
+    , fields = fields
+    , items = fillMissingBools fields items
     , imageLinkField = Nothing
     , titleLinkField = Nothing
     , filterOrder = []
@@ -190,6 +250,33 @@ applyChoice choice uuids pending target =
             Just (mergeInto False uuids pending target)
 
 
+-- mergeInto : Bool -> List String -> PendingImport -> Dataset -> Dataset
+-- mergeInto includeNewKeys uuids pending target =
+--     let
+--         effectiveRawItems =
+--             if includeNewKeys then
+--                 pending.rawItems
+
+--             else
+--                 List.map (restrictKeys (existingKeysOf target.fields)) pending.rawItems
+
+--         newFields =
+--             if includeNewKeys then
+--                 target.fields ++ List.map (\key -> inferFieldConfig key pending.rawItems) pending.newKeys
+
+--             else
+--                 target.fields
+
+--         newItems =
+--             buildItems uuids effectiveRawItems
+--     in
+--     case pending.mode of
+--         ReplaceData ->
+--             { target | fields = newFields, items = newItems }
+
+--         _ ->
+--             { target | fields = newFields, items = target.items ++ newItems }
+
 mergeInto : Bool -> List String -> PendingImport -> Dataset -> Dataset
 mergeInto includeNewKeys uuids pending target =
     let
@@ -209,13 +296,53 @@ mergeInto includeNewKeys uuids pending target =
 
         newItems =
             buildItems uuids effectiveRawItems
-    in
-    case pending.mode of
-        ReplaceData ->
-            { target | fields = newFields, items = newItems }
 
-        _ ->
-            { target | fields = newFields, items = target.items ++ newItems }
+        mergedItems =
+            case pending.mode of
+                ReplaceData ->
+                    newItems
+
+                _ ->
+                    target.items ++ newItems
+    in
+    { target
+        | fields = newFields
+        , items = fillMissingBools newFields mergedItems
+    }
+
+
+fillMissingBools : List FieldConfig -> List Item -> List Item
+fillMissingBools fields items =
+    let
+        boolKeys =
+            fields
+                |> List.filter .isBool
+                |> List.map .key
+    in
+    if List.isEmpty boolKeys then
+        items
+
+    else
+        List.map (fillItemBools boolKeys) items
+
+
+fillItemBools : List String -> Item -> Item
+fillItemBools boolKeys item =
+    let
+        filledValues =
+            List.foldl
+                (\key acc ->
+                    if Dict.member key acc then
+                        acc
+
+                    else
+                        Dict.insert key (Boolean False) acc
+                )
+                item.values
+                boolKeys
+    in
+    { item | values = filledValues }
+
 
 restrictKeys : List String -> List ( String, Value ) -> List ( String, Value )
 restrictKeys allowedKeys pairs =
