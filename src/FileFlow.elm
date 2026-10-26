@@ -65,6 +65,15 @@ readFile file =
 
 -- 読み込んだテキストの処理
 
+-- handleFileLoaded : String -> String -> Model -> ( Model, Cmd Msg )
+-- handleFileLoaded fileName text model =
+--     case parseRawItems fileName text model of
+--         Ok rawItems ->
+--             startImport rawItems model
+
+--         Err message ->
+--             ( { model | importError = Just message, pendingImport = Nothing }, Cmd.none )
+
 handleFileLoaded : String -> String -> Model -> ( Model, Cmd Msg )
 handleFileLoaded fileName text model =
     case parseRawItems fileName text model of
@@ -72,7 +81,8 @@ handleFileLoaded fileName text model =
             startImport rawItems model
 
         Err message ->
-            ( { model | importError = Just message, pendingImport = Nothing }, Cmd.none )
+            -- エラー時はモーダルを開いてエラーメッセージを表示
+            ( { model | importError = Just message, pendingImport = Nothing, fileModalOpen = True }, Cmd.none )
 
 
 parseRawItems : String -> String -> Model -> Result String (List (List ( String, Value )))
@@ -134,6 +144,33 @@ newPendingImport rawItems =
     }
 
 
+-- resolveOrPrompt : List (List ( String, Value )) -> Dataset -> Model -> ( Model, Cmd Msg )
+-- resolveOrPrompt rawItems target model =
+--     let
+--         newKeys =
+--             Import.findNewKeys target.fields rawItems
+
+--         pending =
+--             { mode = model.readMode
+--             , rawItems = rawItems
+--             , newKeys = newKeys
+--             , nameInput = ""
+--             , choice = AddNewFields
+--             }
+--     in
+--     if List.isEmpty newKeys then
+--         let
+--             count =
+--                 List.length rawItems
+--         in
+--         ( { model | pendingImport = Just pending, importError = Nothing }
+--         , Ports.generateUuids count
+--         )
+
+--     else
+--         ( { model | pendingImport = Just pending, importError = Nothing }, Cmd.none )
+
+
 resolveOrPrompt : List (List ( String, Value )) -> Dataset -> Model -> ( Model, Cmd Msg )
 resolveOrPrompt rawItems target model =
     let
@@ -149,6 +186,7 @@ resolveOrPrompt rawItems target model =
             }
     in
     if List.isEmpty newKeys then
+        -- 既存フィールドと一致している場合はモーダルを開かずそのまま追加完了
         let
             count =
                 List.length rawItems
@@ -158,7 +196,9 @@ resolveOrPrompt rawItems target model =
         )
 
     else
-        ( { model | pendingImport = Just pending, importError = Nothing }, Cmd.none )
+        -- 既存データにない新キーが見つかった場合はモーダルを開いてユーザーに選択を促す
+        ( { model | pendingImport = Just pending, importError = Nothing, fileModalOpen = True }, Cmd.none )
+
 
 -- 追加・置き換えインポート解決時：UUID 生成要求を JS ポートへ送る
 resolveChoice : AppendChoice -> Model -> ( Model, Cmd Msg )

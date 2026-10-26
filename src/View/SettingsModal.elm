@@ -42,15 +42,6 @@ overlay dataset =
             ]
         ]
 
--- overlayClasses : String
--- overlayClasses =
---     "fixed inset-0 bg-black/30 flex items-center justify-center z-50"
-
-
--- panelClasses : String
--- panelClasses =
---     "bg-white rounded-md shadow-lg w-[36rem] max-h-[80vh] overflow-y-auto p-5 flex flex-col gap-4"
-
 
 header : Html Msg
 header =
@@ -243,11 +234,6 @@ toggleButtonClasses isActive =
 showOnCardCheckbox : FieldConfig -> Html Msg
 showOnCardCheckbox field =
     checkboxField field.key "カードに表示" field.showOnCard (SetShowOnCard field.key)
-
-
--- filterableCheckbox : FieldConfig -> Html Msg
--- filterableCheckbox field =
---     checkboxField field.key "フィルター" field.filterable (SetFilterable field.key)
 
 
 checkboxField : String -> String -> Bool -> (Bool -> FieldSettingsMsg) -> Html Msg

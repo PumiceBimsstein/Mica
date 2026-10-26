@@ -3,14 +3,11 @@ module Update exposing (update)
 import Dict
 import FileFlow
 import Filter
--- import Search
 import History
--- import Json.Decode as Decode
 import Ports
 import Set
 import Settings
 import Storage
--- import Search
 import Update.DatasetEdit exposing (confirmEditItem, deleteEditingItem)
 import Update.ItemManager exposing (createNewItemWithUuid)
 import Update.EditModalManager exposing (closeEditModal, openEditModal)
@@ -63,9 +60,6 @@ update msg model =
     case msg of
         SetCardSize size ->
             saveAfter (setCardSize size model)
-
-        -- StateLoaded value ->
-        --     handleStateLoaded value model
 
         ToggleSettingsModal open ->
             ( { model | settingsModalOpen = open }, Cmd.none )
@@ -204,6 +198,25 @@ updateFileFlow msg model =
 
         ExportBackupClicked ->
             ( model, FileFlow.exportBackup model )
+        
+        DragEntered ->
+            ( { model | isDraggingFile = True }, Cmd.none )
+
+        DragLeft ->
+            ( { model | isDraggingFile = False }, Cmd.none )
+
+        DragOver ->
+            ( model, Cmd.none )
+
+        FileDropped file ->
+            let
+                newModel =
+                    { model
+                        | isDraggingFile = False
+                        , readMode = Types.AppendData
+                    }
+            in
+            ( newModel, FileFlow.readFile file )
 
 
 updateFilter : FilterMsg -> Model -> ( Model, Cmd Msg )
@@ -418,15 +431,6 @@ applyImportToCurrentDataset : List String -> Types.PendingImport -> Model -> ( M
 applyImportToCurrentDataset uuids pending model =
     FileFlow.applyImportAndSave pending.choice uuids pending model
 
--- applyAndSaveImport : List String -> Types.PendingImport -> Model -> ( Model, Cmd Msg )
--- applyAndSaveImport uuids pending model =
---     FileFlow.applyImportAndSave Types.AddNewFields uuids pending model
-
-
--- clearPendingImport : Model -> Model
--- clearPendingImport model =
---     { model | pendingImport = Nothing }
-
 
 confirmAllTextLists : EditModalState -> EditModalState
 confirmAllTextLists editState =
@@ -452,15 +456,13 @@ updateSearch msg model =
             ( { model | searchState = toggleSearchField fieldKey model.searchState }, Cmd.none )
 
 
--- 検索ワードを更新する。
+-- 検索ワードを更新
 updateSearchQuery : String -> SearchState -> SearchState
 updateSearchQuery newQuery state =
     { state | query = newQuery }
 
 
-{-| 検索モードを切り替える。
-SearchAll <-> SearchFields (空) に切り替える。
--}
+-- 検索モード切り替え
 toggleSearchMode : SearchState -> SearchState
 toggleSearchMode state =
     case state.mode of
@@ -471,9 +473,6 @@ toggleSearchMode state =
             { state | mode = SearchAll }
 
 
-{-| フィールド指定検索でのフィールド選択を切り替える。
-SearchAll の場合は何もしない。
--}
 toggleSearchField : String -> SearchState -> SearchState
 toggleSearchField fieldKey state =
     case state.mode of

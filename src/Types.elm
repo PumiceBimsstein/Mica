@@ -244,6 +244,7 @@ type alias Model =
     , topVisibleCardId : Maybe String
     , searchState : SearchState
     , detailModalItemId : Maybe String
+    , isDraggingFile : Bool
     }
 
 
@@ -341,6 +342,10 @@ type FileFlowMsg
     | BackupFileSelected File.File
     | BackupTextLoaded String
     | ExportBackupClicked
+    | DragEntered
+    | DragLeft
+    | DragOver
+    | FileDropped File.File
 
 type SearchMsg
     = SetQuery String

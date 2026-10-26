@@ -29,14 +29,12 @@ view model =
 overlay : Model -> Html Msg
 overlay model =
     div [ class "fixed inset-0 flex items-center justify-center z-50 p-4" ]
-        [ -- 背景レイヤー
-          div
+        [ div
             [ class "absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
             , onClick (FileFlowMsg (ToggleModal False))
             ]
             []
-        , -- パネル本体
-          div [ class "relative bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto flex flex-col z-10 border border-neutral-100" ]
+        , div [ class "relative bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto flex flex-col z-10 border border-neutral-100" ]
             [ header
             , div [ class "p-6 flex flex-col gap-6" ]
                 [ currentDatasetCard model.dataset
@@ -62,7 +60,7 @@ header =
         ]
 
 
--- MARK: 現在のデータセット情報（B案：名前変更ボタン付き）
+-- MARK: 現在のデータセット情報
 
 
 currentDatasetCard : Dataset -> Html Msg
@@ -180,8 +178,7 @@ newPropertyChoice pending =
         ]
 
 
--- MARK: 書き出しセクション（ボタン2つ）
-
+-- MARK: 書き出しセクション
 
 exportSection : Html Msg
 exportSection =
@@ -204,7 +201,6 @@ exportSection =
 
 -- MARK: バックアップセクション
 
-
 backupSection : Html Msg
 backupSection =
     div [ class "flex flex-col gap-3 pt-4 border-t border-neutral-100" ]
@@ -225,7 +221,6 @@ backupSection =
 
 
 -- MARK: 共通部品
-
 
 sectionHeader : String -> String -> Html Msg
 sectionHeader title_ description_ =
@@ -256,8 +251,7 @@ secondaryButtonClasses =
     "px-3.5 py-1.5 text-xs font-medium rounded-md border border-neutral-200 text-neutral-600 hover:bg-neutral-100 transition"
 
 
--- MARK: B案の名前変更モーダル
-
+-- MARK: 名前変更モーダル
 
 renameModalView : Model -> Html Msg
 renameModalView model =

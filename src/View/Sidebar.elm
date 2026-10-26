@@ -83,24 +83,6 @@ sizeTab current target label =
         [ text label ]
 
 
--- cardSizeButton : CardSize -> CardSize -> String -> Html Msg
--- cardSizeButton current target label =
---     button
---         [ class (cardSizeButtonClasses (current == target))
---         , onClick (SetCardSize target)
---         ]
---         [ text label ]
-
-
--- cardSizeButtonClasses : Bool -> String
--- cardSizeButtonClasses isActive =
---     if isActive then
---         "px-3 py-1 text-sm rounded bg-neutral-900 text-white"
-
---     else
---         "px-3 py-1 text-sm rounded text-neutral-600 hover:bg-neutral-100"
-
-
 settingsButton : Html Msg
 settingsButton =
     button

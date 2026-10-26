@@ -58,25 +58,6 @@ removeItemFromDataset itemId dataset =
     { dataset | items = List.filter (\item -> item.id /= itemId) dataset.items }
 
 
--- saveItemToDataset : EditModalState -> Dataset -> Dataset
--- saveItemToDataset editState dataset =
---     let
---         updatedItem =
---             applyEditingValuesToItem editState
-
---         isNewItem =
---             not (List.any (\item -> item.id == editState.editingItemId) dataset.items)
-
---         updatedItems =
---             if isNewItem then
---                 dataset.items ++ [ updatedItem ]
-
---             else
---                 List.map (updateItemIfMatch editState.editingItemId updatedItem) dataset.items
---     in
---     { dataset | items = updatedItems }
-
-
 saveItemToDataset : EditModalState -> Dataset -> Dataset
 saveItemToDataset editState dataset =
     let

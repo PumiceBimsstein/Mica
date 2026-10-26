@@ -70,6 +70,7 @@ defaultModel =
     , topVisibleCardId = Nothing
     , searchState = { query = "", mode = SearchAll }
     , detailModalItemId = Nothing
+    , isDraggingFile = False
     }
 
 

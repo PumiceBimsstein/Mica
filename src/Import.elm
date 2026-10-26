@@ -32,10 +32,6 @@ decodeRawItems text =
     Decode.decodeString rawItemsDecoder text
 
 
--- rawItemsDecoder : Decode.Decoder (List (List ( String, Value )))
--- rawItemsDecoder =
---     Decode.list (Decode.keyValuePairs DomainJson.decodeValue)
-
 rawItemsDecoder : Decode.Decoder (List (List ( String, Value )))
 rawItemsDecoder =
     Decode.list
@@ -107,27 +103,6 @@ defaultFieldConfig key =
     }
 
 
-{-| キーとデータから型を推測して、フィールドを作成する。
-指定されたキーを持つ値がすべて Boolean 型ならば、isBool = True と設定する。
--}
--- inferFieldConfig : String -> List (List ( String, Value )) -> FieldConfig
--- inferFieldConfig key rawItems =
---     let
---         base =
---             defaultFieldConfig key
-
---         valuesForKey =
---             rawItems
---                 |> List.concatMap (\item -> List.filterMap (\( k, v ) -> if k == key then Just v else Nothing) item)
-
---         isBoolType =
---             if List.isEmpty valuesForKey then
---                 False
---             else
---                 List.all isBooleanValue valuesForKey
---     in
---     { base | isBool = isBoolType }
-
 inferFieldConfig : String -> List (List ( String, Value )) -> FieldConfig
 inferFieldConfig key rawItems =
     let
@@ -185,27 +160,6 @@ buildItems : List String -> List (List ( String, Value )) -> List Item
 buildItems uuids rawItems =
     List.map2 toItem uuids rawItems
 
-{-| 新規データセットを作成する。フィールドはデータから推測し、
-表示方法は仮に通常テキストとする（設定画面から後で変更できる）。
--}
-
-
--- buildNewDataset : String -> String -> List String -> List (List ( String, Value )) -> Dataset
--- buildNewDataset newId name uuids rawItems =
---     let
---         keys =
---             collectKeyOrder rawItems
---     in
---     { id = newId
---     , name = name
---     , fields = List.map (\key -> inferFieldConfig key rawItems) keys
---     , items = buildItems uuids rawItems
---     , imageLinkField = Nothing
---     , titleLinkField = Nothing
---     , filterOrder = []
---     , wrapTitleOnCard = False
---     }
-
 
 buildNewDataset : String -> String -> List String -> List (List ( String, Value )) -> Dataset
 buildNewDataset newId name uuids rawItems =
@@ -232,11 +186,6 @@ buildNewDataset newId name uuids rawItems =
 
 -- 追加・置き換えインポートの解決
 
-
-{-| choice に応じて、新しいプロパティを追加する／無視する／中止する。
-中止の場合は Nothing を返す。
--}
-
 applyChoice : AppendChoice -> List String -> PendingImport -> Dataset -> Maybe Dataset
 applyChoice choice uuids pending target =
     case choice of
@@ -249,33 +198,6 @@ applyChoice choice uuids pending target =
         IgnoreNewFields ->
             Just (mergeInto False uuids pending target)
 
-
--- mergeInto : Bool -> List String -> PendingImport -> Dataset -> Dataset
--- mergeInto includeNewKeys uuids pending target =
---     let
---         effectiveRawItems =
---             if includeNewKeys then
---                 pending.rawItems
-
---             else
---                 List.map (restrictKeys (existingKeysOf target.fields)) pending.rawItems
-
---         newFields =
---             if includeNewKeys then
---                 target.fields ++ List.map (\key -> inferFieldConfig key pending.rawItems) pending.newKeys
-
---             else
---                 target.fields
-
---         newItems =
---             buildItems uuids effectiveRawItems
---     in
---     case pending.mode of
---         ReplaceData ->
---             { target | fields = newFields, items = newItems }
-
---         _ ->
---             { target | fields = newFields, items = target.items ++ newItems }
 
 mergeInto : Bool -> List String -> PendingImport -> Dataset -> Dataset
 mergeInto includeNewKeys uuids pending target =

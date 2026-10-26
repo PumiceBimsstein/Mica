@@ -51,8 +51,8 @@ matchesSearch searchState dataset item =
                     matchesSearchFields queryLower fieldKeys item
 
 
-{-| 全文検索：アイテムのすべての値を対象に検索
--}
+-- 全文検索：アイテムのすべての値を対象に検索
+
 matchesSearchAll : String -> Item -> Bool
 matchesSearchAll queryLower item =
     item.values
@@ -60,8 +60,7 @@ matchesSearchAll queryLower item =
         |> List.any (\value -> String.contains queryLower (valueToString value))
 
 
-{-| フィールド指定検索：指定フィールドのいずれかがマッチ（OR検索）
--}
+-- フィールド指定検索：指定フィールドのいずれかがマッチ（OR検索）
 matchesSearchFields : String -> Set String -> Item -> Bool
 matchesSearchFields queryLower fieldKeys item =
     fieldKeys
@@ -74,25 +73,16 @@ matchesSearchFields queryLower fieldKeys item =
             )
 
 
-{-| 検索条件を満たすアイテムだけを抽出する。
--}
 searchResults : SearchState -> Dataset -> List Item
 searchResults searchState dataset =
     List.filter (matchesSearch searchState dataset) dataset.items
 
 
-{-| クエリを小文字に変換する（大文字小文字を区別しない検索のため）
--}
 queryToLowercase : String -> String
 queryToLowercase =
     String.toLower
 
 
-{-| Value を検索可能な文字列に変換する。
-Text: そのまま
-TextList: スペース区切りで結合
-Boolean: "true" または "false"
--}
 valueToString : Value -> String
 valueToString value =
     case value of

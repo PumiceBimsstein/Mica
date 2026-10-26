@@ -83,11 +83,6 @@ header editState model =
         ]
 
 
--- formContent : EditModalState -> Model -> Html Msg
--- formContent editState model =
---     div [ class "px-6 py-5 flex-1 overflow-y-auto flex flex-col gap-4" ]
---         (List.map (fieldForm editState model) (getFieldsForEdit editState model))
-
 formContent : EditModalState -> Model -> Html Msg
 formContent editState model =
     div [ class "px-6 py-5 flex-1 overflow-y-auto flex flex-col gap-4" ]
@@ -95,8 +90,6 @@ formContent editState model =
             ++ [ addFieldSection editState ]
         )
 
-
--- View/EditModal.elm (addFieldSection 周辺の差し替え)
 
 -- MARK: 新規フィールド追加セクション（小分けにしたView部品）
 

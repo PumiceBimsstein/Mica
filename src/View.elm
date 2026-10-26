@@ -1,11 +1,15 @@
 module View exposing (view)
 
+import Json.Decode as Decode
+import File
 import Filter
 import Html exposing (Html, div, text, button, node)
 import Html.Attributes exposing (class, id, style, disabled, value, type_, title)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick, onInput, custom)
 import Html.Keyed as Keyed
-import Types exposing (CardSize(..), Dataset, EditModalMsg(..), Item, Model, Msg(..), SortModalMsg(..))
+import Svg exposing (path, svg)
+import Svg.Attributes as SvgAttr
+import Types exposing (CardSize(..), Dataset, EditModalMsg(..), FileFlowMsg(..), Item, Model, Msg(..), SortModalMsg(..))
 import View.Card as Card
 import View.DetailModal as DetailModal
 import View.EditModal as EditModal
@@ -31,12 +35,26 @@ view model =
 
 mainArea : Model -> Html Msg
 mainArea model =
-    div [ id "main-area", class mainAreaClasses ] [ mainContent model ]
+    div
+        [ class "flex-1 h-screen relative overflow-hidden flex flex-col"
+        , custom "dragenter" dragEnterDecoder
+        , custom "dragover" dragOverDecoder
+        ]
+        [ div
+            [ id "main-area"
+            , class mainAreaClasses
+            ]
+            [ mainContent model ]
+        , if model.isDraggingFile then
+            dropOverlay
 
+          else
+            text ""
+        ]
 
 mainAreaClasses : String
 mainAreaClasses =
-    "flex-1 h-screen overflow-y-auto p-6 bg-white flex flex-col gap-3"
+    "flex-1 h-full overflow-y-auto p-6 bg-white flex flex-col gap-3"
 
 
 mainContent : Model -> Html Msg
@@ -103,9 +121,6 @@ actionButtonGroup model =
                     text ""
                 ]
 
--- actionButtonRapperClasses : String
--- actionButtonRapperClasses =
---     "fixed top-6 right-6 z-30 flex flex-col gap-1.5 items-stretch bg-white border border-neutral-200 rounded-lg p-2 shadow-md min-w-[90px]"
 
 actionButtonClasses : String
 actionButtonClasses =
@@ -126,21 +141,10 @@ scrollToTopButtonClasses =
     "fixed bottom-6 right-6 z-40 px-3 py-1.5 text-xs text-neutral-600 bg-white/70 border border-neutral-300 rounded shadow-sm opacity-50 hover:opacity-100 transition-opacity duration-200"
 
 
--- emptyState : Html Msg
--- emptyState =
---     div [ class "text-neutral-400 text-sm" ]
---         [ text "データがありません。ファイル操作からデータを読み込んでください。" ]
-
-
 noMatchState : Html Msg
 noMatchState =
     div [ class "text-neutral-400 text-sm" ] [ text "条件に一致するカードがありません。" ]
 
-
-{-| card-grid というidをつけ、JavaScript側（SortableJS・選択操作）がこの
-コンテナを見つけられるようにする。並べ替え後の順序をModelにも正しく反映できるよう、
-アイテムidをキーとしたHtml.Keyedで描画する。
--}
 
 cardGrid : Model -> Dataset -> List Item -> Html Msg
 cardGrid model dataset items =
@@ -157,6 +161,7 @@ cardKeyedEntry : Model -> Dataset -> Item -> ( String, Html Msg )
 cardKeyedEntry model dataset item =
     ( item.id, Card.view dataset model.cardSize False model.hoveredItemId item )
 
+
 cardGridClasses : CardSize -> String
 cardGridClasses size =
     case size of
@@ -170,7 +175,7 @@ cardGridClasses size =
             "grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4"
 
 
--- [追加] 並べ替え専用モーダルの描画
+-- 並べ替えモーダル
 
 sortModal : Model -> Html Msg
 sortModal model =
@@ -196,7 +201,6 @@ sortModal model =
             ]
 
 
--- [変更] 個別の幅・高さ指定を撤廃し、カード単体は通常の要素として描画する
 sortModalCardEntry : Dataset -> CardSize -> Item -> Html Msg
 sortModalCardEntry dataset cardSize item =
     div 
@@ -216,6 +220,7 @@ sortModalControls model =
             [ text "完了" ]
         , cardSizeSlider model.sortModalCardScale
         ]
+
 
 cardSizeSlider : Float -> Html Msg
 cardSizeSlider currentScale =
@@ -249,3 +254,84 @@ mainCardSizeSlider currentScale =
             ]
             []
         ]
+
+-- MARK: ドラッグ＆ドロップ用オーバーレイ
+
+dropOverlay : Html Msg
+dropOverlay =
+    div
+        [ class "absolute inset-0 z-40 bg-blue-500/10 backdrop-blur-xs border-4 border-dashed border-blue-400 m-4 rounded-2xl flex flex-col items-center justify-center p-8 transition-all"
+        , custom "dragover" dragOverDecoder
+        , custom "dragleave" dragLeaveDecoder
+        , custom "drop" dropDecoder
+        ]
+        [ div [ class "bg-white shadow-2xl rounded-2xl p-6 border border-blue-200 flex flex-col items-center gap-3 pointer-events-none select-none" ]
+            [ dropUploadIcon
+            , div [ class "text-base font-bold text-neutral-800" ] [ text "ファイルをドロップしてカードを追加" ]
+            , div [ class "text-xs text-neutral-500" ] [ text "JSON または CSV ファイルに対応（追加モード）" ]
+            ]
+        ]
+
+
+dropUploadIcon : Html Msg
+dropUploadIcon =
+    svg
+        [ SvgAttr.viewBox "0 0 24 24"
+        , SvgAttr.fill "none"
+        , SvgAttr.stroke "currentColor"
+        , SvgAttr.strokeWidth "2"
+        , SvgAttr.strokeLinecap "round"
+        , SvgAttr.strokeLinejoin "round"
+        , SvgAttr.class "w-10 h-10 text-blue-500"
+        ]
+        [ path [ SvgAttr.d "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" ] []
+        , path [ SvgAttr.d "M7 10l5 5 5-5" ] []
+        , path [ SvgAttr.d "M12 15V3" ] []
+        ]
+
+
+-- MARK: ドラッグ＆ドロップ用イベントデコーダー
+
+dropDecoder : Decode.Decoder { message : Msg, stopPropagation : Bool, preventDefault : Bool }
+dropDecoder =
+    Decode.at [ "dataTransfer", "files" ] (Decode.list File.decoder)
+        |> Decode.andThen
+            (\files ->
+                case files of
+                    file :: _ ->
+                        Decode.succeed
+                            { message = FileFlowMsg (FileDropped file)
+                            , stopPropagation = True
+                            , preventDefault = True
+                            }
+
+                    [] ->
+                        Decode.fail "No files dropped"
+            )
+
+
+dragOverDecoder : Decode.Decoder { message : Msg, stopPropagation : Bool, preventDefault : Bool }
+dragOverDecoder =
+    Decode.succeed
+        { message = FileFlowMsg DragOver
+        , stopPropagation = True
+        , preventDefault = True
+        }
+
+
+dragEnterDecoder : Decode.Decoder { message : Msg, stopPropagation : Bool, preventDefault : Bool }
+dragEnterDecoder =
+    Decode.succeed
+        { message = FileFlowMsg DragEntered
+        , stopPropagation = True
+        , preventDefault = True
+        }
+
+
+dragLeaveDecoder : Decode.Decoder { message : Msg, stopPropagation : Bool, preventDefault : Bool }
+dragLeaveDecoder =
+    Decode.succeed
+        { message = FileFlowMsg DragLeft
+        , stopPropagation = True
+        , preventDefault = True
+        }
