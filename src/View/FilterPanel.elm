@@ -28,7 +28,7 @@ view model dataset =
             List.length orderedFields
     in
     if List.isEmpty orderedFields then
-        div [ class "text-sm text-neutral-400" ] [ text "フィルター可能なフィールドがありません" ]
+        div [ class "text-sm text-neutral-400" ] [ text "" ]
 
     else
         div [ class "flex flex-col gap-2" ]

@@ -67,13 +67,6 @@ isMatchingId targetId item =
     item.id == targetId
 
 
--- initializeEditModal : String -> Item -> Dataset -> EditModalState
--- initializeEditModal itemId item dataset =
---     { editingItemId = itemId
---     , editingValues = buildEditingValues item dataset.fields
---     , fields = dataset.fields
---     }
-
 initializeEditModal : String -> Item -> Dataset -> EditModalState
 initializeEditModal itemId item dataset =
     { editingItemId = itemId

@@ -13,6 +13,7 @@ import Types exposing
     ( CardSize(..), FileFormat(..), Model, Msg(..)
     , EditModalMsg(..), SortModalMsg(..), ReadMode(..)
     , SearchState, SearchMode(..), DetailModalMsg(..)
+    , FileFlowMsg(..)
     )
 
 
@@ -82,18 +83,34 @@ subscriptions model =
         , Ports.topCardIdReceived TopCardIdReceived
         , Ports.idGenerated CreateItemWithId
         , Ports.idsArrayGenerated DatasetFileImport
-        , detailKeySubscription model
+        , keySubscription model
         ]
 
--- 詳細モーダルが開いているときのみキーボード入力を購読
-detailKeySubscription : Model -> Sub Msg
-detailKeySubscription model =
-    case model.detailModalItemId of
-        Just _ ->
-            Browser.Events.onKeyDown
-                (Decode.field "key" Decode.string
-                    |> Decode.map (\key -> DetailModalMsg (KeyDown key))
-                )
 
-        Nothing ->
-            Sub.none
+keySubscription : Model -> Sub Msg
+keySubscription model =
+    if model.isDraggingFile || model.detailModalItemId /= Nothing then
+        Browser.Events.onKeyDown (keyDecoder model)
+
+    else
+        Sub.none
+
+
+keyDecoder : Model -> Decode.Decoder Msg
+keyDecoder model =
+    Decode.field "key" Decode.string
+        |> Decode.andThen
+            (\key ->
+                if model.isDraggingFile && key == "Escape" then
+                    -- ファイルドラッグ中の Esc キャンセル
+                    Decode.succeed (FileFlowMsg DragLeft)
+
+                else
+                    case model.detailModalItemId of
+                        -- 詳細モーダル表示中のキー操作（←, →, Esc）
+                        Just _ ->
+                            Decode.succeed (DetailModalMsg (KeyDown key))
+
+                        Nothing ->
+                            Decode.fail "Ignored key"
+            )

@@ -39,7 +39,6 @@ view dataset size isSelected hoveredItemId item =
 
 -- MARK: サイズ別カードビュー
 
-
 viewSmall : Dataset -> Bool -> Bool -> Item -> Html Msg
 viewSmall dataset isSelected isHovered item =
     div (buildCardAttributes smallCardClasses isSelected item.id)
@@ -138,8 +137,6 @@ renderTitle dataset item =
         |> wrapTitleWithLink target classes item.id
 
 
--- Card.elm
-
 renderFallbackTitle : Dataset -> Item -> Html Msg
 renderFallbackTitle dataset item =
     let
@@ -175,6 +172,7 @@ renderFallbackTitle dataset item =
             div [ class baseClasses, title titleString ]
                 [ text titleString ]
 
+
 renderLinkedImage : Dataset -> Item -> String -> Html Msg
 renderLinkedImage dataset item url =
     let
@@ -201,8 +199,7 @@ renderRawImage titleString imgSrc =
         []
 
 
--- MARK: リンク判定・ラッピングの純粋関数
-
+-- MARK: リンク判定
 
 type CardLinkTarget
     = LinkDetail
@@ -277,7 +274,6 @@ wrapImageWithLink linktarget itemId titleString imageNode =
 
 -- MARK: 大サイズカード詳細フィールド
 
-
 detailRow : Item -> FieldConfig -> Html Msg
 detailRow item field =
     detailValueView item field
@@ -326,7 +322,6 @@ emptyDetailPlaceholder =
 
 -- MARK: コンテナ属性・デコレータ
 
-
 buildCardAttributes : String -> Bool -> String -> List (Html.Attribute Msg)
 buildCardAttributes baseClasses isSelected itemId =
     [ attribute "data-id" itemId
@@ -365,13 +360,7 @@ editButton itemId =
 
 
 
--- MARK: データ抽出ヘルパー
-
-
--- imageUrl : Dataset -> Item -> Maybe String
--- imageUrl dataset item =
---     findFieldByRole Image dataset.fields
---         |> Maybe.andThen (\field -> getText field.key item)
+-- MARK: データ抽出
 
 imageUrl : Dataset -> Item -> Maybe String
 imageUrl dataset item =
@@ -396,10 +385,6 @@ linkUrl : Maybe String -> Item -> Maybe String
 linkUrl maybeFieldKey item =
     maybeFieldKey
         |> Maybe.andThen (\key -> getText key item)
-
-
-
--- MARK: クラス定数
 
 
 smallCardClasses : String

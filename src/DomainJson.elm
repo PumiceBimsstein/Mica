@@ -7,19 +7,11 @@ module DomainJson exposing
     , encodeValue
     )
 
-{-| Value / Item / FieldConfig / Dataset のJSONエンコード・デコード。
-IndexedDBへの保存だけでなく、後のステップで実装するファイル入出力
-（通常JSON・バックアップJSON）でもこのモジュールを再利用する想定。
--}
 
 import Dict exposing (Dict)
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Types exposing (Dataset, DisplayRole(..), FieldConfig, Item, Value(..))
-
-
-
--- Value
 
 
 encodeValue : Value -> Encode.Value
@@ -34,14 +26,6 @@ encodeValue value =
         Boolean b ->
             Encode.bool b
 
-
--- decodeValue : Decode.Decoder Value
--- decodeValue =
---     Decode.oneOf
---         [ Decode.map Text Decode.string
---         , Decode.map TextList (Decode.list Decode.string)
---         , Decode.map Boolean Decode.bool
---         ]
 
 decodeValue : Decode.Decoder Value
 decodeValue =
@@ -66,8 +50,6 @@ parseCommaSeparated str =
         |> List.filter (not << String.isEmpty)
 
 
--- Item
-
 encodeItem : Item -> Encode.Value
 encodeItem item =
     Encode.object
@@ -86,10 +68,6 @@ decodeItem =
     Decode.map2 Item
         (Decode.field "id" Decode.string)
         (Decode.field "values" (Decode.dict decodeValue))
-
-
-
--- FieldConfig
 
 
 encodeFieldConfig : FieldConfig -> Encode.Value
@@ -124,6 +102,7 @@ decodeFieldConfig =
 decodeAndMap : Decode.Decoder a -> Decode.Decoder (a -> b) -> Decode.Decoder b
 decodeAndMap =
     Decode.map2 (\a f -> f a)
+
 
 encodeDisplayRole : DisplayRole -> Encode.Value
 encodeDisplayRole role =
@@ -167,10 +146,6 @@ displayRoleFromString s =
             Decode.fail ("unknown displayRole: " ++ other)
 
 
-
--- Dataset
-
-
 encodeDataset : Dataset -> Encode.Value
 encodeDataset dataset =
     Encode.object
@@ -208,10 +183,6 @@ decodeDataset =
         |> decodeAndMap (Decode.oneOf [ Decode.field "wrapTitleOnCard" Decode.bool, Decode.succeed False ])
 
 
-
-{-| filterOrderが無い（このフィールドを追加する前に保存されたデータ）場合は
-空リストとして扱う。
--}
 decodeFilterOrder : Decode.Decoder (List String)
 decodeFilterOrder =
     Decode.oneOf

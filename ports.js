@@ -2,37 +2,61 @@ const DB_NAME = "card-viewer-Mica";
 const DB_VERSION = 2;
 const STORE_NAME = "appState";
 const RECORD_KEY = "state";
+const HAS_SAVED_FLAG = "mica_has_saved_data";
 
 
-function openDb() {
+// リトライ機能付きの openDb（ブラウザ起動時のロック解除待ちに対応）
+function openDb(retries = 3, delay = 200) {
   return new Promise((resolve, reject) => {
-    try {
-      const req = indexedDB.open(DB_NAME, DB_VERSION);
+    function tryOpen(remaining) {
+      try {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
 
-      req.onupgradeneeded = (event) => {
-        const db = req.result;
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.createObjectStore(STORE_NAME);
+        req.onupgradeneeded = (event) => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME);
+          }
+        };
+
+        req.onsuccess = () => resolve(req.result);
+
+        req.onerror = () => {
+          if (remaining > 0) {
+            setTimeout(() => tryOpen(remaining - 1), delay);
+          } else {
+            reject(req.error);
+          }
+        };
+
+        req.onblocked = () => {
+          if (remaining > 0) {
+            setTimeout(() => tryOpen(remaining - 1), delay);
+          } else {
+            reject(new Error("IndexedDB is blocked"));
+          }
+        };
+      } catch (err) {
+        if (remaining > 0) {
+          setTimeout(() => tryOpen(remaining - 1), delay);
+        } else {
+          reject(err);
         }
-      };
-
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-      req.onblocked = () => reject(new Error("IndexedDB is blocked"));
-    } catch (err) {
-      reject(err);
+      }
     }
+
+    tryOpen(retries);
   });
 }
 
 
-// 起動時に呼ばれる安全な読込処理（最大500msでタイムアウトしてアプリ起動を保証）
 async function loadState() {
+  const hasSavedData = localStorage.getItem(HAS_SAVED_FLAG) === "true";
+
   const readPromise = (async () => {
-    const db = await openDb();
+    const db = await openDb(3, 200);
     return new Promise((resolve) => {
       try {
-        // オブジェクトストアが存在しない場合は null
         if (!db.objectStoreNames.contains(STORE_NAME)) {
           resolve(null);
           return;
@@ -50,13 +74,15 @@ async function loadState() {
       }
     });
   })();
-  
-  // IndexedDBの応答が遅い、または止まった場合のタイムアウト（500ms）
+  // ブラウザ再起動の遅延を許容するため 3000ms（3秒）
+  // 保存実績があるのに取れなかった場合は "LOAD_ERROR" を返す
   const timeoutPromise = new Promise((resolve) => {
-    setTimeout(() => resolve(null), 500);
+    setTimeout(() => {
+      resolve(hasSavedData ? "LOAD_ERROR" : null);
+    }, 3000);
   });
 
-  return Promise.race([readPromise, timeoutPromise]).catch(() => null);
+  return Promise.race([readPromise, timeoutPromise]).catch(() => (hasSavedData ? "LOAD_ERROR" : null));
 }
 
 
@@ -66,7 +92,13 @@ async function saveState(state) {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, "readwrite");
       tx.objectStore(STORE_NAME).put(state, RECORD_KEY);
-      tx.oncomplete = () => resolve();
+      tx.oncomplete = () => {
+        // 保存成功の実績を記録（次回以降、モックデータでの誤起動を防止するため）
+        try {
+          localStorage.setItem(HAS_SAVED_FLAG, "true");
+        } catch (_) {}
+        resolve();
+      };
       tx.onerror = () => reject(tx.error);
     });
   } catch (err) {

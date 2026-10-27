@@ -40,11 +40,14 @@ mainArea model =
         , custom "dragenter" dragEnterDecoder
         , custom "dragover" dragOverDecoder
         ]
-        [ div
+        [ -- 通常のカードスクロール領域
+          div
             [ id "main-area"
             , class mainAreaClasses
             ]
             [ mainContent model ]
+
+        -- ドラッグ中のみ最前面（z-50）を全面覆うオーバーレイ
         , if model.isDraggingFile then
             dropOverlay
 
@@ -260,15 +263,21 @@ mainCardSizeSlider currentScale =
 dropOverlay : Html Msg
 dropOverlay =
     div
-        [ class "absolute inset-0 z-40 bg-blue-500/10 backdrop-blur-xs border-4 border-dashed border-blue-400 m-4 rounded-2xl flex flex-col items-center justify-center p-8 transition-all"
+        [ -- 画面全体を隙間なく覆い、イベントを確実にキャッチする
+          class "absolute inset-0 z-50 bg-blue-500/15 backdrop-blur-xs flex flex-col p-6 transition-all cursor-pointer"
         , custom "dragover" dragOverDecoder
         , custom "dragleave" dragLeaveDecoder
         , custom "drop" dropDecoder
+        , onClick (FileFlowMsg DragLeft)
         ]
-        [ div [ class "bg-white shadow-2xl rounded-2xl p-6 border border-blue-200 flex flex-col items-center gap-3 pointer-events-none select-none" ]
-            [ dropUploadIcon
-            , div [ class "text-base font-bold text-neutral-800" ] [ text "ファイルをドロップしてカードを追加" ]
-            , div [ class "text-xs text-neutral-500" ] [ text "JSON または CSV ファイルに対応（追加モード）" ]
+        [ -- 内部の装飾要素はすべて pointer-events-none でマウス判定を無効化（dragleaveの誤爆防止）
+          div [ class "w-full h-full border-4 border-dashed border-blue-500 rounded-2xl flex flex-col items-center justify-center pointer-events-none select-none bg-blue-50/20" ]
+            [ div [ class "bg-white shadow-2xl rounded-2xl p-6 border border-blue-200 flex flex-col items-center gap-3 pointer-events-none select-none" ]
+                [ dropUploadIcon
+                , div [ class "text-base font-bold text-neutral-800" ] [ text "ファイルをドロップしてカードを追加" ]
+                , div [ class "text-xs text-neutral-500" ] [ text "JSON または CSV ファイルに対応（追加モード）" ]
+                , div [ class "text-[11px] text-neutral-400 mt-1" ] [ text "※ クリックまたは Esc キーでキャンセル" ]
+                ]
             ]
         ]
 
@@ -292,6 +301,8 @@ dropUploadIcon =
 
 -- MARK: ドラッグ＆ドロップ用イベントデコーダー
 
+-- MARK: ドラッグ＆ドロップ用イベントデコーダー
+
 dropDecoder : Decode.Decoder { message : Msg, stopPropagation : Bool, preventDefault : Bool }
 dropDecoder =
     Decode.at [ "dataTransfer", "files" ] (Decode.list File.decoder)
@@ -306,7 +317,7 @@ dropDecoder =
                             }
 
                     [] ->
-                        Decode.fail "No files dropped"
+                        Decode.fail "No files"
             )
 
 

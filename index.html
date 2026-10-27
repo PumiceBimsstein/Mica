@@ -28,6 +28,19 @@
         console.warn("card-viewer: failed to load initial state", err);
       }
 
+      // ストレージの応答がない場合にデータをモックで上書きしないよう保護
+      if (savedState === "LOAD_ERROR") {
+        document.getElementById("app").innerHTML = `
+          <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; font-family: sans-serif; color: #404040;">
+            <p style="font-size: 14px; font-weight: bold;">保存データの読み込みに時間がかかっています</p>
+            <button onclick="location.reload()" style="padding: 8px 16px; font-size: 12px; background: #171717; color: white; border: none; border-radius: 6px; cursor: pointer;">
+              再読み込みする
+            </button>
+          </div>
+        `;
+        return;
+      }
+
       window.appInstance = Elm.Main.init({
         node: document.getElementById("app"),
         flags: savedState !== undefined ? savedState : null

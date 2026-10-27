@@ -116,19 +116,107 @@ inferFieldConfig key rawItems =
         isBoolType =
             if List.isEmpty valuesForKey then
                 False
+
             else
                 List.all isBooleanValue valuesForKey
 
         isTextListType =
             if List.isEmpty valuesForKey then
                 False
+
             else
                 List.any isTextListValue valuesForKey
+
+        inferredRole =
+            inferDisplayRole key valuesForKey
     in
     { base
-        | isBool = isBoolType
+        | displayRole = inferredRole
+        , isBool = isBoolType
         , isTextList = isTextListType
     }
+
+
+inferDisplayRole : String -> List Value -> DisplayRole
+inferDisplayRole key values =
+    let
+        lowerKey =
+            String.toLower (String.trim key)
+    in
+    if lowerKey == "title" then
+        Title
+
+    else
+        case firstTextValue values of
+            Just textStr ->
+                let
+                    trimmed =
+                        String.trim textStr
+                in
+                if isImageUrl trimmed then
+                    Image
+
+                else if isWebUrl trimmed then
+                    Link
+
+                else
+                    PlainText
+
+            Nothing ->
+                PlainText
+
+
+firstTextValue : List Value -> Maybe String
+firstTextValue values =
+    values
+        |> List.filterMap
+            (\v ->
+                case v of
+                    Text s ->
+                        if String.isEmpty (String.trim s) then
+                            Nothing
+
+                        else
+                            Just s
+
+                    _ ->
+                        Nothing
+            )
+        |> List.head
+
+
+-- URL（http:// または https://）か判定
+isWebUrl : String -> Bool
+isWebUrl str =
+    let
+        lower =
+            String.toLower (String.trim str)
+    in
+    String.startsWith "http://" lower || String.startsWith "https://" lower
+
+
+-- 画像の URL か判定する
+isImageUrl : String -> Bool
+isImageUrl url =
+    if isWebUrl url then
+        let
+            cleanPath =
+                url
+                    |> String.split "?"
+                    |> List.head
+                    |> Maybe.withDefault url
+                    |> String.split "#"
+                    |> List.head
+                    |> Maybe.withDefault url
+                    |> String.toLower
+
+            imageExtensions =
+                [ ".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".bmp" ]
+        in
+        List.any (\ext -> String.endsWith ext cleanPath) imageExtensions
+
+    else
+        False
 
 
 isBooleanValue : Value -> Bool

@@ -65,15 +65,6 @@ readFile file =
 
 -- 読み込んだテキストの処理
 
--- handleFileLoaded : String -> String -> Model -> ( Model, Cmd Msg )
--- handleFileLoaded fileName text model =
---     case parseRawItems fileName text model of
---         Ok rawItems ->
---             startImport rawItems model
-
---         Err message ->
---             ( { model | importError = Just message, pendingImport = Nothing }, Cmd.none )
-
 handleFileLoaded : String -> String -> Model -> ( Model, Cmd Msg )
 handleFileLoaded fileName text model =
     case parseRawItems fileName text model of
@@ -81,7 +72,6 @@ handleFileLoaded fileName text model =
             startImport rawItems model
 
         Err message ->
-            -- エラー時はモーダルを開いてエラーメッセージを表示
             ( { model | importError = Just message, pendingImport = Nothing, fileModalOpen = True }, Cmd.none )
 
 
@@ -99,7 +89,6 @@ parseRawItems fileName text model =
             |> Result.mapError (\_ -> "JSONの形式が正しくありません。")
 
     else
-        -- 拡張子がない場合のフォールバック（JSON を試し、ダメなら CSV）
         case Import.decodeRawItems text of
             Ok items ->
                 Ok items
@@ -107,9 +96,6 @@ parseRawItems fileName text model =
             Err _ ->
                 CsvCodec.decodeRawItems (existingDatasetFor model) text
 
-{-| 新規モードでは既存データを参照しない（列の型は列内の値から推測する）。
-追加・置き換えでは、対象データセットの既存フィールドの型をCSVの列の型推測に使う。
--}
 
 existingDatasetFor : Model -> Maybe Dataset
 existingDatasetFor model =
@@ -130,10 +116,6 @@ startImport rawItems model =
             resolveOrPrompt rawItems model.dataset model
 
 
--- newPendingImport : List (List ( String, Value )) -> PendingImport
--- newPendingImport rawItems =
---     { mode = NewDataset, rawItems = rawItems, newKeys = [], nameInput = "" }
-
 newPendingImport : List (List ( String, Value )) -> PendingImport
 newPendingImport rawItems =
     { mode = NewDataset
@@ -142,33 +124,6 @@ newPendingImport rawItems =
     , nameInput = ""
     , choice = AddNewFields
     }
-
-
--- resolveOrPrompt : List (List ( String, Value )) -> Dataset -> Model -> ( Model, Cmd Msg )
--- resolveOrPrompt rawItems target model =
---     let
---         newKeys =
---             Import.findNewKeys target.fields rawItems
-
---         pending =
---             { mode = model.readMode
---             , rawItems = rawItems
---             , newKeys = newKeys
---             , nameInput = ""
---             , choice = AddNewFields
---             }
---     in
---     if List.isEmpty newKeys then
---         let
---             count =
---                 List.length rawItems
---         in
---         ( { model | pendingImport = Just pending, importError = Nothing }
---         , Ports.generateUuids count
---         )
-
---     else
---         ( { model | pendingImport = Just pending, importError = Nothing }, Cmd.none )
 
 
 resolveOrPrompt : List (List ( String, Value )) -> Dataset -> Model -> ( Model, Cmd Msg )
@@ -186,7 +141,6 @@ resolveOrPrompt rawItems target model =
             }
     in
     if List.isEmpty newKeys then
-        -- 既存フィールドと一致している場合はモーダルを開かずそのまま追加完了
         let
             count =
                 List.length rawItems
@@ -196,11 +150,9 @@ resolveOrPrompt rawItems target model =
         )
 
     else
-        -- 既存データにない新キーが見つかった場合はモーダルを開いてユーザーに選択を促す
         ( { model | pendingImport = Just pending, importError = Nothing, fileModalOpen = True }, Cmd.none )
 
 
--- 追加・置き換えインポート解決時：UUID 生成要求を JS ポートへ送る
 resolveChoice : AppendChoice -> Model -> ( Model, Cmd Msg )
 resolveChoice choice model =
     case model.pendingImport of

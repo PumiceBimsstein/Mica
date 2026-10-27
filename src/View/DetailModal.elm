@@ -144,8 +144,7 @@ modalContent dataset item currentNumber totalCount =
                 |> Maybe.withDefault "(無題)"
     in
     div [ class "relative z-20 bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden border border-neutral-200" ]
-        [ -- ヘッダー
-          div [ class "px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50" ]
+        [ div [ class "px-6 py-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50" ]
             [ div [ class "flex items-center gap-3" ]
                 [ span [ class "text-xs font-semibold px-2.5 py-1 rounded-full bg-neutral-200 text-neutral-700" ]
                     [ text (String.fromInt currentNumber ++ " / " ++ String.fromInt totalCount) ]

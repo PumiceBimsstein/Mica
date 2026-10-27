@@ -344,14 +344,13 @@ filterFieldCheckbox field =
         ]
 
 
-
 filterArea : Model -> Html Msg
 filterArea model =
     div [ class "flex-1 overflow-y-auto flex flex-col gap-2 min-h-0" ]
         [ FilterPanel.view model model.dataset ]
 
--- MARK: アイコン部品
 
+-- MARK: アイコン部品
 
 folderIcon : Html Msg
 folderIcon =

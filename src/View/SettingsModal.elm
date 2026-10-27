@@ -2,7 +2,7 @@ module View.SettingsModal exposing (view)
 
 import Dict
 import Html exposing (Html, button, div, h2, input, label, option, select, span, text)
-import Html.Attributes exposing (checked, class, disabled, placeholder, selected, type_, value)
+import Html.Attributes exposing (checked, class, title, disabled, placeholder, selected, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Types exposing
     ( Dataset
@@ -196,6 +196,7 @@ labelInput field =
         [ span [ class "text-xs text-neutral-400 shrink-0" ] [ text field.key ]
         , input
             [ class inputClasses
+            , title "このフィールドの表記名を変更できます"
             , value field.label
             , onInput (FieldSettingsMsg << SetLabel field.key)
             ]
