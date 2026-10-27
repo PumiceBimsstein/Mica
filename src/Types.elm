@@ -25,6 +25,7 @@ module Types exposing
     , SearchMsg(..)
     , SearchMode(..)
     , SearchState
+    , Toast
     , PendingImport
     , ReadMode(..)
     , Snapshot
@@ -33,6 +34,8 @@ module Types exposing
     , Value(..)
     , WithinRelation(..)
     , DetailModalMsg(..)
+    , SortCriterion
+    , SortDirection(..)
     )
 
 import Dict exposing (Dict)
@@ -218,6 +221,30 @@ type alias DatasetRenameState =
     , name : String
     }
 
+-- MARK:Sort
+type SortDirection
+    = Ascending
+    | Descending
+
+
+type alias SortCriterion =
+    { fieldKey : String
+    , direction : SortDirection
+    }
+
+
+type alias AutoSortState =
+    { primaryField : String
+    , primaryDirection : SortDirection
+    , secondaryField : Maybe String
+    , secondaryDirection : SortDirection
+    }
+
+
+type alias Toast =
+    { message : String
+    , showUndo : Bool
+    }
 
 type alias Model =
     { dataset : Dataset
@@ -245,6 +272,11 @@ type alias Model =
     , searchState : SearchState
     , detailModalItemId : Maybe String
     , isDraggingFile : Bool
+    , copyDeleteMode : Bool
+    , pendingCopyItemId : Maybe String
+    , toast : Maybe Toast
+    , autoSortModalOpen : Bool
+    , autoSortState : AutoSortState
     }
 
 
@@ -269,7 +301,18 @@ type Msg
     | CreateItemWithId String
     | DatasetFileImport (List String)
     | SetMainCardScale Float
-
+    | ToggleCopyDeleteMode
+    | CopyItemClicked String
+    | DeleteItemClicked String
+    | DismissToast
+    | UndoFromToast
+    | OpenAutoSortModal
+    | CloseAutoSortModal
+    | SetAutoSortPrimaryField String
+    | SetAutoSortPrimaryDirection SortDirection
+    | SetAutoSortSecondaryField (Maybe String)
+    | SetAutoSortSecondaryDirection SortDirection
+    | ApplyAutoSort
 
 type DatasetMsg
     = OpenRename

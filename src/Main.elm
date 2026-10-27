@@ -72,6 +72,16 @@ defaultModel =
     , searchState = { query = "", mode = SearchAll }
     , detailModalItemId = Nothing
     , isDraggingFile = False
+    , copyDeleteMode = False
+    , pendingCopyItemId = Nothing
+    , toast = Nothing
+    , autoSortModalOpen = False
+    , autoSortState =
+        { primaryField = "title"
+        , primaryDirection = Types.Ascending
+        , secondaryField = Nothing
+        , secondaryDirection = Types.Ascending
+        }
     }
 
 

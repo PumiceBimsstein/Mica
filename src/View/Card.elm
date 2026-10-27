@@ -19,47 +19,47 @@ import Types
 
 -- MARK: メインエントリ
 
-view : Dataset -> CardSize -> Bool -> Maybe String -> Item -> Html Msg
-view dataset size isSelected hoveredItemId item =
+view : Dataset -> CardSize -> Bool -> Maybe String -> Bool -> Item -> Html Msg
+view dataset size isSelected hoveredItemId isCopyDeleteMode item =
     let
         isHovered =
             hoveredItemId == Just item.id
     in
     case size of
         Small ->
-            viewSmall dataset isSelected isHovered item
+            viewSmall dataset isSelected isHovered isCopyDeleteMode item
 
         Medium ->
-            viewMedium dataset isSelected isHovered item
+            viewMedium dataset isSelected isHovered isCopyDeleteMode item
 
         Large ->
-            viewLarge dataset isSelected isHovered item
+            viewLarge dataset isSelected isHovered isCopyDeleteMode item
 
 
 
 -- MARK: サイズ別カードビュー
 
-viewSmall : Dataset -> Bool -> Bool -> Item -> Html Msg
-viewSmall dataset isSelected isHovered item =
+viewSmall : Dataset -> Bool -> Bool -> Bool -> Item -> Html Msg
+viewSmall dataset isSelected isHovered isCopyDeleteMode item =
     div (buildCardAttributes smallCardClasses isSelected item.id)
-        (appendEditButtonIf isHovered item.id
+        (appendCardActionButtons isHovered isCopyDeleteMode item.id
             [ smallCardBody dataset item ]
         )
 
 
-viewMedium : Dataset -> Bool -> Bool -> Item -> Html Msg
-viewMedium dataset isSelected isHovered item =
+viewMedium : Dataset -> Bool -> Bool -> Bool -> Item -> Html Msg
+viewMedium dataset isSelected isHovered isCopyDeleteMode item =
     div (buildCardAttributes mediumCardClasses isSelected item.id)
         [ mediumCardImage dataset item
-        , mediumCardFooter dataset item isHovered
+        , mediumCardFooter dataset item isHovered isCopyDeleteMode
         ]
 
 
-viewLarge : Dataset -> Bool -> Bool -> Item -> Html Msg
-viewLarge dataset isSelected isHovered item =
+viewLarge : Dataset -> Bool -> Bool -> Bool -> Item -> Html Msg
+viewLarge dataset isSelected isHovered isCopyDeleteMode item =
     div (buildCardAttributes largeCardClasses isSelected item.id)
         [ largeCardImage dataset item
-        , largeCardDetail dataset item isHovered
+        , largeCardDetail dataset item isHovered isCopyDeleteMode
         ]
 
 
@@ -88,10 +88,10 @@ mediumCardImage dataset item =
         ]
 
 
-mediumCardFooter : Dataset -> Item -> Bool -> Html Msg
-mediumCardFooter dataset item isHovered =
+mediumCardFooter : Dataset -> Item -> Bool -> Bool -> Html Msg
+mediumCardFooter dataset item isHovered isCopyDeleteMode =
     div [ class "px-2 py-2 flex-1 flex flex-col justify-between" ]
-        (appendEditButtonIf isHovered item.id
+        (appendCardActionButtons isHovered isCopyDeleteMode item.id
             [ renderTitle dataset item ]
         )
 
@@ -108,15 +108,15 @@ largeCardImage dataset item =
         ]
 
 
-largeCardDetail : Dataset -> Item -> Bool -> Html Msg
-largeCardDetail dataset item isHovered =
+largeCardDetail : Dataset -> Item -> Bool -> Bool -> Html Msg
+largeCardDetail dataset item isHovered isCopyDeleteMode =
     let
         rows =
             renderTitle dataset item
                 :: List.map (detailRow item) (detailFields dataset.fields)
     in
     div [ class "flex-1 px-4 py-3 flex flex-col gap-2 relative" ]
-        (appendEditButtonIf isHovered item.id rows)
+        (appendCardActionButtons isHovered isCopyDeleteMode item.id rows)
 
 
 -- MARK: タイトル・画像描画パイプライン
@@ -318,7 +318,45 @@ emptyDetailPlaceholder : Html Msg
 emptyDetailPlaceholder =
     div [ class "text-neutral-800" ] [ text "—" ]
 
+-- MARK: 操作ボタンの切り替え
 
+appendCardActionButtons : Bool -> Bool -> String -> List (Html Msg) -> List (Html Msg)
+appendCardActionButtons isHovered isCopyDeleteMode itemId elements =
+    if not isHovered then
+        elements
+
+    else if isCopyDeleteMode then
+        elements ++ [ copyDeleteButtons itemId ]
+
+    else
+        elements ++ [ editButton itemId ]
+
+
+copyDeleteButtons : String -> Html Msg
+copyDeleteButtons itemId =
+    div [ class "absolute top-2 right-2 z-10 flex gap-1 shadow-md bg-white p-0.5 rounded border border-neutral-300" ]
+        [ button
+            [ class "px-2 py-0.5 rounded bg-neutral-800 hover:bg-neutral-900 text-white text-xs font-medium cursor-pointer transition flex items-center gap-1"
+            , onClick (CopyItemClicked itemId)
+            , title "このカードの直後にコピー"
+            ]
+            [ text "Copy" ]
+        , button
+            [ class "px-2 py-0.5 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-medium cursor-pointer transition flex items-center gap-1"
+            , onClick (DeleteItemClicked itemId)
+            , title "このカードを削除"
+            ]
+            [ text "Delete" ]
+        ]
+
+editButton : String -> Html Msg
+editButton itemId =
+    button
+        [ class editButtonClasses
+        , onClick (EditModalMsg (EditButtonClicked itemId))
+        , title "編集"
+        ]
+        [ text "edit" ]
 
 -- MARK: コンテナ属性・デコレータ
 
@@ -349,14 +387,14 @@ appendEditButtonIf isHovered itemId elements =
         elements
 
 
-editButton : String -> Html Msg
-editButton itemId =
-    button
-        [ class editButtonClasses
-        , onClick (EditModalMsg (EditButtonClicked itemId))
-        , title "編集"
-        ]
-        [ text "edit" ]
+-- editButton : String -> Html Msg
+-- editButton itemId =
+--     button
+--         [ class editButtonClasses
+--         , onClick (EditModalMsg (EditButtonClicked itemId))
+--         , title "編集"
+--         ]
+--         [ text "edit" ]
 
 
 
