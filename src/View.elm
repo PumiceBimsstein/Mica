@@ -9,13 +9,21 @@ import Html.Events exposing (onClick, onInput, custom)
 import Html.Keyed as Keyed
 import Svg exposing (path, svg)
 import Svg.Attributes as SvgAttr
-import Types exposing (CardSize(..), Dataset, EditModalMsg(..), FileFlowMsg(..), Item, Model, Msg(..), SortModalMsg(..))
 import View.Card as Card
 import View.DetailModal as DetailModal
 import View.EditModal as EditModal
 import View.FileModal as FileModal
 import View.SettingsModal as SettingsModal
 import View.Sidebar as Sidebar
+import Types
+    exposing (
+        CardSize(..), Dataset, EditModalMsg(..)
+        , FieldConfig, AutoSortState
+        , FileFlowMsg(..), Item, Model, Msg(..)
+        , SortModalMsg(..)
+        , AutoSortMsg(..)
+        , CardActionMsg(..)
+        )
 
 
 view : Model -> Html Msg
@@ -73,70 +81,124 @@ mainContent model =
         ]
 
 
+-- MARK: 操作メニュー
 actionButtonGroup : Model -> Html Msg
 actionButtonGroup model =
-    let
-        isFiltered =
-            Filter.isFilterActive model.filterUi model.dataset
-    in
     div [ class "fixed top-6 right-6 z-30 flex flex-col items-end gap-2" ]
-        [ if model.actionMenuOpen then
-            div [ class "fixed inset-0 z-30", onClick ToggleActionMenu ] []
-
-          else
-            text ""
-        , button
-            [ class "z-40 px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-neutral-200 shadow-md text-neutral-700 hover:bg-neutral-50 cursor-pointer flex items-center gap-1"
-            , onClick ToggleActionMenu
-            ]
-            [ text (if model.actionMenuOpen then "✕ 閉じる" else "⚙ 操作") ]
+        [ menuBackdrop model.actionMenuOpen
+        , menuToggleButton model.actionMenuOpen
         , if model.actionMenuOpen then
-            div [ class "z-40 flex flex-col gap-1.5 items-stretch bg-white border border-neutral-200 rounded-lg p-2 shadow-md min-w-[120px]" ]
-                [ button
-                    [ class actionButtonClasses
-                    , onClick (EditModalMsg CreateNewItem)
-                    ]
-                    [ text "＋ 追加" ]
-                , button
-                    [ class actionButtonClasses
-                    , onClick (SortModalMsg RequestOpen)
-                    , disabled isFiltered
-                    , title (if isFiltered then "フィルター使用時は無効" else "手動で並べ替え")
-                    ]
-                    [ text "手動並べ替え" ]
-                , button
-                    [ class actionButtonClasses
-                    , onClick OpenAutoSortModal
-                    ]
-                    [ text "ソート..." ]
-                , button
-                    [ class
-                        (if model.copyDeleteMode then
-                            "w-full px-3 py-1.5 text-xs border rounded font-semibold bg-amber-500 text-white shadow-xs transition cursor-pointer text-center"
-
-                         else
-                            actionButtonClasses
-                        )
-                    , onClick ToggleCopyDeleteMode
-                    ]
-                    [ text (if model.copyDeleteMode then "✓ コピー・削除中" else "コピーと削除") ]
-                , mainCardSizeSlider model.mainAreaCardScale
-                ]
+            actionMenuDropdown model
 
           else
             text ""
         ]
 
 
--- MARK: カードグリッド呼び出し（copyDeleteMode を渡す）
+menuBackdrop : Bool -> Html Msg
+menuBackdrop isOpen =
+    if isOpen then
+        div [ class "fixed inset-0 z-30", onClick ToggleActionMenu ] []
+
+    else
+        text ""
+
+
+menuToggleButton : Bool -> Html Msg
+menuToggleButton isOpen =
+    button
+        [ class "z-40 px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-neutral-200 shadow-md text-neutral-700 hover:bg-neutral-50 cursor-pointer flex items-center gap-1"
+        , onClick ToggleActionMenu
+        ]
+        [ text
+            (if isOpen then
+                "✕ 閉じる"
+
+             else
+                "⚙ 操作"
+            )
+        ]
+
+
+actionMenuDropdown : Model -> Html Msg
+actionMenuDropdown model =
+    let
+        isFiltered =
+            Filter.isFilterActive model.filterUi model.dataset
+    in
+    div [ class "z-40 flex flex-col gap-1.5 items-stretch bg-white border border-neutral-200 rounded-lg p-2 shadow-md min-w-[120px]" ]
+        [ addItemButton
+        , manualSortButton isFiltered
+        , autoSortButton
+        , copyDeleteModeButton model.copyDeleteMode
+        , mainCardSizeSlider model.mainAreaCardScale
+        ]
+
+
+addItemButton : Html Msg
+addItemButton =
+    button
+        [ class actionMenuButtonClasses
+        , onClick (EditModalMsg CreateNewItem)
+        ]
+        [ text "＋ 追加" ]
+
+
+manualSortButton : Bool -> Html Msg
+manualSortButton isFiltered =
+    button
+        [ class actionMenuButtonClasses
+        , onClick (SortModalMsg RequestOpen)
+        , disabled isFiltered
+        , title
+            (if isFiltered then
+                "フィルター使用時は無効"
+
+             else
+                "手動で並べ替え"
+            )
+        ]
+        [ text "手動並べ替え" ]
+
+
+autoSortButton : Html Msg
+autoSortButton =
+    button
+        [ class actionMenuButtonClasses
+        , onClick (AutoSortMsg OpenModal)
+        ]
+        [ text "ソート" ]
+
+
+copyDeleteModeButton : Bool -> Html Msg
+copyDeleteModeButton isModeActive =
+    button
+        [ class (copyDeleteButtonClasses isModeActive)
+        , onClick (CardActionMsg ToggleMode)
+        ]
+        [ text (if isModeActive then "✓ コピー・削除中" else "コピーと削除") ]
+
+
+actionMenuButtonClasses : String
+actionMenuButtonClasses =
+    "w-full px-3 py-1.5 text-xs border border-neutral-100 rounded bg-neutral-50 hover:bg-neutral-100 text-neutral-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-center cursor-pointer"
+
+
+copyDeleteButtonClasses : Bool -> String
+copyDeleteButtonClasses isActive =
+    if isActive then
+        "w-full px-3 py-1.5 text-xs border rounded font-semibold bg-amber-500 text-white shadow-xs transition cursor-pointer text-center"
+
+    else
+        actionMenuButtonClasses
+
 
 cardKeyedEntry : Model -> Dataset -> Item -> ( String, Html Msg )
 cardKeyedEntry model dataset item =
     ( item.id, Card.view dataset model.cardSize False model.hoveredItemId model.copyDeleteMode item )
 
 
--- MARK: コピー・削除モード中の通知バー
-
+-- MARK: コピー・削除モード中の通知
 copyDeleteModeBanner : Model -> Html Msg
 copyDeleteModeBanner model =
     if not model.copyDeleteMode then
@@ -144,10 +206,10 @@ copyDeleteModeBanner model =
 
     else
         div [ class "fixed top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-500 text-white px-4 py-1.5 rounded-full shadow-lg flex items-center gap-3 text-xs font-semibold" ]
-            [ span [] [ text "⚡ カードのコピー・削除モード有効中" ]
+            [ span [] [ text "コピー・削除モード" ]
             , button
                 [ class "bg-amber-700 hover:bg-amber-800 text-white px-2 py-0.5 rounded text-[11px] cursor-pointer"
-                , onClick ToggleCopyDeleteMode
+                , onClick (CardActionMsg ToggleMode)
                 ]
                 [ text "終了" ]
             ]
@@ -164,7 +226,7 @@ toastNotificationView maybeToast =
                 , if toast.showUndo then
                     button
                         [ class "text-amber-400 hover:text-amber-300 font-bold underline cursor-pointer"
-                        , onClick UndoFromToast
+                        , onClick (CardActionMsg UndoFromToast)
                         ]
                         [ text "元に戻す" ]
 
@@ -172,7 +234,7 @@ toastNotificationView maybeToast =
                     text ""
                 , button
                     [ class "text-neutral-400 hover:text-white p-1 text-xs cursor-pointer ml-1"
-                    , onClick DismissToast
+                    , onClick (CardActionMsg DismissToast)
                     ]
                     [ text "✕" ]
                 ]
@@ -181,71 +243,173 @@ toastNotificationView maybeToast =
             text ""
 
 
--- MARK: 自動ソート設定モーダル
-
 autoSortModalView : Model -> Html Msg
 autoSortModalView model =
     if not model.autoSortModalOpen then
         text ""
 
     else
-        let
-            fields =
-                model.dataset.fields
-        in
-        div [ class "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs" ]
-            [ div [ class "bg-white rounded-xl shadow-2xl border border-neutral-200 p-5 w-full max-w-md flex flex-col gap-4 z-10" ]
-                [ div [ class "flex items-center justify-between border-b border-neutral-100 pb-2" ]
-                    [ span [ class "text-sm font-bold text-neutral-800" ] [ text "カードのソート（並べ替え）" ]
-                    , button [ class "text-neutral-400 hover:text-neutral-600 text-sm", onClick CloseAutoSortModal ] [ text "✕" ]
-                    ]
-                , div [ class "flex flex-col gap-3 text-xs" ]
-                    [ -- 第1優先キー
-                      div [ class "flex flex-col gap-1" ]
-                        [ span [ class "font-semibold text-neutral-600" ] [ text "第1優先項目" ]
-                        , div [ class "flex gap-2" ]
-                            [ Html.select
-                                [ class "flex-1 border border-neutral-200 rounded px-2 py-1.5 bg-white"
-                                , onInput SetAutoSortPrimaryField
-                                ]
-                                (List.map (\f -> Html.option [ Html.Attributes.value f.key, Html.Attributes.selected (f.key == model.autoSortState.primaryField) ] [ text f.label ]) fields)
-                            , directionSelect model.autoSortState.primaryDirection SetAutoSortPrimaryDirection
-                            ]
-                        ]
-                    , -- 第2優先キー
-                      div [ class "flex flex-col gap-1 pt-2 border-t border-neutral-100" ]
-                        [ span [ class "font-semibold text-neutral-600" ] [ text "第2優先項目（同値の場合）" ]
-                        , div [ class "flex gap-2" ]
-                            [ Html.select
-                                [ class "flex-1 border border-neutral-200 rounded px-2 py-1.5 bg-white"
-                                , onInput (\val -> SetAutoSortSecondaryField (if val == "" then Nothing else Just val))
-                                ]
-                                (Html.option [ Html.Attributes.value "", Html.Attributes.selected (model.autoSortState.secondaryField == Nothing) ] [ text "（指定なし）" ]
-                                    :: List.map (\f -> Html.option [ Html.Attributes.value f.key, Html.Attributes.selected (model.autoSortState.secondaryField == Just f.key) ] [ text f.label ]) fields
-                                )
-                            , directionSelect model.autoSortState.secondaryDirection SetAutoSortSecondaryDirection
-                            ]
-                        ]
-                    , span [ class "text-[11px] text-neutral-400" ]
-                        [ text "※ 数値混じりの項目は自然順で整列されます。未入力のカードは常に末尾に配置されます。" ]
-                    ]
-                , div [ class "flex justify-end gap-2 pt-2 border-t border-neutral-100" ]
-                    [ button [ class "px-3 py-1.5 text-xs text-neutral-600 hover:bg-neutral-100 rounded", onClick CloseAutoSortModal ] [ text "キャンセル" ]
-                    , button [ class "px-4 py-1.5 text-xs font-semibold bg-neutral-900 text-white hover:bg-neutral-800 rounded shadow-xs", onClick ApplyAutoSort ] [ text "ソート実行" ]
-                    ]
-                ]
+        autoSortOverlay model
+
+
+autoSortOverlay : Model -> Html Msg
+autoSortOverlay model =
+    div [ class "fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs" ]
+        [ autoSortBackdrop
+        , autoSortDialog model
+        ]
+
+
+autoSortBackdrop : Html Msg
+autoSortBackdrop =
+    div
+        [ class "absolute inset-0"
+        , onClick (AutoSortMsg CloseModal)
+        ]
+        []
+
+
+autoSortDialog : Model -> Html Msg
+autoSortDialog model =
+    div [ class "relative bg-white rounded-xl shadow-2xl border border-neutral-200 p-5 w-full max-w-md flex flex-col gap-4 z-10" ]
+        [ autoSortHeader
+        , autoSortBody model.dataset.fields model.autoSortState
+        , autoSortFooter
+        ]
+
+
+-- MARK: ヘッダー
+
+autoSortHeader : Html Msg
+autoSortHeader =
+    div [ class "flex items-center justify-between border-b border-neutral-100 pb-2" ]
+        [ span [ class "text-sm font-bold text-neutral-800" ] [ text "カードのソート（並べ替え）" ]
+        , button
+            [ class "text-neutral-400 hover:text-neutral-600 text-sm cursor-pointer leading-none"
+            , onClick (AutoSortMsg CloseModal)
             ]
+            [ text "✕" ]
+        ]
+
+
+-- MARK: フォーム本体
+
+autoSortBody : List FieldConfig -> AutoSortState -> Html Msg
+autoSortBody fields state =
+    div [ class "flex flex-col gap-3 text-xs" ]
+        [ primarySortSection fields state
+        , secondarySortSection fields state
+        , autoSortNote
+        ]
+
+
+-- 第1優先キー設定
+primarySortSection : List FieldConfig -> AutoSortState -> Html Msg
+primarySortSection fields state =
+    div [ class "flex flex-col gap-1" ]
+        [ span [ class "font-semibold text-neutral-600" ] [ text "第1優先項目" ]
+        , div [ class "flex gap-2" ]
+            [ primaryFieldSelect fields state.primaryField
+            , directionSelect state.primaryDirection (\d -> AutoSortMsg (SetPrimaryDirection d))
+            ]
+        ]
+
+
+-- 第2優先キー設定
+secondarySortSection : List FieldConfig -> AutoSortState -> Html Msg
+secondarySortSection fields state =
+    div [ class "flex flex-col gap-1 pt-2 border-t border-neutral-100" ]
+        [ span [ class "font-semibold text-neutral-600" ] [ text "第2優先項目（同値の場合）" ]
+        , div [ class "flex gap-2" ]
+            [ secondaryFieldSelect fields state.secondaryField
+            , directionSelect state.secondaryDirection (\d -> AutoSortMsg (SetSecondaryDirection d))
+            ]
+        ]
+
+
+-- MARK: セレクトボックス・選択肢部品
+
+primaryFieldSelect : List FieldConfig -> String -> Html Msg
+primaryFieldSelect fields currentField =
+    Html.select
+        [ class "flex-1 border border-neutral-200 rounded px-2 py-1.5 bg-white cursor-pointer"
+        , onInput (AutoSortMsg << SetPrimaryField)
+        ]
+        (List.map (fieldOption currentField) fields)
+
+
+secondaryFieldSelect : List FieldConfig -> Maybe String -> Html Msg
+secondaryFieldSelect fields maybeSelectedKey =
+    Html.select
+        [ class "flex-1 border border-neutral-200 rounded px-2 py-1.5 bg-white cursor-pointer"
+        , onInput (\val -> AutoSortMsg (SetSecondaryField (stringToMaybe val)))
+        ]
+        (Html.option [ Html.Attributes.value "", Html.Attributes.selected (maybeSelectedKey == Nothing) ] [ text "（指定なし）" ]
+            :: List.map (secondaryFieldOption maybeSelectedKey) fields
+        )
+
+
+fieldOption : String -> FieldConfig -> Html Msg
+fieldOption currentKey field =
+    Html.option
+        [ Html.Attributes.value field.key
+        , Html.Attributes.selected (field.key == currentKey)
+        ]
+        [ text field.label ]
+
+
+secondaryFieldOption : Maybe String -> FieldConfig -> Html Msg
+secondaryFieldOption maybeSelectedKey field =
+    Html.option
+        [ Html.Attributes.value field.key
+        , Html.Attributes.selected (maybeSelectedKey == Just field.key)
+        ]
+        [ text field.label ]
 
 
 directionSelect : Types.SortDirection -> (Types.SortDirection -> Msg) -> Html Msg
 directionSelect currentDir toMsg =
     Html.select
-        [ class "w-24 border border-neutral-200 rounded px-2 py-1.5 bg-white"
+        [ class "w-24 border border-neutral-200 rounded px-2 py-1.5 bg-white cursor-pointer"
         , onInput (\val -> toMsg (if val == "desc" then Types.Descending else Types.Ascending))
         ]
         [ Html.option [ Html.Attributes.value "asc", Html.Attributes.selected (currentDir == Types.Ascending) ] [ text "昇順 (A→Z)" ]
         , Html.option [ Html.Attributes.value "desc", Html.Attributes.selected (currentDir == Types.Descending) ] [ text "降順 (Z→A)" ]
         ]
+
+
+autoSortNote : Html Msg
+autoSortNote =
+    span [ class "text-[11px] text-neutral-400" ]
+        [ text "※ 数値混じりの項目は自然順で整列されます。未入力のカードは常に末尾に配置されます。" ]
+
+
+-- MARK: フッター
+
+autoSortFooter : Html Msg
+autoSortFooter =
+    div [ class "flex justify-end gap-2 pt-2 border-t border-neutral-100" ]
+        [ button
+            [ class "px-3 py-1.5 text-xs text-neutral-600 hover:bg-neutral-100 rounded cursor-pointer transition"
+            , onClick (AutoSortMsg CloseModal)
+            ]
+            [ text "キャンセル" ]
+        , button
+            [ class "px-4 py-1.5 text-xs font-semibold bg-neutral-900 text-white hover:bg-neutral-800 rounded shadow-xs cursor-pointer transition"
+            , onClick (AutoSortMsg Apply)
+            ]
+            [ text "ソート実行" ]
+        ]
+
+
+stringToMaybe : String -> Maybe String
+stringToMaybe str =
+    if String.isEmpty (String.trim str) then
+        Nothing
+
+    else
+        Just str
+
 
 actionButtonClasses : String
 actionButtonClasses =

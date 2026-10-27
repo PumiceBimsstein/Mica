@@ -36,6 +36,9 @@ module Types exposing
     , DetailModalMsg(..)
     , SortCriterion
     , SortDirection(..)
+    , AutoSortMsg(..)
+    , CardActionMsg(..)
+    , AutoSortState
     )
 
 import Dict exposing (Dict)
@@ -301,18 +304,24 @@ type Msg
     | CreateItemWithId String
     | DatasetFileImport (List String)
     | SetMainCardScale Float
-    | ToggleCopyDeleteMode
-    | CopyItemClicked String
-    | DeleteItemClicked String
+    | AutoSortMsg AutoSortMsg
+    | CardActionMsg CardActionMsg
+
+type AutoSortMsg
+    = OpenModal
+    | CloseModal
+    | SetPrimaryField String
+    | SetPrimaryDirection SortDirection
+    | SetSecondaryField (Maybe String)
+    | SetSecondaryDirection SortDirection
+    | Apply
+
+type CardActionMsg
+    = ToggleMode
+    | RequestCopy String
+    | Delete String
     | DismissToast
     | UndoFromToast
-    | OpenAutoSortModal
-    | CloseAutoSortModal
-    | SetAutoSortPrimaryField String
-    | SetAutoSortPrimaryDirection SortDirection
-    | SetAutoSortSecondaryField (Maybe String)
-    | SetAutoSortSecondaryDirection SortDirection
-    | ApplyAutoSort
 
 type DatasetMsg
     = OpenRename

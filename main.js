@@ -6406,6 +6406,142 @@ var $author$project$Main$subscriptions = function (model) {
 				$author$project$Main$keySubscription(model)
 			]));
 };
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (!maybe.$) {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Import$toItem = F2(
+	function (uuid, pairs) {
+		return {
+			ai: uuid,
+			aA: $elm$core$Dict$fromList(pairs)
+		};
+	});
+var $author$project$Import$buildItems = F2(
+	function (uuids, rawItems) {
+		return A3($elm$core$List$map2, $author$project$Import$toItem, uuids, rawItems);
+	});
+var $author$project$Import$existingKeysOf = function (fields) {
+	return A2(
+		$elm$core$List$map,
+		function ($) {
+			return $.ak;
+		},
+		fields);
+};
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === -2) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1) {
+					case 0:
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 1:
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var $elm$core$Dict$member = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$get, key, dict);
+		if (!_v0.$) {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var $author$project$Import$fillItemBools = F2(
+	function (boolKeys, item) {
+		var filledValues = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (key, acc) {
+					return A2($elm$core$Dict$member, key, acc) ? acc : A3(
+						$elm$core$Dict$insert,
+						key,
+						$author$project$Types$Boolean(false),
+						acc);
+				}),
+			item.aA,
+			boolKeys);
+		return _Utils_update(
+			item,
+			{aA: filledValues});
+	});
+var $author$project$Import$fillMissingBools = F2(
+	function (fields, items) {
+		var boolKeys = A2(
+			$elm$core$List$map,
+			function ($) {
+				return $.ak;
+			},
+			A2(
+				$elm$core$List$filter,
+				function ($) {
+					return $.bd;
+				},
+				fields));
+		return $elm$core$List$isEmpty(boolKeys) ? items : A2(
+			$elm$core$List$map,
+			$author$project$Import$fillItemBools(boolKeys),
+			items);
+	});
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$all = F2(
+	function (isOkay, list) {
+		return !A2(
+			$elm$core$List$any,
+			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
+			list);
+	});
+var $author$project$Import$defaultFieldConfig = function (key) {
+	return {aS: 0, a$: $elm$core$Maybe$Nothing, a4: false, bd: false, be: false, ak: key, bf: key, bA: true, bN: $elm$core$Maybe$Nothing};
+};
 var $elm$core$List$head = function (list) {
 	if (list.b) {
 		var x = list.a;
@@ -6415,21 +6551,179 @@ var $elm$core$List$head = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$Update$insertItemDirectlyAfter = F3(
-	function (targetId, newItem, items) {
-		if (!items.b) {
-			return _List_fromArray(
-				[newItem]);
+var $author$project$Import$firstTextValue = function (values) {
+	return $elm$core$List$head(
+		A2(
+			$elm$core$List$filterMap,
+			function (v) {
+				if (!v.$) {
+					var s = v.a;
+					return $elm$core$String$isEmpty(
+						$elm$core$String$trim(s)) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(s);
+				} else {
+					return $elm$core$Maybe$Nothing;
+				}
+			},
+			values));
+};
+var $elm$core$String$endsWith = _String_endsWith;
+var $elm$core$String$toLower = _String_toLower;
+var $author$project$Import$isWebUrl = function (str) {
+	var lower = $elm$core$String$toLower(
+		$elm$core$String$trim(str));
+	return A2($elm$core$String$startsWith, 'http://', lower) || A2($elm$core$String$startsWith, 'https://', lower);
+};
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (!maybe.$) {
+			var value = maybe.a;
+			return value;
 		} else {
-			var head = items.a;
-			var tail = items.b;
-			return _Utils_eq(head.ai, targetId) ? A2(
-				$elm$core$List$cons,
-				head,
-				A2($elm$core$List$cons, newItem, tail)) : A2(
-				$elm$core$List$cons,
-				head,
-				A3($author$project$Update$insertItemDirectlyAfter, targetId, newItem, tail));
+			return _default;
+		}
+	});
+var $author$project$Import$isImageUrl = function (url) {
+	if ($author$project$Import$isWebUrl(url)) {
+		var imageExtensions = _List_fromArray(
+			['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.bmp']);
+		var cleanPath = $elm$core$String$toLower(
+			A2(
+				$elm$core$Maybe$withDefault,
+				url,
+				$elm$core$List$head(
+					A2(
+						$elm$core$String$split,
+						'#',
+						A2(
+							$elm$core$Maybe$withDefault,
+							url,
+							$elm$core$List$head(
+								A2($elm$core$String$split, '?', url)))))));
+		return A2(
+			$elm$core$List$any,
+			function (ext) {
+				return A2($elm$core$String$endsWith, ext, cleanPath);
+			},
+			imageExtensions);
+	} else {
+		return false;
+	}
+};
+var $author$project$Import$inferDisplayRole = F2(
+	function (key, values) {
+		var lowerKey = $elm$core$String$toLower(
+			$elm$core$String$trim(key));
+		if (lowerKey === 'title') {
+			return 1;
+		} else {
+			var _v0 = $author$project$Import$firstTextValue(values);
+			if (!_v0.$) {
+				var textStr = _v0.a;
+				var trimmed = $elm$core$String$trim(textStr);
+				return $author$project$Import$isImageUrl(trimmed) ? 2 : ($author$project$Import$isWebUrl(trimmed) ? 3 : 0);
+			} else {
+				return 0;
+			}
+		}
+	});
+var $author$project$Import$isBooleanValue = function (val) {
+	if (val.$ === 2) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $author$project$Import$isTextListValue = function (val) {
+	if (val.$ === 1) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $author$project$Import$inferFieldConfig = F2(
+	function (key, rawItems) {
+		var valuesForKey = A2(
+			$elm$core$List$concatMap,
+			function (item) {
+				return A2(
+					$elm$core$List$filterMap,
+					function (_v0) {
+						var k = _v0.a;
+						var v = _v0.b;
+						return _Utils_eq(k, key) ? $elm$core$Maybe$Just(v) : $elm$core$Maybe$Nothing;
+					},
+					item);
+			},
+			rawItems);
+		var isTextListType = $elm$core$List$isEmpty(valuesForKey) ? false : A2($elm$core$List$any, $author$project$Import$isTextListValue, valuesForKey);
+		var isBoolType = $elm$core$List$isEmpty(valuesForKey) ? false : A2($elm$core$List$all, $author$project$Import$isBooleanValue, valuesForKey);
+		var inferredRole = A2($author$project$Import$inferDisplayRole, key, valuesForKey);
+		var base = $author$project$Import$defaultFieldConfig(key);
+		return _Utils_update(
+			base,
+			{aS: inferredRole, bd: isBoolType, be: isTextListType});
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $author$project$Import$restrictKeys = F2(
+	function (allowedKeys, pairs) {
+		return A2(
+			$elm$core$List$filter,
+			function (_v0) {
+				var key = _v0.a;
+				return A2($elm$core$List$member, key, allowedKeys);
+			},
+			pairs);
+	});
+var $author$project$Import$mergeInto = F4(
+	function (includeNewKeys, uuids, pending, target) {
+		var newFields = includeNewKeys ? _Utils_ap(
+			target.af,
+			A2(
+				$elm$core$List$map,
+				function (key) {
+					return A2($author$project$Import$inferFieldConfig, key, pending.G);
+				},
+				pending.an)) : target.af;
+		var effectiveRawItems = includeNewKeys ? pending.G : A2(
+			$elm$core$List$map,
+			$author$project$Import$restrictKeys(
+				$author$project$Import$existingKeysOf(target.af)),
+			pending.G);
+		var newItems = A2($author$project$Import$buildItems, uuids, effectiveRawItems);
+		var mergedItems = function () {
+			var _v0 = pending.al;
+			if (_v0 === 2) {
+				return newItems;
+			} else {
+				return _Utils_ap(target.aj, newItems);
+			}
+		}();
+		return _Utils_update(
+			target,
+			{
+				af: newFields,
+				aj: A2($author$project$Import$fillMissingBools, newFields, mergedItems)
+			});
+	});
+var $author$project$Import$applyChoice = F4(
+	function (choice, uuids, pending, target) {
+		switch (choice) {
+			case 2:
+				return $elm$core$Maybe$Nothing;
+			case 0:
+				return $elm$core$Maybe$Just(
+					A4($author$project$Import$mergeInto, true, uuids, pending, target));
+			default:
+				return $elm$core$Maybe$Just(
+					A4($author$project$Import$mergeInto, false, uuids, pending, target));
 		}
 	});
 var $author$project$History$maxSize = 20;
@@ -6817,15 +7111,618 @@ var $author$project$Storage$save = function (model) {
 	return $author$project$Ports$saveState(
 		$author$project$Storage$encodeState(model));
 };
-var $author$project$Types$DismissToast = {$: 23};
+var $author$project$FileFlow$save = function (model) {
+	return _Utils_Tuple2(
+		model,
+		$author$project$Storage$save(model));
+};
+var $author$project$FileFlow$applyImportAndSave = F4(
+	function (choice, uuids, pending, model) {
+		var _v0 = A4($author$project$Import$applyChoice, choice, uuids, pending, model.m);
+		if (!_v0.$) {
+			var updated = _v0.a;
+			return $author$project$FileFlow$save(
+				_Utils_update(
+					model,
+					{
+						m: updated,
+						D: false,
+						z: A2($author$project$History$push, model, model.z),
+						f: $elm$core$Maybe$Nothing
+					}));
+		} else {
+			return _Utils_Tuple2(
+				_Utils_update(
+					model,
+					{f: $elm$core$Maybe$Nothing}),
+				$elm$core$Platform$Cmd$none);
+		}
+	});
+var $author$project$Update$applyImportToCurrentDataset = F3(
+	function (uuids, pending, model) {
+		return A4($author$project$FileFlow$applyImportAndSave, pending.S, uuids, pending, model);
+	});
+var $author$project$Import$addKeyIfNew = F2(
+	function (_v0, acc) {
+		var key = _v0.a;
+		return A2($elm$core$List$member, key, acc) ? acc : A2($elm$core$List$cons, key, acc);
+	});
+var $author$project$Import$collectFromItem = F2(
+	function (pairs, acc) {
+		return A3($elm$core$List$foldl, $author$project$Import$addKeyIfNew, acc, pairs);
+	});
+var $author$project$Import$collectKeyOrder = function (rawItems) {
+	return $elm$core$List$reverse(
+		A3($elm$core$List$foldl, $author$project$Import$collectFromItem, _List_Nil, rawItems));
+};
+var $author$project$Import$buildNewDataset = F4(
+	function (newId, name, uuids, rawItems) {
+		var keys = $author$project$Import$collectKeyOrder(rawItems);
+		var items = A2($author$project$Import$buildItems, uuids, rawItems);
+		var fields = A2(
+			$elm$core$List$map,
+			function (key) {
+				return A2($author$project$Import$inferFieldConfig, key, rawItems);
+			},
+			keys);
+		return {
+			af: fields,
+			a1: _List_Nil,
+			ai: newId,
+			a8: $elm$core$Maybe$Nothing,
+			aj: A2($author$project$Import$fillMissingBools, fields, items),
+			bi: name,
+			bJ: $elm$core$Maybe$Nothing,
+			bS: false
+		};
+	});
+var $author$project$FileFlow$datasetNameOrDefault = function (input) {
+	return $elm$core$String$isEmpty(
+		$elm$core$String$trim(input)) ? '新しいデータ' : input;
+};
+var $author$project$FileFlow$finaliseNewDatasetImport = F2(
+	function (uuids, model) {
+		var _v0 = model.f;
+		if (!_v0.$) {
+			var pending = _v0.a;
+			var newDataset = A4(
+				$author$project$Import$buildNewDataset,
+				model.m.ai,
+				$author$project$FileFlow$datasetNameOrDefault(pending.O),
+				uuids,
+				pending.G);
+			return $author$project$FileFlow$save(
+				_Utils_update(
+					model,
+					{
+						m: newDataset,
+						D: false,
+						z: A2($author$project$History$push, model, model.z),
+						f: $elm$core$Maybe$Nothing
+					}));
+		} else {
+			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+		}
+	});
+var $author$project$Update$processPendingImport = F3(
+	function (uuids, model, pending) {
+		var _v0 = pending.al;
+		if (!_v0) {
+			return A2($author$project$FileFlow$finaliseNewDatasetImport, uuids, model);
+		} else {
+			return A3($author$project$Update$applyImportToCurrentDataset, uuids, pending, model);
+		}
+	});
+var $author$project$Update$fileImport = F2(
+	function (uuids, model) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
+			A2(
+				$elm$core$Maybe$map,
+				A2($author$project$Update$processPendingImport, uuids, model),
+				model.f));
+	});
+var $author$project$Sort$compareSingleChunk = F2(
+	function (a, b) {
+		var _v0 = _Utils_Tuple2(a, b);
+		if (_v0.a.$ === 1) {
+			if (_v0.b.$ === 1) {
+				var n1 = _v0.a.a;
+				var n2 = _v0.b.a;
+				return A2($elm$core$Basics$compare, n1, n2);
+			} else {
+				return 0;
+			}
+		} else {
+			if (!_v0.b.$) {
+				var s1 = _v0.a.a;
+				var s2 = _v0.b.a;
+				return A2($elm$core$Basics$compare, s1, s2);
+			} else {
+				return 2;
+			}
+		}
+	});
+var $author$project$Sort$compareChunkList = F2(
+	function (listA, listB) {
+		compareChunkList:
+		while (true) {
+			var _v0 = _Utils_Tuple2(listA, listB);
+			if (!_v0.a.b) {
+				if (!_v0.b.b) {
+					return 1;
+				} else {
+					return 0;
+				}
+			} else {
+				if (!_v0.b.b) {
+					return 2;
+				} else {
+					var _v1 = _v0.a;
+					var chunkA = _v1.a;
+					var restA = _v1.b;
+					var _v2 = _v0.b;
+					var chunkB = _v2.a;
+					var restB = _v2.b;
+					var _v3 = A2($author$project$Sort$compareSingleChunk, chunkA, chunkB);
+					if (_v3 === 1) {
+						var $temp$listA = restA,
+							$temp$listB = restB;
+						listA = $temp$listA;
+						listB = $temp$listB;
+						continue compareChunkList;
+					} else {
+						var diff = _v3;
+						return diff;
+					}
+				}
+			}
+		}
+	});
+var $author$project$Sort$NumericChunk = function (a) {
+	return {$: 1, a: a};
+};
+var $author$project$Sort$TextChunk = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$core$String$fromList = _String_fromList;
+var $author$project$Sort$spanDigits = function (chars) {
+	if (chars.b) {
+		var c = chars.a;
+		var rest = chars.b;
+		if ($elm$core$Char$isDigit(c)) {
+			var _v1 = $author$project$Sort$spanDigits(rest);
+			var match = _v1.a;
+			var remainder = _v1.b;
+			return _Utils_Tuple2(
+				A2($elm$core$List$cons, c, match),
+				remainder);
+		} else {
+			return _Utils_Tuple2(
+				_List_Nil,
+				A2($elm$core$List$cons, c, rest));
+		}
+	} else {
+		return _Utils_Tuple2(_List_Nil, _List_Nil);
+	}
+};
+var $author$project$Sort$spanNonDigits = function (chars) {
+	if (chars.b) {
+		var c = chars.a;
+		var rest = chars.b;
+		if (!$elm$core$Char$isDigit(c)) {
+			var _v1 = $author$project$Sort$spanNonDigits(rest);
+			var match = _v1.a;
+			var remainder = _v1.b;
+			return _Utils_Tuple2(
+				A2($elm$core$List$cons, c, match),
+				remainder);
+		} else {
+			return _Utils_Tuple2(
+				_List_Nil,
+				A2($elm$core$List$cons, c, rest));
+		}
+	} else {
+		return _Utils_Tuple2(_List_Nil, _List_Nil);
+	}
+};
+var $author$project$Sort$parseChars = F2(
+	function (chars, acc) {
+		parseChars:
+		while (true) {
+			if (!chars.b) {
+				return $elm$core$List$reverse(acc);
+			} else {
+				var c = chars.a;
+				var rest = chars.b;
+				if ($elm$core$Char$isDigit(c)) {
+					var _v1 = $author$project$Sort$spanDigits(
+						A2($elm$core$List$cons, c, rest));
+					var digits = _v1.a;
+					var remainder = _v1.b;
+					var num = A2(
+						$elm$core$Maybe$withDefault,
+						0,
+						$elm$core$String$toInt(
+							$elm$core$String$fromList(digits)));
+					var $temp$chars = remainder,
+						$temp$acc = A2(
+						$elm$core$List$cons,
+						$author$project$Sort$NumericChunk(num),
+						acc);
+					chars = $temp$chars;
+					acc = $temp$acc;
+					continue parseChars;
+				} else {
+					var _v2 = $author$project$Sort$spanNonDigits(
+						A2($elm$core$List$cons, c, rest));
+					var nonDigits = _v2.a;
+					var remainder = _v2.b;
+					var txt = $elm$core$String$fromList(nonDigits);
+					var $temp$chars = remainder,
+						$temp$acc = A2(
+						$elm$core$List$cons,
+						$author$project$Sort$TextChunk(txt),
+						acc);
+					chars = $temp$chars;
+					acc = $temp$acc;
+					continue parseChars;
+				}
+			}
+		}
+	});
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $author$project$Sort$parseChunks = function (str) {
+	return A2(
+		$author$project$Sort$parseChars,
+		$elm$core$String$toList(str),
+		_List_Nil);
+};
+var $author$project$Sort$compareNatural = F2(
+	function (a, b) {
+		return A2(
+			$author$project$Sort$compareChunkList,
+			$author$project$Sort$parseChunks(
+				$elm$core$String$toLower(a)),
+			$author$project$Sort$parseChunks(
+				$elm$core$String$toLower(b)));
+	});
+var $author$project$Sort$extractFieldValue = F2(
+	function (key, item) {
+		var _v0 = A2($elm$core$Dict$get, key, item.aA);
+		if (!_v0.$) {
+			switch (_v0.a.$) {
+				case 0:
+					var s = _v0.a.a;
+					return $elm$core$String$isEmpty(
+						$elm$core$String$trim(s)) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
+						$elm$core$String$trim(s));
+				case 1:
+					var xs = _v0.a.a;
+					var _v1 = A2(
+						$elm$core$List$filter,
+						A2(
+							$elm$core$Basics$composeL,
+							A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$String$isEmpty),
+							$elm$core$String$trim),
+						xs);
+					if (_v1.b) {
+						var first = _v1.a;
+						return $elm$core$Maybe$Just(
+							$elm$core$String$trim(first));
+					} else {
+						return $elm$core$Maybe$Nothing;
+					}
+				default:
+					var b = _v0.a.a;
+					return b ? $elm$core$Maybe$Just('1') : $elm$core$Maybe$Just('0');
+			}
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Sort$compareByCriterion = F3(
+	function (criterion, itemA, itemB) {
+		var valB = A2($author$project$Sort$extractFieldValue, criterion.ae, itemB);
+		var valA = A2($author$project$Sort$extractFieldValue, criterion.ae, itemA);
+		var _v0 = _Utils_Tuple2(valA, valB);
+		if (_v0.a.$ === 1) {
+			if (_v0.b.$ === 1) {
+				var _v1 = _v0.a;
+				var _v2 = _v0.b;
+				return 1;
+			} else {
+				var _v3 = _v0.a;
+				return 2;
+			}
+		} else {
+			if (_v0.b.$ === 1) {
+				var _v4 = _v0.b;
+				return 0;
+			} else {
+				var strA = _v0.a.a;
+				var strB = _v0.b.a;
+				var natOrder = A2($author$project$Sort$compareNatural, strA, strB);
+				var _v5 = criterion.aR;
+				if (!_v5) {
+					return natOrder;
+				} else {
+					switch (natOrder) {
+						case 0:
+							return 2;
+						case 2:
+							return 0;
+						default:
+							return 1;
+					}
+				}
+			}
+		}
+	});
+var $elm$core$List$sortWith = _List_sortWith;
+var $author$project$Sort$sortItems = F3(
+	function (primary, maybeSecondary, items) {
+		return A2(
+			$elm$core$List$sortWith,
+			F2(
+				function (a, b) {
+					var _v0 = A3($author$project$Sort$compareByCriterion, primary, a, b);
+					if (_v0 === 1) {
+						if (!maybeSecondary.$) {
+							var secondary = maybeSecondary.a;
+							return A3($author$project$Sort$compareByCriterion, secondary, a, b);
+						} else {
+							return 1;
+						}
+					} else {
+						var other = _v0;
+						return other;
+					}
+				}),
+			items);
+	});
+var $author$project$Types$CardActionMsg = function (a) {
+	return {$: 21, a: a};
+};
+var $author$project$Types$DismissToast = {$: 3};
 var $elm$core$Process$sleep = _Process_sleep;
-var $author$project$Update$triggerAutoDismissToast = A2(
+var $author$project$Update$AutoSortManager$triggerAutoDismissToast = A2(
 	$elm$core$Task$perform,
 	function (_v0) {
-		return $author$project$Types$DismissToast;
+		return $author$project$Types$CardActionMsg($author$project$Types$DismissToast);
 	},
 	$elm$core$Process$sleep(5000));
-var $author$project$Update$copyItemAfter = F3(
+var $author$project$Update$AutoSortManager$applySort = function (model) {
+	var secondary = A2(
+		$elm$core$Maybe$map,
+		function (f) {
+			return {aR: model.aJ.bx, ae: f};
+		},
+		model.aJ.by);
+	var primary = {aR: model.aJ.bp, ae: model.aJ.bq};
+	var sortedItems = A3($author$project$Sort$sortItems, primary, secondary, model.m.aj);
+	var oldDataset = model.m;
+	var updatedDataset = _Utils_update(
+		oldDataset,
+		{aj: sortedItems});
+	var newModel = _Utils_update(
+		model,
+		{
+			aI: false,
+			m: updatedDataset,
+			z: A2($author$project$History$push, model, model.z),
+			bK: $elm$core$Maybe$Just(
+				{bh: 'カードをソートしました', bB: true})
+		});
+	return _Utils_Tuple2(
+		newModel,
+		$elm$core$Platform$Cmd$batch(
+			_List_fromArray(
+				[
+					$author$project$Storage$save(newModel),
+					$author$project$Update$AutoSortManager$triggerAutoDismissToast
+				])));
+};
+var $author$project$Update$AutoSortManager$handleAutoSortMsg = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 0:
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{aG: false, aI: true}),
+					$elm$core$Platform$Cmd$none);
+			case 1:
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{aI: false}),
+					$elm$core$Platform$Cmd$none);
+			case 2:
+				var fieldKey = msg.a;
+				var st = model.aJ;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							aJ: _Utils_update(
+								st,
+								{bq: fieldKey})
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 3:
+				var dir = msg.a;
+				var st = model.aJ;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							aJ: _Utils_update(
+								st,
+								{bp: dir})
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 4:
+				var maybeFieldKey = msg.a;
+				var st = model.aJ;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							aJ: _Utils_update(
+								st,
+								{by: maybeFieldKey})
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 5:
+				var dir = msg.a;
+				var st = model.aJ;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							aJ: _Utils_update(
+								st,
+								{bx: dir})
+						}),
+					$elm$core$Platform$Cmd$none);
+			default:
+				return $author$project$Update$AutoSortManager$applySort(model);
+		}
+	});
+var $author$project$Update$CardActionManager$triggerAutoDismissToast = A2(
+	$elm$core$Task$perform,
+	function (_v0) {
+		return $author$project$Types$CardActionMsg($author$project$Types$DismissToast);
+	},
+	$elm$core$Process$sleep(5000));
+var $author$project$Update$CardActionManager$deleteCard = F2(
+	function (itemId, model) {
+		var oldDataset = model.m;
+		var updatedDataset = _Utils_update(
+			oldDataset,
+			{
+				aj: A2(
+					$elm$core$List$filter,
+					function (it) {
+						return !_Utils_eq(it.ai, itemId);
+					},
+					oldDataset.aj)
+			});
+		var newModel = _Utils_update(
+			model,
+			{
+				m: updatedDataset,
+				z: A2($author$project$History$push, model, model.z),
+				bK: $elm$core$Maybe$Just(
+					{bh: 'カードを削除しました', bB: true})
+			});
+		return _Utils_Tuple2(
+			newModel,
+			$elm$core$Platform$Cmd$batch(
+				_List_fromArray(
+					[
+						$author$project$Storage$save(newModel),
+						$author$project$Update$CardActionManager$triggerAutoDismissToast
+					])));
+	});
+var $author$project$Ports$generateUuid = _Platform_outgoingPort(
+	'generateUuid',
+	function ($) {
+		return $elm$json$Json$Encode$null;
+	});
+var $author$project$History$applySnapshot = F2(
+	function (snapshot, model) {
+		return _Utils_update(
+			model,
+			{m: snapshot.m});
+	});
+var $author$project$History$pop = function (stack) {
+	if (stack.b) {
+		var top = stack.a;
+		var rest = stack.b;
+		return $elm$core$Maybe$Just(
+			_Utils_Tuple2(top, rest));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Update$CardActionManager$undoFromToast = function (model) {
+	var _v0 = $author$project$History$pop(model.z);
+	if (!_v0.$) {
+		var _v1 = _v0.a;
+		var snapshot = _v1.a;
+		var rest = _v1.b;
+		var restoredModel = A2(
+			$author$project$History$applySnapshot,
+			snapshot,
+			_Utils_update(
+				model,
+				{z: rest, bK: $elm$core$Maybe$Nothing}));
+		return _Utils_Tuple2(
+			restoredModel,
+			$author$project$Storage$save(restoredModel));
+	} else {
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{bK: $elm$core$Maybe$Nothing}),
+			$elm$core$Platform$Cmd$none);
+	}
+};
+var $author$project$Update$CardActionManager$handleCardActionMsg = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 0:
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{aP: !model.aP}),
+					$elm$core$Platform$Cmd$none);
+			case 1:
+				var itemId = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							bo: $elm$core$Maybe$Just(itemId)
+						}),
+					$author$project$Ports$generateUuid(0));
+			case 2:
+				var itemId = msg.a;
+				return A2($author$project$Update$CardActionManager$deleteCard, itemId, model);
+			case 3:
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{bK: $elm$core$Maybe$Nothing}),
+					$elm$core$Platform$Cmd$none);
+			default:
+				return $author$project$Update$CardActionManager$undoFromToast(model);
+		}
+	});
+var $author$project$Update$CardActionManager$insertAfter = F3(
+	function (targetId, newItem, items) {
+		if (!items.b) {
+			return _List_fromArray(
+				[newItem]);
+		} else {
+			var head = items.a;
+			var tail = items.b;
+			return _Utils_eq(head.ai, targetId) ? A2(
+				$elm$core$List$cons,
+				head,
+				A2($elm$core$List$cons, newItem, tail)) : A2(
+				$elm$core$List$cons,
+				head,
+				A3($author$project$Update$CardActionManager$insertAfter, targetId, newItem, tail));
+		}
+	});
+var $author$project$Update$CardActionManager$copyItemDirectlyAfter = F3(
 	function (targetId, newUuid, model) {
 		var maybeTarget = $elm$core$List$head(
 			A2(
@@ -6838,7 +7735,7 @@ var $author$project$Update$copyItemAfter = F3(
 			var targetItem = maybeTarget.a;
 			var oldDataset = model.m;
 			var newItem = {ai: newUuid, aA: targetItem.aA};
-			var updatedItems = A3($author$project$Update$insertItemDirectlyAfter, targetId, newItem, model.m.aj);
+			var updatedItems = A3($author$project$Update$CardActionManager$insertAfter, targetId, newItem, model.m.aj);
 			var updatedDataset = _Utils_update(
 				oldDataset,
 				{aj: updatedItems});
@@ -6856,62 +7753,10 @@ var $author$project$Update$copyItemAfter = F3(
 					_List_fromArray(
 						[
 							$author$project$Storage$save(newModel),
-							$author$project$Update$triggerAutoDismissToast
+							$author$project$Update$CardActionManager$triggerAutoDismissToast
 						])));
 		} else {
 			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-		}
-	});
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === -2) {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1) {
-					case 0:
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 1:
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
 		}
 	});
 var $author$project$Update$ItemManager$isBooleanValue = function (val) {
@@ -7033,381 +7878,22 @@ var $author$project$Update$ItemManager$createNewItemWithUuid = F3(
 	function (uuid, maybeTopId, model) {
 		return A4($author$project$Update$ItemManager$appendItemAndSave, uuid, maybeTopId, model, model.m);
 	});
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (!maybe.$) {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $author$project$Import$toItem = F2(
-	function (uuid, pairs) {
-		return {
-			ai: uuid,
-			aA: $elm$core$Dict$fromList(pairs)
-		};
-	});
-var $author$project$Import$buildItems = F2(
-	function (uuids, rawItems) {
-		return A3($elm$core$List$map2, $author$project$Import$toItem, uuids, rawItems);
-	});
-var $author$project$Import$existingKeysOf = function (fields) {
-	return A2(
-		$elm$core$List$map,
-		function ($) {
-			return $.ak;
-		},
-		fields);
-};
-var $elm$core$Dict$member = F2(
-	function (key, dict) {
-		var _v0 = A2($elm$core$Dict$get, key, dict);
+var $author$project$Update$CardActionManager$handleCreateItemWithId = F2(
+	function (uuid, model) {
+		var _v0 = model.bo;
 		if (!_v0.$) {
-			return true;
-		} else {
-			return false;
-		}
-	});
-var $author$project$Import$fillItemBools = F2(
-	function (boolKeys, item) {
-		var filledValues = A3(
-			$elm$core$List$foldl,
-			F2(
-				function (key, acc) {
-					return A2($elm$core$Dict$member, key, acc) ? acc : A3(
-						$elm$core$Dict$insert,
-						key,
-						$author$project$Types$Boolean(false),
-						acc);
-				}),
-			item.aA,
-			boolKeys);
-		return _Utils_update(
-			item,
-			{aA: filledValues});
-	});
-var $author$project$Import$fillMissingBools = F2(
-	function (fields, items) {
-		var boolKeys = A2(
-			$elm$core$List$map,
-			function ($) {
-				return $.ak;
-			},
-			A2(
-				$elm$core$List$filter,
-				function ($) {
-					return $.bd;
-				},
-				fields));
-		return $elm$core$List$isEmpty(boolKeys) ? items : A2(
-			$elm$core$List$map,
-			$author$project$Import$fillItemBools(boolKeys),
-			items);
-	});
-var $elm$core$List$all = F2(
-	function (isOkay, list) {
-		return !A2(
-			$elm$core$List$any,
-			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
-			list);
-	});
-var $author$project$Import$defaultFieldConfig = function (key) {
-	return {aS: 0, a$: $elm$core$Maybe$Nothing, a4: false, bd: false, be: false, ak: key, bf: key, bA: true, bN: $elm$core$Maybe$Nothing};
-};
-var $author$project$Import$firstTextValue = function (values) {
-	return $elm$core$List$head(
-		A2(
-			$elm$core$List$filterMap,
-			function (v) {
-				if (!v.$) {
-					var s = v.a;
-					return $elm$core$String$isEmpty(
-						$elm$core$String$trim(s)) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(s);
-				} else {
-					return $elm$core$Maybe$Nothing;
-				}
-			},
-			values));
-};
-var $elm$core$String$endsWith = _String_endsWith;
-var $elm$core$String$toLower = _String_toLower;
-var $author$project$Import$isWebUrl = function (str) {
-	var lower = $elm$core$String$toLower(
-		$elm$core$String$trim(str));
-	return A2($elm$core$String$startsWith, 'http://', lower) || A2($elm$core$String$startsWith, 'https://', lower);
-};
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (!maybe.$) {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var $author$project$Import$isImageUrl = function (url) {
-	if ($author$project$Import$isWebUrl(url)) {
-		var imageExtensions = _List_fromArray(
-			['.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg', '.bmp']);
-		var cleanPath = $elm$core$String$toLower(
-			A2(
-				$elm$core$Maybe$withDefault,
-				url,
-				$elm$core$List$head(
-					A2(
-						$elm$core$String$split,
-						'#',
-						A2(
-							$elm$core$Maybe$withDefault,
-							url,
-							$elm$core$List$head(
-								A2($elm$core$String$split, '?', url)))))));
-		return A2(
-			$elm$core$List$any,
-			function (ext) {
-				return A2($elm$core$String$endsWith, ext, cleanPath);
-			},
-			imageExtensions);
-	} else {
-		return false;
-	}
-};
-var $author$project$Import$inferDisplayRole = F2(
-	function (key, values) {
-		var lowerKey = $elm$core$String$toLower(
-			$elm$core$String$trim(key));
-		if (lowerKey === 'title') {
-			return 1;
-		} else {
-			var _v0 = $author$project$Import$firstTextValue(values);
-			if (!_v0.$) {
-				var textStr = _v0.a;
-				var trimmed = $elm$core$String$trim(textStr);
-				return $author$project$Import$isImageUrl(trimmed) ? 2 : ($author$project$Import$isWebUrl(trimmed) ? 3 : 0);
-			} else {
-				return 0;
-			}
-		}
-	});
-var $author$project$Import$isBooleanValue = function (val) {
-	if (val.$ === 2) {
-		return true;
-	} else {
-		return false;
-	}
-};
-var $author$project$Import$isTextListValue = function (val) {
-	if (val.$ === 1) {
-		return true;
-	} else {
-		return false;
-	}
-};
-var $author$project$Import$inferFieldConfig = F2(
-	function (key, rawItems) {
-		var valuesForKey = A2(
-			$elm$core$List$concatMap,
-			function (item) {
-				return A2(
-					$elm$core$List$filterMap,
-					function (_v0) {
-						var k = _v0.a;
-						var v = _v0.b;
-						return _Utils_eq(k, key) ? $elm$core$Maybe$Just(v) : $elm$core$Maybe$Nothing;
-					},
-					item);
-			},
-			rawItems);
-		var isTextListType = $elm$core$List$isEmpty(valuesForKey) ? false : A2($elm$core$List$any, $author$project$Import$isTextListValue, valuesForKey);
-		var isBoolType = $elm$core$List$isEmpty(valuesForKey) ? false : A2($elm$core$List$all, $author$project$Import$isBooleanValue, valuesForKey);
-		var inferredRole = A2($author$project$Import$inferDisplayRole, key, valuesForKey);
-		var base = $author$project$Import$defaultFieldConfig(key);
-		return _Utils_update(
-			base,
-			{aS: inferredRole, bd: isBoolType, be: isTextListType});
-	});
-var $elm$core$List$member = F2(
-	function (x, xs) {
-		return A2(
-			$elm$core$List$any,
-			function (a) {
-				return _Utils_eq(a, x);
-			},
-			xs);
-	});
-var $author$project$Import$restrictKeys = F2(
-	function (allowedKeys, pairs) {
-		return A2(
-			$elm$core$List$filter,
-			function (_v0) {
-				var key = _v0.a;
-				return A2($elm$core$List$member, key, allowedKeys);
-			},
-			pairs);
-	});
-var $author$project$Import$mergeInto = F4(
-	function (includeNewKeys, uuids, pending, target) {
-		var newFields = includeNewKeys ? _Utils_ap(
-			target.af,
-			A2(
-				$elm$core$List$map,
-				function (key) {
-					return A2($author$project$Import$inferFieldConfig, key, pending.G);
-				},
-				pending.an)) : target.af;
-		var effectiveRawItems = includeNewKeys ? pending.G : A2(
-			$elm$core$List$map,
-			$author$project$Import$restrictKeys(
-				$author$project$Import$existingKeysOf(target.af)),
-			pending.G);
-		var newItems = A2($author$project$Import$buildItems, uuids, effectiveRawItems);
-		var mergedItems = function () {
-			var _v0 = pending.al;
-			if (_v0 === 2) {
-				return newItems;
-			} else {
-				return _Utils_ap(target.aj, newItems);
-			}
-		}();
-		return _Utils_update(
-			target,
-			{
-				af: newFields,
-				aj: A2($author$project$Import$fillMissingBools, newFields, mergedItems)
-			});
-	});
-var $author$project$Import$applyChoice = F4(
-	function (choice, uuids, pending, target) {
-		switch (choice) {
-			case 2:
-				return $elm$core$Maybe$Nothing;
-			case 0:
-				return $elm$core$Maybe$Just(
-					A4($author$project$Import$mergeInto, true, uuids, pending, target));
-			default:
-				return $elm$core$Maybe$Just(
-					A4($author$project$Import$mergeInto, false, uuids, pending, target));
-		}
-	});
-var $author$project$FileFlow$save = function (model) {
-	return _Utils_Tuple2(
-		model,
-		$author$project$Storage$save(model));
-};
-var $author$project$FileFlow$applyImportAndSave = F4(
-	function (choice, uuids, pending, model) {
-		var _v0 = A4($author$project$Import$applyChoice, choice, uuids, pending, model.m);
-		if (!_v0.$) {
-			var updated = _v0.a;
-			return $author$project$FileFlow$save(
-				_Utils_update(
-					model,
-					{
-						m: updated,
-						D: false,
-						z: A2($author$project$History$push, model, model.z),
-						f: $elm$core$Maybe$Nothing
-					}));
-		} else {
+			var targetId = _v0.a;
+			var _v1 = A3($author$project$Update$CardActionManager$copyItemDirectlyAfter, targetId, uuid, model);
+			var newModel = _v1.a;
+			var cmd = _v1.b;
 			return _Utils_Tuple2(
 				_Utils_update(
-					model,
-					{f: $elm$core$Maybe$Nothing}),
-				$elm$core$Platform$Cmd$none);
-		}
-	});
-var $author$project$Update$applyImportToCurrentDataset = F3(
-	function (uuids, pending, model) {
-		return A4($author$project$FileFlow$applyImportAndSave, pending.S, uuids, pending, model);
-	});
-var $author$project$Import$addKeyIfNew = F2(
-	function (_v0, acc) {
-		var key = _v0.a;
-		return A2($elm$core$List$member, key, acc) ? acc : A2($elm$core$List$cons, key, acc);
-	});
-var $author$project$Import$collectFromItem = F2(
-	function (pairs, acc) {
-		return A3($elm$core$List$foldl, $author$project$Import$addKeyIfNew, acc, pairs);
-	});
-var $author$project$Import$collectKeyOrder = function (rawItems) {
-	return $elm$core$List$reverse(
-		A3($elm$core$List$foldl, $author$project$Import$collectFromItem, _List_Nil, rawItems));
-};
-var $author$project$Import$buildNewDataset = F4(
-	function (newId, name, uuids, rawItems) {
-		var keys = $author$project$Import$collectKeyOrder(rawItems);
-		var items = A2($author$project$Import$buildItems, uuids, rawItems);
-		var fields = A2(
-			$elm$core$List$map,
-			function (key) {
-				return A2($author$project$Import$inferFieldConfig, key, rawItems);
-			},
-			keys);
-		return {
-			af: fields,
-			a1: _List_Nil,
-			ai: newId,
-			a8: $elm$core$Maybe$Nothing,
-			aj: A2($author$project$Import$fillMissingBools, fields, items),
-			bi: name,
-			bJ: $elm$core$Maybe$Nothing,
-			bS: false
-		};
-	});
-var $author$project$FileFlow$datasetNameOrDefault = function (input) {
-	return $elm$core$String$isEmpty(
-		$elm$core$String$trim(input)) ? '新しいデータ' : input;
-};
-var $author$project$FileFlow$finaliseNewDatasetImport = F2(
-	function (uuids, model) {
-		var _v0 = model.f;
-		if (!_v0.$) {
-			var pending = _v0.a;
-			var newDataset = A4(
-				$author$project$Import$buildNewDataset,
-				model.m.ai,
-				$author$project$FileFlow$datasetNameOrDefault(pending.O),
-				uuids,
-				pending.G);
-			return $author$project$FileFlow$save(
-				_Utils_update(
-					model,
-					{
-						m: newDataset,
-						D: false,
-						z: A2($author$project$History$push, model, model.z),
-						f: $elm$core$Maybe$Nothing
-					}));
+					newModel,
+					{bo: $elm$core$Maybe$Nothing}),
+				cmd);
 		} else {
-			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			return A3($author$project$Update$ItemManager$createNewItemWithUuid, uuid, model.bM, model);
 		}
-	});
-var $author$project$Update$processPendingImport = F3(
-	function (uuids, model, pending) {
-		var _v0 = pending.al;
-		if (!_v0) {
-			return A2($author$project$FileFlow$finaliseNewDatasetImport, uuids, model);
-		} else {
-			return A3($author$project$Update$applyImportToCurrentDataset, uuids, pending, model);
-		}
-	});
-var $author$project$Update$fileImport = F2(
-	function (uuids, model) {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
-			A2(
-				$elm$core$Maybe$map,
-				A2($author$project$Update$processPendingImport, uuids, model),
-				model.f));
-	});
-var $author$project$Ports$generateUuid = _Platform_outgoingPort(
-	'generateUuid',
-	function ($) {
-		return $elm$json$Json$Encode$null;
 	});
 var $elm$core$Tuple$pair = F2(
 	function (a, b) {
@@ -7764,284 +8250,6 @@ var $author$project$Update$setCardSize = F2(
 			model,
 			{aM: size, bg: 1.0});
 	});
-var $author$project$Sort$compareSingleChunk = F2(
-	function (a, b) {
-		var _v0 = _Utils_Tuple2(a, b);
-		if (_v0.a.$ === 1) {
-			if (_v0.b.$ === 1) {
-				var n1 = _v0.a.a;
-				var n2 = _v0.b.a;
-				return A2($elm$core$Basics$compare, n1, n2);
-			} else {
-				return 0;
-			}
-		} else {
-			if (!_v0.b.$) {
-				var s1 = _v0.a.a;
-				var s2 = _v0.b.a;
-				return A2($elm$core$Basics$compare, s1, s2);
-			} else {
-				return 2;
-			}
-		}
-	});
-var $author$project$Sort$compareChunkList = F2(
-	function (listA, listB) {
-		compareChunkList:
-		while (true) {
-			var _v0 = _Utils_Tuple2(listA, listB);
-			if (!_v0.a.b) {
-				if (!_v0.b.b) {
-					return 1;
-				} else {
-					return 0;
-				}
-			} else {
-				if (!_v0.b.b) {
-					return 2;
-				} else {
-					var _v1 = _v0.a;
-					var chunkA = _v1.a;
-					var restA = _v1.b;
-					var _v2 = _v0.b;
-					var chunkB = _v2.a;
-					var restB = _v2.b;
-					var _v3 = A2($author$project$Sort$compareSingleChunk, chunkA, chunkB);
-					if (_v3 === 1) {
-						var $temp$listA = restA,
-							$temp$listB = restB;
-						listA = $temp$listA;
-						listB = $temp$listB;
-						continue compareChunkList;
-					} else {
-						var diff = _v3;
-						return diff;
-					}
-				}
-			}
-		}
-	});
-var $author$project$Sort$NumericChunk = function (a) {
-	return {$: 1, a: a};
-};
-var $author$project$Sort$TextChunk = function (a) {
-	return {$: 0, a: a};
-};
-var $elm$core$String$fromList = _String_fromList;
-var $author$project$Sort$spanDigits = function (chars) {
-	if (chars.b) {
-		var c = chars.a;
-		var rest = chars.b;
-		if ($elm$core$Char$isDigit(c)) {
-			var _v1 = $author$project$Sort$spanDigits(rest);
-			var match = _v1.a;
-			var remainder = _v1.b;
-			return _Utils_Tuple2(
-				A2($elm$core$List$cons, c, match),
-				remainder);
-		} else {
-			return _Utils_Tuple2(
-				_List_Nil,
-				A2($elm$core$List$cons, c, rest));
-		}
-	} else {
-		return _Utils_Tuple2(_List_Nil, _List_Nil);
-	}
-};
-var $author$project$Sort$spanNonDigits = function (chars) {
-	if (chars.b) {
-		var c = chars.a;
-		var rest = chars.b;
-		if (!$elm$core$Char$isDigit(c)) {
-			var _v1 = $author$project$Sort$spanNonDigits(rest);
-			var match = _v1.a;
-			var remainder = _v1.b;
-			return _Utils_Tuple2(
-				A2($elm$core$List$cons, c, match),
-				remainder);
-		} else {
-			return _Utils_Tuple2(
-				_List_Nil,
-				A2($elm$core$List$cons, c, rest));
-		}
-	} else {
-		return _Utils_Tuple2(_List_Nil, _List_Nil);
-	}
-};
-var $author$project$Sort$parseChars = F2(
-	function (chars, acc) {
-		parseChars:
-		while (true) {
-			if (!chars.b) {
-				return $elm$core$List$reverse(acc);
-			} else {
-				var c = chars.a;
-				var rest = chars.b;
-				if ($elm$core$Char$isDigit(c)) {
-					var _v1 = $author$project$Sort$spanDigits(
-						A2($elm$core$List$cons, c, rest));
-					var digits = _v1.a;
-					var remainder = _v1.b;
-					var num = A2(
-						$elm$core$Maybe$withDefault,
-						0,
-						$elm$core$String$toInt(
-							$elm$core$String$fromList(digits)));
-					var $temp$chars = remainder,
-						$temp$acc = A2(
-						$elm$core$List$cons,
-						$author$project$Sort$NumericChunk(num),
-						acc);
-					chars = $temp$chars;
-					acc = $temp$acc;
-					continue parseChars;
-				} else {
-					var _v2 = $author$project$Sort$spanNonDigits(
-						A2($elm$core$List$cons, c, rest));
-					var nonDigits = _v2.a;
-					var remainder = _v2.b;
-					var txt = $elm$core$String$fromList(nonDigits);
-					var $temp$chars = remainder,
-						$temp$acc = A2(
-						$elm$core$List$cons,
-						$author$project$Sort$TextChunk(txt),
-						acc);
-					chars = $temp$chars;
-					acc = $temp$acc;
-					continue parseChars;
-				}
-			}
-		}
-	});
-var $elm$core$String$foldr = _String_foldr;
-var $elm$core$String$toList = function (string) {
-	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
-};
-var $author$project$Sort$parseChunks = function (str) {
-	return A2(
-		$author$project$Sort$parseChars,
-		$elm$core$String$toList(str),
-		_List_Nil);
-};
-var $author$project$Sort$compareNatural = F2(
-	function (a, b) {
-		return A2(
-			$author$project$Sort$compareChunkList,
-			$author$project$Sort$parseChunks(
-				$elm$core$String$toLower(a)),
-			$author$project$Sort$parseChunks(
-				$elm$core$String$toLower(b)));
-	});
-var $author$project$Sort$extractFieldValue = F2(
-	function (key, item) {
-		var _v0 = A2($elm$core$Dict$get, key, item.aA);
-		if (!_v0.$) {
-			switch (_v0.a.$) {
-				case 0:
-					var s = _v0.a.a;
-					return $elm$core$String$isEmpty(
-						$elm$core$String$trim(s)) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
-						$elm$core$String$trim(s));
-				case 1:
-					var xs = _v0.a.a;
-					var _v1 = A2(
-						$elm$core$List$filter,
-						A2(
-							$elm$core$Basics$composeL,
-							A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$String$isEmpty),
-							$elm$core$String$trim),
-						xs);
-					if (_v1.b) {
-						var first = _v1.a;
-						return $elm$core$Maybe$Just(
-							$elm$core$String$trim(first));
-					} else {
-						return $elm$core$Maybe$Nothing;
-					}
-				default:
-					var b = _v0.a.a;
-					return b ? $elm$core$Maybe$Just('1') : $elm$core$Maybe$Just('0');
-			}
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $author$project$Sort$compareByCriterion = F3(
-	function (criterion, itemA, itemB) {
-		var valB = A2($author$project$Sort$extractFieldValue, criterion.ae, itemB);
-		var valA = A2($author$project$Sort$extractFieldValue, criterion.ae, itemA);
-		var _v0 = _Utils_Tuple2(valA, valB);
-		if (_v0.a.$ === 1) {
-			if (_v0.b.$ === 1) {
-				var _v1 = _v0.a;
-				var _v2 = _v0.b;
-				return 1;
-			} else {
-				var _v3 = _v0.a;
-				return 2;
-			}
-		} else {
-			if (_v0.b.$ === 1) {
-				var _v4 = _v0.b;
-				return 0;
-			} else {
-				var strA = _v0.a.a;
-				var strB = _v0.b.a;
-				var natOrder = A2($author$project$Sort$compareNatural, strA, strB);
-				var _v5 = criterion.aR;
-				if (!_v5) {
-					return natOrder;
-				} else {
-					switch (natOrder) {
-						case 0:
-							return 2;
-						case 2:
-							return 0;
-						default:
-							return 1;
-					}
-				}
-			}
-		}
-	});
-var $elm$core$List$sortWith = _List_sortWith;
-var $author$project$Sort$sortItems = F3(
-	function (primary, maybeSecondary, items) {
-		return A2(
-			$elm$core$List$sortWith,
-			F2(
-				function (a, b) {
-					var _v0 = A3($author$project$Sort$compareByCriterion, primary, a, b);
-					if (_v0 === 1) {
-						if (!maybeSecondary.$) {
-							var secondary = maybeSecondary.a;
-							return A3($author$project$Sort$compareByCriterion, secondary, a, b);
-						} else {
-							return 1;
-						}
-					} else {
-						var other = _v0;
-						return other;
-					}
-				}),
-			items);
-	});
-var $author$project$History$applySnapshot = F2(
-	function (snapshot, model) {
-		return _Utils_update(
-			model,
-			{m: snapshot.m});
-	});
-var $author$project$History$pop = function (stack) {
-	if (stack.b) {
-		var top = stack.a;
-		var rest = stack.b;
-		return $elm$core$Maybe$Just(
-			_Utils_Tuple2(top, rest));
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
 var $author$project$Update$undo = function (model) {
 	var _v0 = $author$project$History$pop(model.z);
 	if (!_v0.$) {
@@ -10894,168 +11102,15 @@ var $author$project$Update$update = F2(
 			case 15:
 				var detailMsg = msg.a;
 				return A2($author$project$Update$DetailModalManager$handleDetailModalMsg, detailMsg, model);
-			case 20:
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{aP: !model.aP}),
-					$elm$core$Platform$Cmd$none);
-			case 21:
-				var itemId = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							bo: $elm$core$Maybe$Just(itemId)
-						}),
-					$author$project$Ports$generateUuid(0));
 			case 17:
 				var uuid = msg.a;
-				var _v1 = model.bo;
-				if (!_v1.$) {
-					var targetId = _v1.a;
-					var _v2 = A3($author$project$Update$copyItemAfter, targetId, uuid, model);
-					var newModel = _v2.a;
-					var cmd = _v2.b;
-					return _Utils_Tuple2(
-						_Utils_update(
-							newModel,
-							{bo: $elm$core$Maybe$Nothing}),
-						cmd);
-				} else {
-					return A3($author$project$Update$ItemManager$createNewItemWithUuid, uuid, model.bM, model);
-				}
-			case 22:
-				var itemId = msg.a;
-				var oldDataset = model.m;
-				var updatedDataset = _Utils_update(
-					oldDataset,
-					{
-						aj: A2(
-							$elm$core$List$filter,
-							function (it) {
-								return !_Utils_eq(it.ai, itemId);
-							},
-							oldDataset.aj)
-					});
-				var newModel = _Utils_update(
-					model,
-					{
-						m: updatedDataset,
-						z: A2($author$project$History$push, model, model.z),
-						bK: $elm$core$Maybe$Just(
-							{bh: 'カードを削除しました', bB: true})
-					});
-				return _Utils_Tuple2(
-					newModel,
-					$elm$core$Platform$Cmd$batch(
-						_List_fromArray(
-							[
-								$author$project$Storage$save(newModel),
-								$author$project$Update$triggerAutoDismissToast
-							])));
-			case 23:
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{bK: $elm$core$Maybe$Nothing}),
-					$elm$core$Platform$Cmd$none);
-			case 24:
-				var undoneModel = $author$project$Update$undo(model);
-				return $author$project$Update$saveAfter(
-					_Utils_update(
-						undoneModel,
-						{bK: $elm$core$Maybe$Nothing}));
-			case 25:
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{aG: false, aI: true}),
-					$elm$core$Platform$Cmd$none);
-			case 26:
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{aI: false}),
-					$elm$core$Platform$Cmd$none);
-			case 27:
-				var fieldKey = msg.a;
-				var st = model.aJ;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							aJ: _Utils_update(
-								st,
-								{bq: fieldKey})
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 28:
-				var dir = msg.a;
-				var st = model.aJ;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							aJ: _Utils_update(
-								st,
-								{bp: dir})
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 29:
-				var maybeFieldKey = msg.a;
-				var st = model.aJ;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							aJ: _Utils_update(
-								st,
-								{by: maybeFieldKey})
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 30:
-				var dir = msg.a;
-				var st = model.aJ;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							aJ: _Utils_update(
-								st,
-								{bx: dir})
-						}),
-					$elm$core$Platform$Cmd$none);
+				return A2($author$project$Update$CardActionManager$handleCreateItemWithId, uuid, model);
+			case 20:
+				var autoSortMsg = msg.a;
+				return A2($author$project$Update$AutoSortManager$handleAutoSortMsg, autoSortMsg, model);
 			default:
-				var secondary = A2(
-					$elm$core$Maybe$map,
-					function (f) {
-						return {aR: model.aJ.bx, ae: f};
-					},
-					model.aJ.by);
-				var primary = {aR: model.aJ.bp, ae: model.aJ.bq};
-				var sortedItems = A3($author$project$Sort$sortItems, primary, secondary, model.m.aj);
-				var oldDataset = model.m;
-				var updatedDataset = _Utils_update(
-					oldDataset,
-					{aj: sortedItems});
-				var newModel = _Utils_update(
-					model,
-					{
-						aI: false,
-						m: updatedDataset,
-						z: A2($author$project$History$push, model, model.z),
-						bK: $elm$core$Maybe$Just(
-							{bh: 'カードをソートしました', bB: true})
-					});
-				return _Utils_Tuple2(
-					newModel,
-					$elm$core$Platform$Cmd$batch(
-						_List_fromArray(
-							[
-								$author$project$Storage$save(newModel),
-								$author$project$Update$triggerAutoDismissToast
-							])));
+				var cardActionMsg = msg.a;
+				return A2($author$project$Update$CardActionManager$handleCardActionMsg, cardActionMsg, model);
 		}
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
@@ -11063,11 +11118,7 @@ var $author$project$Types$CreateNewItem = {$: 12};
 var $author$project$Types$EditModalMsg = function (a) {
 	return {$: 13, a: a};
 };
-var $author$project$Types$OpenAutoSortModal = {$: 25};
-var $author$project$Types$RequestOpen = {$: 0};
-var $author$project$Types$ToggleActionMenu = {$: 2};
-var $author$project$Types$ToggleCopyDeleteMode = {$: 20};
-var $author$project$View$actionButtonClasses = 'w-full px-3 py-1.5 text-xs border border-neutral-100 rounded bg-neutral-50 hover:bg-neutral-100 text-neutral-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-center';
+var $author$project$View$actionMenuButtonClasses = 'w-full px-3 py-1.5 text-xs border border-neutral-100 rounded bg-neutral-50 hover:bg-neutral-100 text-neutral-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-center cursor-pointer';
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -11077,14 +11128,73 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 			$elm$json$Json$Encode$string(string));
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
-var $elm$html$Html$Attributes$boolProperty = F2(
-	function (key, bool) {
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
 		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$bool(bool));
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
 	});
-var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$View$addItemButton = A2(
+	$elm$html$Html$button,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$class($author$project$View$actionMenuButtonClasses),
+			$elm$html$Html$Events$onClick(
+			$author$project$Types$EditModalMsg($author$project$Types$CreateNewItem))
+		]),
+	_List_fromArray(
+		[
+			$elm$html$Html$text('＋ 追加')
+		]));
+var $author$project$Types$AutoSortMsg = function (a) {
+	return {$: 20, a: a};
+};
+var $author$project$Types$OpenModal = {$: 0};
+var $author$project$View$autoSortButton = A2(
+	$elm$html$Html$button,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$class($author$project$View$actionMenuButtonClasses),
+			$elm$html$Html$Events$onClick(
+			$author$project$Types$AutoSortMsg($author$project$Types$OpenModal))
+		]),
+	_List_fromArray(
+		[
+			$elm$html$Html$text('ソート')
+		]));
+var $author$project$Types$ToggleMode = {$: 0};
+var $author$project$View$copyDeleteButtonClasses = function (isActive) {
+	return isActive ? 'w-full px-3 py-1.5 text-xs border rounded font-semibold bg-amber-500 text-white shadow-xs transition cursor-pointer text-center' : $author$project$View$actionMenuButtonClasses;
+};
+var $author$project$View$copyDeleteModeButton = function (isModeActive) {
+	return A2(
+		$elm$html$Html$button,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class(
+				$author$project$View$copyDeleteButtonClasses(isModeActive)),
+				$elm$html$Html$Events$onClick(
+				$author$project$Types$CardActionMsg($author$project$Types$ToggleMode))
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(
+				isModeActive ? '✓ コピー・削除中' : 'コピーと削除')
+			]));
+};
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $author$project$Filter$isFilterActive = F2(
 	function (filterUiDict, dataset) {
@@ -11114,7 +11224,6 @@ var $elm$html$Html$Events$alwaysStop = function (x) {
 var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
 	return {$: 1, a: a};
 };
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
 var $elm$html$Html$Events$stopPropagationOn = F2(
 	function (event, decoder) {
 		return A2(
@@ -11143,8 +11252,6 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 var $elm$html$Html$Attributes$step = function (n) {
 	return A2($elm$html$Html$Attributes$stringProperty, 'step', n);
 };
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$core$String$toFloat = _String_toFloat;
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
@@ -11190,25 +11297,76 @@ var $author$project$View$mainCardSizeSlider = function (currentScale) {
 				_List_Nil)
 			]));
 };
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 0, a: a};
-};
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
+var $author$project$Types$RequestOpen = {$: 0};
+var $elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
 		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$bool(bool));
 	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
+var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
 var $elm$html$Html$Attributes$title = $elm$html$Html$Attributes$stringProperty('title');
-var $author$project$View$actionButtonGroup = function (model) {
+var $author$project$View$manualSortButton = function (isFiltered) {
+	return A2(
+		$elm$html$Html$button,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class($author$project$View$actionMenuButtonClasses),
+				$elm$html$Html$Events$onClick(
+				$author$project$Types$SortModalMsg($author$project$Types$RequestOpen)),
+				$elm$html$Html$Attributes$disabled(isFiltered),
+				$elm$html$Html$Attributes$title(
+				isFiltered ? 'フィルター使用時は無効' : '手動で並べ替え')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('手動並べ替え')
+			]));
+};
+var $author$project$View$actionMenuDropdown = function (model) {
 	var isFiltered = A2($author$project$Filter$isFilterActive, model.a3, model.m);
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('z-40 flex flex-col gap-1.5 items-stretch bg-white border border-neutral-200 rounded-lg p-2 shadow-md min-w-[120px]')
+			]),
+		_List_fromArray(
+			[
+				$author$project$View$addItemButton,
+				$author$project$View$manualSortButton(isFiltered),
+				$author$project$View$autoSortButton,
+				$author$project$View$copyDeleteModeButton(model.aP),
+				$author$project$View$mainCardSizeSlider(model.bg)
+			]));
+};
+var $author$project$Types$ToggleActionMenu = {$: 2};
+var $author$project$View$menuBackdrop = function (isOpen) {
+	return isOpen ? A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('fixed inset-0 z-30'),
+				$elm$html$Html$Events$onClick($author$project$Types$ToggleActionMenu)
+			]),
+		_List_Nil) : $elm$html$Html$text('');
+};
+var $author$project$View$menuToggleButton = function (isOpen) {
+	return A2(
+		$elm$html$Html$button,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('z-40 px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-neutral-200 shadow-md text-neutral-700 hover:bg-neutral-50 cursor-pointer flex items-center gap-1'),
+				$elm$html$Html$Events$onClick($author$project$Types$ToggleActionMenu)
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(
+				isOpen ? '✕ 閉じる' : '⚙ 操作')
+			]));
+};
+var $author$project$View$actionButtonGroup = function (model) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
@@ -11217,102 +11375,34 @@ var $author$project$View$actionButtonGroup = function (model) {
 			]),
 		_List_fromArray(
 			[
-				model.aG ? A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('fixed inset-0 z-30'),
-						$elm$html$Html$Events$onClick($author$project$Types$ToggleActionMenu)
-					]),
-				_List_Nil) : $elm$html$Html$text(''),
-				A2(
-				$elm$html$Html$button,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('z-40 px-3 py-1.5 text-xs font-medium rounded-lg bg-white border border-neutral-200 shadow-md text-neutral-700 hover:bg-neutral-50 cursor-pointer flex items-center gap-1'),
-						$elm$html$Html$Events$onClick($author$project$Types$ToggleActionMenu)
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(
-						model.aG ? '✕ 閉じる' : '⚙ 操作')
-					])),
-				model.aG ? A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('z-40 flex flex-col gap-1.5 items-stretch bg-white border border-neutral-200 rounded-lg p-2 shadow-md min-w-[120px]')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class($author$project$View$actionButtonClasses),
-								$elm$html$Html$Events$onClick(
-								$author$project$Types$EditModalMsg($author$project$Types$CreateNewItem))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('＋ 追加')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class($author$project$View$actionButtonClasses),
-								$elm$html$Html$Events$onClick(
-								$author$project$Types$SortModalMsg($author$project$Types$RequestOpen)),
-								$elm$html$Html$Attributes$disabled(isFiltered),
-								$elm$html$Html$Attributes$title(
-								isFiltered ? 'フィルター使用時は無効' : '手動で並べ替え')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('手動並べ替え')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class($author$project$View$actionButtonClasses),
-								$elm$html$Html$Events$onClick($author$project$Types$OpenAutoSortModal)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('ソート...')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class(
-								model.aP ? 'w-full px-3 py-1.5 text-xs border rounded font-semibold bg-amber-500 text-white shadow-xs transition cursor-pointer text-center' : $author$project$View$actionButtonClasses),
-								$elm$html$Html$Events$onClick($author$project$Types$ToggleCopyDeleteMode)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(
-								model.aP ? '✓ コピー・削除中' : 'コピーと削除')
-							])),
-						$author$project$View$mainCardSizeSlider(model.bg)
-					])) : $elm$html$Html$text('')
+				$author$project$View$menuBackdrop(model.aG),
+				$author$project$View$menuToggleButton(model.aG),
+				model.aG ? $author$project$View$actionMenuDropdown(model) : $elm$html$Html$text('')
 			]));
 };
-var $author$project$Types$ApplyAutoSort = {$: 31};
-var $author$project$Types$CloseAutoSortModal = {$: 26};
-var $author$project$Types$SetAutoSortPrimaryDirection = function (a) {
-	return {$: 28, a: a};
-};
-var $author$project$Types$SetAutoSortPrimaryField = function (a) {
-	return {$: 27, a: a};
-};
-var $author$project$Types$SetAutoSortSecondaryDirection = function (a) {
-	return {$: 30, a: a};
-};
-var $author$project$Types$SetAutoSortSecondaryField = function (a) {
-	return {$: 29, a: a};
+var $author$project$Types$CloseModal = {$: 1};
+var $author$project$View$autoSortBackdrop = A2(
+	$elm$html$Html$div,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('absolute inset-0'),
+			$elm$html$Html$Events$onClick(
+			$author$project$Types$AutoSortMsg($author$project$Types$CloseModal))
+		]),
+	_List_Nil);
+var $elm$html$Html$span = _VirtualDom_node('span');
+var $author$project$View$autoSortNote = A2(
+	$elm$html$Html$span,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('text-[11px] text-neutral-400')
+		]),
+	_List_fromArray(
+		[
+			$elm$html$Html$text('※ 数値混じりの項目は自然順で整列されます。未入力のカードは常に末尾に配置されます。')
+		]));
+var $author$project$Types$SetPrimaryDirection = function (a) {
+	return {$: 3, a: a};
 };
 var $author$project$Types$Descending = 1;
 var $elm$html$Html$option = _VirtualDom_node('option');
@@ -11324,7 +11414,7 @@ var $author$project$View$directionSelect = F2(
 			$elm$html$Html$select,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('w-24 border border-neutral-200 rounded px-2 py-1.5 bg-white'),
+					$elm$html$Html$Attributes$class('w-24 border border-neutral-200 rounded px-2 py-1.5 bg-white cursor-pointer'),
 					$elm$html$Html$Events$onInput(
 					function (val) {
 						return toMsg(
@@ -11357,237 +11447,286 @@ var $author$project$View$directionSelect = F2(
 						]))
 				]));
 	});
-var $elm$html$Html$span = _VirtualDom_node('span');
-var $author$project$View$autoSortModalView = function (model) {
-	if (!model.aI) {
-		return $elm$html$Html$text('');
-	} else {
-		var fields = model.m.af;
+var $author$project$Types$SetPrimaryField = function (a) {
+	return {$: 2, a: a};
+};
+var $author$project$View$fieldOption = F2(
+	function (currentKey, field) {
+		return A2(
+			$elm$html$Html$option,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$value(field.ak),
+					$elm$html$Html$Attributes$selected(
+					_Utils_eq(field.ak, currentKey))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(field.bf)
+				]));
+	});
+var $author$project$View$primaryFieldSelect = F2(
+	function (fields, currentField) {
+		return A2(
+			$elm$html$Html$select,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('flex-1 border border-neutral-200 rounded px-2 py-1.5 bg-white cursor-pointer'),
+					$elm$html$Html$Events$onInput(
+					A2($elm$core$Basics$composeL, $author$project$Types$AutoSortMsg, $author$project$Types$SetPrimaryField))
+				]),
+			A2(
+				$elm$core$List$map,
+				$author$project$View$fieldOption(currentField),
+				fields));
+	});
+var $author$project$View$primarySortSection = F2(
+	function (fields, state) {
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs')
+					$elm$html$Html$Attributes$class('flex flex-col gap-1')
 				]),
 			_List_fromArray(
 				[
 					A2(
-					$elm$html$Html$div,
+					$elm$html$Html$span,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class('bg-white rounded-xl shadow-2xl border border-neutral-200 p-5 w-full max-w-md flex flex-col gap-4 z-10')
+							$elm$html$Html$Attributes$class('font-semibold text-neutral-600')
 						]),
 					_List_fromArray(
 						[
+							$elm$html$Html$text('第1優先項目')
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('flex gap-2')
+						]),
+					_List_fromArray(
+						[
+							A2($author$project$View$primaryFieldSelect, fields, state.bq),
 							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('flex items-center justify-between border-b border-neutral-100 pb-2')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$span,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('text-sm font-bold text-neutral-800')
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text('カードのソート（並べ替え）')
-										])),
-									A2(
-									$elm$html$Html$button,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('text-neutral-400 hover:text-neutral-600 text-sm'),
-											$elm$html$Html$Events$onClick($author$project$Types$CloseAutoSortModal)
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text('✕')
-										]))
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('flex flex-col gap-3 text-xs')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('flex flex-col gap-1')
-										]),
-									_List_fromArray(
-										[
-											A2(
-											$elm$html$Html$span,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('font-semibold text-neutral-600')
-												]),
-											_List_fromArray(
-												[
-													$elm$html$Html$text('第1優先項目')
-												])),
-											A2(
-											$elm$html$Html$div,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('flex gap-2')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$select,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('flex-1 border border-neutral-200 rounded px-2 py-1.5 bg-white'),
-															$elm$html$Html$Events$onInput($author$project$Types$SetAutoSortPrimaryField)
-														]),
-													A2(
-														$elm$core$List$map,
-														function (f) {
-															return A2(
-																$elm$html$Html$option,
-																_List_fromArray(
-																	[
-																		$elm$html$Html$Attributes$value(f.ak),
-																		$elm$html$Html$Attributes$selected(
-																		_Utils_eq(f.ak, model.aJ.bq))
-																	]),
-																_List_fromArray(
-																	[
-																		$elm$html$Html$text(f.bf)
-																	]));
-														},
-														fields)),
-													A2($author$project$View$directionSelect, model.aJ.bp, $author$project$Types$SetAutoSortPrimaryDirection)
-												]))
-										])),
-									A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('flex flex-col gap-1 pt-2 border-t border-neutral-100')
-										]),
-									_List_fromArray(
-										[
-											A2(
-											$elm$html$Html$span,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('font-semibold text-neutral-600')
-												]),
-											_List_fromArray(
-												[
-													$elm$html$Html$text('第2優先項目（同値の場合）')
-												])),
-											A2(
-											$elm$html$Html$div,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$class('flex gap-2')
-												]),
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$select,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('flex-1 border border-neutral-200 rounded px-2 py-1.5 bg-white'),
-															$elm$html$Html$Events$onInput(
-															function (val) {
-																return $author$project$Types$SetAutoSortSecondaryField(
-																	(val === '') ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(val));
-															})
-														]),
-													A2(
-														$elm$core$List$cons,
-														A2(
-															$elm$html$Html$option,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$value(''),
-																	$elm$html$Html$Attributes$selected(
-																	_Utils_eq(model.aJ.by, $elm$core$Maybe$Nothing))
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text('（指定なし）')
-																])),
-														A2(
-															$elm$core$List$map,
-															function (f) {
-																return A2(
-																	$elm$html$Html$option,
-																	_List_fromArray(
-																		[
-																			$elm$html$Html$Attributes$value(f.ak),
-																			$elm$html$Html$Attributes$selected(
-																			_Utils_eq(
-																				model.aJ.by,
-																				$elm$core$Maybe$Just(f.ak)))
-																		]),
-																	_List_fromArray(
-																		[
-																			$elm$html$Html$text(f.bf)
-																		]));
-															},
-															fields))),
-													A2($author$project$View$directionSelect, model.aJ.bx, $author$project$Types$SetAutoSortSecondaryDirection)
-												]))
-										])),
-									A2(
-									$elm$html$Html$span,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('text-[11px] text-neutral-400')
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text('※ 数値混じりの項目は自然順で整列されます。未入力のカードは常に末尾に配置されます。')
-										]))
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('flex justify-end gap-2 pt-2 border-t border-neutral-100')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$button,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('px-3 py-1.5 text-xs text-neutral-600 hover:bg-neutral-100 rounded'),
-											$elm$html$Html$Events$onClick($author$project$Types$CloseAutoSortModal)
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text('キャンセル')
-										])),
-									A2(
-									$elm$html$Html$button,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('px-4 py-1.5 text-xs font-semibold bg-neutral-900 text-white hover:bg-neutral-800 rounded shadow-xs'),
-											$elm$html$Html$Events$onClick($author$project$Types$ApplyAutoSort)
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text('ソート実行')
-										]))
-								]))
+							$author$project$View$directionSelect,
+							state.bp,
+							function (d) {
+								return $author$project$Types$AutoSortMsg(
+									$author$project$Types$SetPrimaryDirection(d));
+							})
 						]))
 				]));
-	}
+	});
+var $author$project$Types$SetSecondaryDirection = function (a) {
+	return {$: 5, a: a};
+};
+var $author$project$Types$SetSecondaryField = function (a) {
+	return {$: 4, a: a};
+};
+var $author$project$View$secondaryFieldOption = F2(
+	function (maybeSelectedKey, field) {
+		return A2(
+			$elm$html$Html$option,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$value(field.ak),
+					$elm$html$Html$Attributes$selected(
+					_Utils_eq(
+						maybeSelectedKey,
+						$elm$core$Maybe$Just(field.ak)))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(field.bf)
+				]));
+	});
+var $author$project$View$stringToMaybe = function (str) {
+	return $elm$core$String$isEmpty(
+		$elm$core$String$trim(str)) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(str);
+};
+var $author$project$View$secondaryFieldSelect = F2(
+	function (fields, maybeSelectedKey) {
+		return A2(
+			$elm$html$Html$select,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('flex-1 border border-neutral-200 rounded px-2 py-1.5 bg-white cursor-pointer'),
+					$elm$html$Html$Events$onInput(
+					function (val) {
+						return $author$project$Types$AutoSortMsg(
+							$author$project$Types$SetSecondaryField(
+								$author$project$View$stringToMaybe(val)));
+					})
+				]),
+			A2(
+				$elm$core$List$cons,
+				A2(
+					$elm$html$Html$option,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$value(''),
+							$elm$html$Html$Attributes$selected(
+							_Utils_eq(maybeSelectedKey, $elm$core$Maybe$Nothing))
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('（指定なし）')
+						])),
+				A2(
+					$elm$core$List$map,
+					$author$project$View$secondaryFieldOption(maybeSelectedKey),
+					fields)));
+	});
+var $author$project$View$secondarySortSection = F2(
+	function (fields, state) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('flex flex-col gap-1 pt-2 border-t border-neutral-100')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('font-semibold text-neutral-600')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('第2優先項目（同値の場合）')
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('flex gap-2')
+						]),
+					_List_fromArray(
+						[
+							A2($author$project$View$secondaryFieldSelect, fields, state.by),
+							A2(
+							$author$project$View$directionSelect,
+							state.bx,
+							function (d) {
+								return $author$project$Types$AutoSortMsg(
+									$author$project$Types$SetSecondaryDirection(d));
+							})
+						]))
+				]));
+	});
+var $author$project$View$autoSortBody = F2(
+	function (fields, state) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('flex flex-col gap-3 text-xs')
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$View$primarySortSection, fields, state),
+					A2($author$project$View$secondarySortSection, fields, state),
+					$author$project$View$autoSortNote
+				]));
+	});
+var $author$project$Types$Apply = {$: 6};
+var $author$project$View$autoSortFooter = A2(
+	$elm$html$Html$div,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('flex justify-end gap-2 pt-2 border-t border-neutral-100')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('px-3 py-1.5 text-xs text-neutral-600 hover:bg-neutral-100 rounded cursor-pointer transition'),
+					$elm$html$Html$Events$onClick(
+					$author$project$Types$AutoSortMsg($author$project$Types$CloseModal))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('キャンセル')
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('px-4 py-1.5 text-xs font-semibold bg-neutral-900 text-white hover:bg-neutral-800 rounded shadow-xs cursor-pointer transition'),
+					$elm$html$Html$Events$onClick(
+					$author$project$Types$AutoSortMsg($author$project$Types$Apply))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('ソート実行')
+				]))
+		]));
+var $author$project$View$autoSortHeader = A2(
+	$elm$html$Html$div,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('flex items-center justify-between border-b border-neutral-100 pb-2')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$span,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('text-sm font-bold text-neutral-800')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('カードのソート（並べ替え）')
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('text-neutral-400 hover:text-neutral-600 text-sm cursor-pointer leading-none'),
+					$elm$html$Html$Events$onClick(
+					$author$project$Types$AutoSortMsg($author$project$Types$CloseModal))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('✕')
+				]))
+		]));
+var $author$project$View$autoSortDialog = function (model) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('relative bg-white rounded-xl shadow-2xl border border-neutral-200 p-5 w-full max-w-md flex flex-col gap-4 z-10')
+			]),
+		_List_fromArray(
+			[
+				$author$project$View$autoSortHeader,
+				A2($author$project$View$autoSortBody, model.m.af, model.aJ),
+				$author$project$View$autoSortFooter
+			]));
+};
+var $author$project$View$autoSortOverlay = function (model) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs')
+			]),
+		_List_fromArray(
+			[
+				$author$project$View$autoSortBackdrop,
+				$author$project$View$autoSortDialog(model)
+			]));
+};
+var $author$project$View$autoSortModalView = function (model) {
+	return (!model.aI) ? $elm$html$Html$text('') : $author$project$View$autoSortOverlay(model);
 };
 var $author$project$View$copyDeleteModeBanner = function (model) {
 	return (!model.aP) ? $elm$html$Html$text('') : A2(
@@ -11603,14 +11742,15 @@ var $author$project$View$copyDeleteModeBanner = function (model) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						$elm$html$Html$text('⚡ カードのコピー・削除モード有効中')
+						$elm$html$Html$text('コピー・削除モード')
 					])),
 				A2(
 				$elm$html$Html$button,
 				_List_fromArray(
 					[
 						$elm$html$Html$Attributes$class('bg-amber-700 hover:bg-amber-800 text-white px-2 py-0.5 rounded text-[11px] cursor-pointer'),
-						$elm$html$Html$Events$onClick($author$project$Types$ToggleCopyDeleteMode)
+						$elm$html$Html$Events$onClick(
+						$author$project$Types$CardActionMsg($author$project$Types$ToggleMode))
 					]),
 				_List_fromArray(
 					[
@@ -11836,11 +11976,11 @@ var $author$project$View$Card$buildCardAttributes = F3(
 			]);
 	});
 var $author$project$View$Card$largeCardClasses = 'w-full max-w-3xl rounded-md border border-neutral-200 bg-white overflow-hidden flex group';
-var $author$project$Types$CopyItemClicked = function (a) {
-	return {$: 21, a: a};
+var $author$project$Types$Delete = function (a) {
+	return {$: 2, a: a};
 };
-var $author$project$Types$DeleteItemClicked = function (a) {
-	return {$: 22, a: a};
+var $author$project$Types$RequestCopy = function (a) {
+	return {$: 1, a: a};
 };
 var $author$project$View$Card$copyDeleteButtons = function (itemId) {
 	return A2(
@@ -11857,7 +11997,8 @@ var $author$project$View$Card$copyDeleteButtons = function (itemId) {
 					[
 						$elm$html$Html$Attributes$class('px-2 py-0.5 rounded bg-neutral-800 hover:bg-neutral-900 text-white text-xs font-medium cursor-pointer transition flex items-center gap-1'),
 						$elm$html$Html$Events$onClick(
-						$author$project$Types$CopyItemClicked(itemId)),
+						$author$project$Types$CardActionMsg(
+							$author$project$Types$RequestCopy(itemId))),
 						$elm$html$Html$Attributes$title('このカードの直後にコピー')
 					]),
 				_List_fromArray(
@@ -11870,7 +12011,8 @@ var $author$project$View$Card$copyDeleteButtons = function (itemId) {
 					[
 						$elm$html$Html$Attributes$class('px-2 py-0.5 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-medium cursor-pointer transition flex items-center gap-1'),
 						$elm$html$Html$Events$onClick(
-						$author$project$Types$DeleteItemClicked(itemId)),
+						$author$project$Types$CardActionMsg(
+							$author$project$Types$Delete(itemId))),
 						$elm$html$Html$Attributes$title('このカードを削除')
 					]),
 				_List_fromArray(
@@ -12647,7 +12789,7 @@ var $author$project$View$sortModal = function (model) {
 				]));
 	}
 };
-var $author$project$Types$UndoFromToast = {$: 24};
+var $author$project$Types$UndoFromToast = {$: 4};
 var $author$project$View$toastNotificationView = function (maybeToast) {
 	if (!maybeToast.$) {
 		var toast = maybeToast.a;
@@ -12674,7 +12816,8 @@ var $author$project$View$toastNotificationView = function (maybeToast) {
 					_List_fromArray(
 						[
 							$elm$html$Html$Attributes$class('text-amber-400 hover:text-amber-300 font-bold underline cursor-pointer'),
-							$elm$html$Html$Events$onClick($author$project$Types$UndoFromToast)
+							$elm$html$Html$Events$onClick(
+							$author$project$Types$CardActionMsg($author$project$Types$UndoFromToast))
 						]),
 					_List_fromArray(
 						[
@@ -12685,7 +12828,8 @@ var $author$project$View$toastNotificationView = function (maybeToast) {
 					_List_fromArray(
 						[
 							$elm$html$Html$Attributes$class('text-neutral-400 hover:text-white p-1 text-xs cursor-pointer ml-1'),
-							$elm$html$Html$Events$onClick($author$project$Types$DismissToast)
+							$elm$html$Html$Events$onClick(
+							$author$project$Types$CardActionMsg($author$project$Types$DismissToast))
 						]),
 					_List_fromArray(
 						[

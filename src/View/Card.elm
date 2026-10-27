@@ -14,6 +14,8 @@ import Types
         , FieldConfig
         , Item
         , Msg(..)
+        , AutoSortMsg(..)
+        , CardActionMsg(..)
         )
 
 
@@ -337,17 +339,18 @@ copyDeleteButtons itemId =
     div [ class "absolute top-2 right-2 z-10 flex gap-1 shadow-md bg-white p-0.5 rounded border border-neutral-300" ]
         [ button
             [ class "px-2 py-0.5 rounded bg-neutral-800 hover:bg-neutral-900 text-white text-xs font-medium cursor-pointer transition flex items-center gap-1"
-            , onClick (CopyItemClicked itemId)
+            , onClick (CardActionMsg (RequestCopy itemId))
             , title "このカードの直後にコピー"
             ]
             [ text "Copy" ]
         , button
             [ class "px-2 py-0.5 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-medium cursor-pointer transition flex items-center gap-1"
-            , onClick (DeleteItemClicked itemId)
+            , onClick (CardActionMsg (Delete itemId))
             , title "このカードを削除"
             ]
             [ text "Delete" ]
         ]
+
 
 editButton : String -> Html Msg
 editButton itemId =
@@ -385,17 +388,6 @@ appendEditButtonIf isHovered itemId elements =
 
     else
         elements
-
-
--- editButton : String -> Html Msg
--- editButton itemId =
---     button
---         [ class editButtonClasses
---         , onClick (EditModalMsg (EditButtonClicked itemId))
---         , title "編集"
---         ]
---         [ text "edit" ]
-
 
 
 -- MARK: データ抽出

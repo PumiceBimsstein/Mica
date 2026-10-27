@@ -16,6 +16,7 @@ import Update.ItemManager exposing (createNewItemWithUuid)
 import Update.EditModalManager exposing (closeEditModal, openEditModal)
 import Update.SortModalManager exposing (applySortAndClose, openSortModal)
 import Update.DetailModalManager exposing (handleDetailModalMsg)
+import Update.AutoSortManager exposing (handleAutoSortMsg)
 import Update.EditModalState exposing
     ( addNewFieldToState
     , confirmTextListField
@@ -37,6 +38,10 @@ import Update.DatasetManager exposing
     , openRenameModal
     , updateRenameModalName
     )
+import Update.CardActionManager exposing
+    ( handleCardActionMsg
+    , handleCreateItemWithId
+    )
 import Types exposing
     ( CardSize
     , Dataset
@@ -56,6 +61,8 @@ import Types exposing
     , Model
     , Msg(..)
     , Value(..)
+    , AutoSortMsg(..)
+    , CardActionMsg(..)
     )
 
 
@@ -109,13 +116,7 @@ update msg model =
         
         DatasetFileImport uuids ->
             fileImport uuids model
-        
-        -- CreateItemWithId uuid ->
-        --     let
-        --         (newModel, saveCmd) = createNewItemWithUuid uuid model.topVisibleCardId model
-        --     in
-        --     (newModel, saveCmd)
-        
+                
         SetMainCardScale scale ->
             ( { model | mainAreaCardScale = scale }, Cmd.none )
 
@@ -125,133 +126,14 @@ update msg model =
         DetailModalMsg detailMsg ->
             handleDetailModalMsg detailMsg model
 
-        -- ▼ コピー・削除モードのトグル
-        ToggleCopyDeleteMode ->
-            ( { model | copyDeleteMode = not model.copyDeleteMode }, Cmd.none )
-
-        -- ▼ カードのコピー要求（対象IDを記録してUUID発行を呼ぶ）
-        CopyItemClicked itemId ->
-            ( { model | pendingCopyItemId = Just itemId }
-            , Ports.generateUuid ()
-            )
-
-        -- ▼ UUID生成完了（新規追加 or コピーの挿入）
         CreateItemWithId uuid ->
-            case model.pendingCopyItemId of
-                Just targetId ->
-                    let
-                        ( newModel, cmd ) =
-                            copyItemAfter targetId uuid model
-                    in
-                    ( { newModel | pendingCopyItemId = Nothing }, cmd )
+            handleCreateItemWithId uuid model
 
-                Nothing ->
-                    createNewItemWithUuid uuid model.topVisibleCardId model
+        AutoSortMsg autoSortMsg ->
+            handleAutoSortMsg autoSortMsg model
 
-        -- ▼ カードの即時削除とトースト表示
-        DeleteItemClicked itemId ->
-            let
-                oldDataset =
-                    model.dataset
-
-                updatedDataset =
-                    { oldDataset | items = List.filter (\it -> it.id /= itemId) oldDataset.items }
-
-                newModel =
-                    { model
-                        | history = History.push model model.history
-                        , dataset = updatedDataset
-                        , toast = Just { message = "カードを削除しました", showUndo = True }
-                    }
-            in
-            ( newModel
-            , Cmd.batch
-                [ Storage.save newModel
-                , triggerAutoDismissToast
-                ]
-            )
-
-        -- ▼ トースト通知関連
-        DismissToast ->
-            ( { model | toast = Nothing }, Cmd.none )
-
-        UndoFromToast ->
-            let
-                undoneModel =
-                    undo model
-            in
-            saveAfter { undoneModel | toast = Nothing }
-
-        -- ▼ 自動ソート関連
-        OpenAutoSortModal ->
-            ( { model | autoSortModalOpen = True, actionMenuOpen = False }, Cmd.none )
-
-        CloseAutoSortModal ->
-            ( { model | autoSortModalOpen = False }, Cmd.none )
-
-        SetAutoSortPrimaryField fieldKey ->
-            let
-                st =
-                    model.autoSortState
-            in
-            ( { model | autoSortState = { st | primaryField = fieldKey } }, Cmd.none )
-
-        SetAutoSortPrimaryDirection dir ->
-            let
-                st =
-                    model.autoSortState
-            in
-            ( { model | autoSortState = { st | primaryDirection = dir } }, Cmd.none )
-
-        SetAutoSortSecondaryField maybeFieldKey ->
-            let
-                st =
-                    model.autoSortState
-            in
-            ( { model | autoSortState = { st | secondaryField = maybeFieldKey } }, Cmd.none )
-
-        SetAutoSortSecondaryDirection dir ->
-            let
-                st =
-                    model.autoSortState
-            in
-            ( { model | autoSortState = { st | secondaryDirection = dir } }, Cmd.none )
-
-        ApplyAutoSort ->
-            let
-                primary =
-                    { fieldKey = model.autoSortState.primaryField
-                    , direction = model.autoSortState.primaryDirection
-                    }
-
-                secondary =
-                    model.autoSortState.secondaryField
-                        |> Maybe.map (\f -> { fieldKey = f, direction = model.autoSortState.secondaryDirection })
-
-                sortedItems =
-                    Sort.sortItems primary secondary model.dataset.items
-
-                oldDataset =
-                    model.dataset
-
-                updatedDataset =
-                    { oldDataset | items = sortedItems }
-
-                newModel =
-                    { model
-                        | history = History.push model model.history
-                        , dataset = updatedDataset
-                        , autoSortModalOpen = False
-                        , toast = Just { message = "カードをソートしました", showUndo = True }
-                    }
-            in
-            ( newModel
-            , Cmd.batch
-                [ Storage.save newModel
-                , triggerAutoDismissToast
-                ]
-            )
-
+        CardActionMsg cardActionMsg ->
+            handleCardActionMsg cardActionMsg model
 
 updateDataset : DatasetMsg -> Model -> ( Model, Cmd Msg )
 updateDataset msg model =
@@ -627,7 +509,7 @@ insertItemDirectlyAfter targetId newItem items =
 
 triggerAutoDismissToast : Cmd Msg
 triggerAutoDismissToast =
-    Process.sleep 5000 |> Task.perform (\_ -> DismissToast)
+    Process.sleep 5000 |> Task.perform (\_ -> CardActionMsg DismissToast)
 
 
 -- MARK: 検索処理
